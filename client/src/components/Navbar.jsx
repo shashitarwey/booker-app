@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { CreditCard, LogOut, Sun, Moon, Search, Menu, X as XIcon, ShoppingBag, Users, UserCog, BarChart3, History, BookOpen, ContactRound, LayoutDashboard, FileText } from 'lucide-react';
+import { LogOut, Sun, Moon, Search, Menu, X as XIcon, ShoppingBag, Users, UserCog, BarChart3, History, BookOpen, ContactRound, LayoutDashboard, FileText } from 'lucide-react';
+import BrandMark from './BrandMark';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import GlobalSearch from '../common/GlobalSearch';
@@ -51,7 +52,7 @@ export default function Navbar() {
       {user && (
         <aside className="app-sidebar">
           <Link to="/" className="sidebar-brand">
-            <div className="sidebar-brand-mark"><CreditCard size={18} /></div>
+            <div className="sidebar-brand-mark"><BrandMark size={18} /></div>
             <span>Booker</span>
           </Link>
 
@@ -104,7 +105,7 @@ export default function Navbar() {
           )}
 
           <Link to="/" className="d-flex items-center" style={{ gap: '12px', textDecoration: 'none', cursor: 'pointer', color: 'var(--text)' }}>
-            <div className="logo-icon"><CreditCard size={22} /></div>
+            <div className="logo-icon"><BrandMark size={22} /></div>
             <span className="logo-text hide-on-mobile">Booker</span>
           </Link>
 

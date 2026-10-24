@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { CreditCard, ArrowLeft, Mail } from 'lucide-react';
+import { ArrowLeft, Mail } from 'lucide-react';
+import BrandMark from '../components/BrandMark';
 import { forgotPassword } from '../api';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
@@ -31,7 +32,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <div className="auth-logo"><CreditCard size={28} /><span>Booker</span></div>
+        <div className="auth-logo"><BrandMark size={28} /><span>Booker</span></div>
 
         {sent ? (
           <div className="forgot-pw-sent">

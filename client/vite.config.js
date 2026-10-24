@@ -7,11 +7,11 @@ export default defineConfig({
         react(),
         VitePWA({
             registerType: 'autoUpdate',
-            includeAssets: ['icon-192x192.png', 'icon-512x512.png'],
+            includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'icon-192x192.png', 'icon-512x512.png', 'icon-maskable-512x512.png'],
             manifest: {
                 name: 'Booker — Orders, Cards & Bookers',
                 short_name: 'Booker',
-                description: 'Track all your credit card spends in one place',
+                description: 'Orders booked on your, family and friends\' cards: buyer ledgers, booker khata, profit and ITR reports',
                 theme_color: '#0a0d14',
                 background_color: '#0a0d14',
                 display: 'standalone',
@@ -29,7 +29,7 @@ export default defineConfig({
                         type: 'image/png',
                     },
                     {
-                        src: 'icon-512x512.png',
+                        src: 'icon-maskable-512x512.png',
                         sizes: '512x512',
                         type: 'image/png',
                         purpose: 'maskable',

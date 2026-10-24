@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { CreditCard, CheckCircle2, XCircle, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { CheckCircle2, XCircle, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import BrandMark from '../components/BrandMark';
 import { resetPassword } from '../api';
 import { toast } from 'react-hot-toast';
 import { useParams, Link } from 'react-router-dom';
@@ -49,7 +50,7 @@ export default function ResetPasswordPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <div className="auth-logo"><CreditCard size={28} /><span>Booker</span></div>
+        <div className="auth-logo"><BrandMark size={28} /><span>Booker</span></div>
 
         {success ? (
           <div className="forgot-pw-sent">
