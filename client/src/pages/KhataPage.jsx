@@ -3,7 +3,8 @@ import { getCustomers, deleteCustomer } from '../api';
 import { Plus, Trash2, Pencil, BookText, Wallet, TrendingDown, TrendingUp, ChevronLeft, Phone, Users, History } from 'lucide-react';
 import { fmtCurrency, profitColor } from '../utils/formatters';
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import BookersKhataList from '../components/BookersKhataList';
 import AddCustomerModal from '../components/AddCustomerModal';
 import ConfirmModal from '../common/ConfirmModal';
 import ActionMenu from '../common/ActionMenu';
@@ -20,6 +21,8 @@ export default function KhataPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = searchParams.get('tab') === 'bookers' ? 'bookers' : 'customers';
 
   const fetchCustomers = useCallback(async (p = page, ps = pageSize) => {
     try {
@@ -80,50 +83,63 @@ export default function KhataPage() {
             </button>
             <div className="page-hero-title-group">
               <h1 className="page-hero-title">Khata Book</h1>
-              {!loading && total > 0 && (
+              {tab === 'customers' && !loading && total > 0 && (
                 <span className="page-hero-subtitle">{total} customer{total !== 1 ? 's' : ''}</span>
               )}
+              {tab === 'bookers' && <span className="page-hero-subtitle">What you owe your bookers and what you've paid</span>}
             </div>
           </div>
 
           <div className="page-hero-actions">
-            <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
-              <Plus size={16} /> Add Customer
-            </button>
+            {tab === 'customers' && (
+              <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
+                <Plus size={16} /> Add Customer
+              </button>
+            )}
           </div>
         </div>
       </div>
 
       <div className="page-content">
+        <div className="tab-strip">
+          <button className={`tab-btn ${tab === 'customers' ? 'is-active' : ''}`} onClick={() => setSearchParams({})}>
+            Customers {total > 0 && <span className="tab-btn-count">{total}</span>}
+          </button>
+          <button className={`tab-btn ${tab === 'bookers' ? 'is-active' : ''}`} onClick={() => setSearchParams({ tab: 'bookers' })}>
+            Bookers
+          </button>
+        </div>
+
+        {tab === 'bookers' ? <BookersKhataList /> : (<>
         {!loading && total > 0 && (
           <div className="stats-row">
             <div className="stat-card">
               <div className="stat-card-header">
-                <div className="stat-card-icon" style={{ background: 'rgba(248, 113, 113, 0.12)', color: '#fca5a5' }}>
+                <div className="stat-card-icon" style={{ background: 'rgba(248, 113, 113, 0.12)', color: 'var(--ink-red)' }}>
                   <TrendingDown size={16} />
                 </div>
                 <span className="stat-card-label">Total You Gave</span>
               </div>
-              <div className="stat-card-value" style={{ color: '#fca5a5' }}>
+              <div className="stat-card-value" style={{ color: 'var(--ink-red)' }}>
                 {fmtCurrency(totalGave)}
               </div>
             </div>
 
             <div className="stat-card">
               <div className="stat-card-header">
-                <div className="stat-card-icon" style={{ background: 'rgba(134, 239, 172, 0.12)', color: '#86efac' }}>
+                <div className="stat-card-icon" style={{ background: 'rgba(134, 239, 172, 0.12)', color: 'var(--ink-green)' }}>
                   <TrendingUp size={16} />
                 </div>
                 <span className="stat-card-label">Total You Got</span>
               </div>
-              <div className="stat-card-value" style={{ color: '#86efac' }}>
+              <div className="stat-card-value" style={{ color: 'var(--ink-green)' }}>
                 {fmtCurrency(totalGot)}
               </div>
             </div>
 
             <div className="stat-card">
               <div className="stat-card-header">
-                <div className="stat-card-icon" style={{ background: 'rgba(88, 166, 255, 0.12)', color: 'var(--accent)' }}>
+                <div className="stat-card-icon" style={{ background: 'rgba(124, 108, 255, 0.12)', color: 'var(--accent)' }}>
                   <Wallet size={16} />
                 </div>
                 <span className="stat-card-label">Net Balance</span>
@@ -188,8 +204,8 @@ export default function KhataPage() {
                           : <span style={{ color: 'var(--text-muted)' }}>—</span>
                         }
                       </td>
-                      <td className="font-medium" style={{ color: '#fca5a5' }}>{fmtCurrency(c.total_gave || 0)}</td>
-                      <td className="font-medium" style={{ color: '#86efac' }}>{fmtCurrency(c.total_got || 0)}</td>
+                      <td className="font-medium" style={{ color: 'var(--ink-red)' }}>{fmtCurrency(c.total_gave || 0)}</td>
+                      <td className="font-medium" style={{ color: 'var(--ink-green)' }}>{fmtCurrency(c.total_got || 0)}</td>
                       <td className="font-bold" style={{ color: profitColor(-(c.balance || 0)) }}>
                         {fmtCurrency(Math.abs(c.balance || 0))}
                       </td>
@@ -223,6 +239,7 @@ export default function KhataPage() {
             />
           </div>
         )}
+        </>)}
       </div>
 
       {showAddModal && (

@@ -1,4 +1,5 @@
-import { useRef, useState, useLayoutEffect } from 'react';
+import { useRef } from 'react';
+import usePopoverPlacement from './usePopoverPlacement';
 import { EllipsisVertical } from 'lucide-react';
 
 /**
@@ -13,17 +14,9 @@ import { EllipsisVertical } from 'lucide-react';
 export default function ActionMenu({ id, openId, onToggle, items }) {
     const isOpen = openId === id;
     const btnRef = useRef(null);
-    const [pos, setPos] = useState({ top: 0, right: 0 });
-
-    useLayoutEffect(() => {
-        if (isOpen && btnRef.current) {
-            const rect = btnRef.current.getBoundingClientRect();
-            setPos({
-                top: rect.bottom + 4,
-                right: window.innerWidth - rect.right,
-            });
-        }
-    }, [isOpen]);
+    const menuRef = useRef(null);
+    // Right-aligned under the button; flips up near the bottom of the screen
+    const menuStyle = usePopoverPlacement(isOpen, btnRef, menuRef, { align: 'end', gap: 4, zIndex: 10 });
 
     return (
         <div style={{ position: 'relative', display: 'flex', justifyContent: 'flex-end' }}>
@@ -43,11 +36,11 @@ export default function ActionMenu({ id, openId, onToggle, items }) {
                         onClick={e => { e.stopPropagation(); onToggle(null); }}
                     />
 
-                    <div style={{
-                        position: 'fixed', top: pos.top, right: pos.right,
+                    <div ref={menuRef} style={{
+                        ...menuStyle,
                         background: 'var(--surface)', border: '1px solid var(--border)',
                         borderRadius: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
-                        zIndex: 10, minWidth: '150px',
+                        minWidth: '150px',
                         display: 'flex', flexDirection: 'column', overflow: 'hidden'
                     }}>
                         {items.map((item, i) => (

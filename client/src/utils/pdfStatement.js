@@ -307,7 +307,7 @@ export const buildStatementHtml = ({
 </head>
 <body>
     <div class="brand-bar">
-        <div class="brand-name">CardVault</div>
+        <div class="brand-name">Booker</div>
         <div>${escapeHtml(brandSubtitle)}</div>
     </div>
 

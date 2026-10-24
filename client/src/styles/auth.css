@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse at 20% 60%, rgba(88, 166, 255, 0.07) 0%, transparent 60%),
+  background: radial-gradient(ellipse at 20% 60%, rgba(124, 108, 255, 0.07) 0%, transparent 60%),
     radial-gradient(ellipse at 80% 30%, rgba(188, 140, 255, 0.07) 0%, transparent 60%),
     var(--bg);
   padding: 20px;
@@ -27,7 +27,7 @@
   gap: 10px;
   font-size: 1.5rem;
   font-weight: 800;
-  background: linear-gradient(90deg, #58a6ff, #bc8cff);
+  background: linear-gradient(90deg, #7c6cff, #2dd4bf);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -66,7 +66,7 @@
 
 .auth-tab.active {
   background: var(--accent);
-  color: #0d1117;
+  color: #0a0d14;
 }
 
 /* ── Password toggle ────────────────────────────────────────── */
@@ -139,14 +139,14 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: rgba(88, 166, 255, 0.1);
+  background: rgba(124, 108, 255, 0.1);
   color: var(--accent);
   margin-bottom: 16px;
 }
 
 .forgot-pw-sent-icon.success {
-  background: rgba(63, 185, 80, 0.1);
-  color: var(--success, #3fb950);
+  background: rgba(52, 211, 153, 0.1);
+  color: var(--success, #34d399);
 }
 
 .forgot-pw-sent h2 {

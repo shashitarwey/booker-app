@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import usePopoverPlacement from './usePopoverPlacement';
 import { DayPicker } from 'react-day-picker';
 import { parseISO } from 'date-fns';
 import { Calendar as CalendarIcon, ChevronDown } from 'lucide-react';
@@ -8,7 +9,7 @@ import { fmtDate, fmtDisplay } from '../utils/formatters';
 
 export default function SingleDatePicker({ value, onChange, placeholder = "Select Date", maxDate, className, disabled }) {
   const [open, setOpen] = useState(false);
-  const [popoverStyle, setPopoverStyle] = useState({});
+  const popoverRef = useRef(null);
   const containerRef = useRef(null);
   const buttonRef = useRef(null);
 
@@ -22,18 +23,8 @@ export default function SingleDatePicker({ value, onChange, placeholder = "Selec
     return () => document.removeEventListener('mousedown', handleOutside);
   }, [open]);
 
-  // Position the popover using fixed positioning to escape overflow:hidden
-  useEffect(() => {
-    if (open && buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      setPopoverStyle({
-        position: 'fixed',
-        top: rect.bottom + 8,
-        left: rect.left,
-        zIndex: 10001,
-      });
-    }
-  }, [open]);
+  // Fixed + viewport-aware so it escapes overflow:hidden parents and never leaves the screen
+  const popoverStyle = usePopoverPlacement(open, buttonRef, popoverRef);
 
   // Lock body scroll when picker is open
   useEffect(() => {
@@ -73,7 +64,7 @@ export default function SingleDatePicker({ value, onChange, placeholder = "Selec
       </button>
 
       {open && (
-        <div className="date-picker-popover fade-in" style={popoverStyle}>
+        <div className="date-picker-popover fade-in" ref={popoverRef} style={popoverStyle}>
           <DayPicker
             mode="single"
             selected={selectedDate}

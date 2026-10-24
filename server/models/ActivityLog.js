@@ -9,7 +9,7 @@ const ActivityLogSchema = new mongoose.Schema({
     },
     entity: {
         type: String,
-        enum: ['order', 'seller', 'seller_payment', 'transaction', 'card', 'customer', 'customer_entry'],
+        enum: ['order', 'seller', 'seller_payment', 'transaction', 'card', 'customer', 'customer_entry', 'person', 'booker_payment'],
         required: true
     },
     entity_id: { type: mongoose.Schema.Types.ObjectId },
@@ -20,6 +20,6 @@ const ActivityLogSchema = new mongoose.Schema({
 
 ActivityLogSchema.index({ user_id: 1, created_at: -1 });
 ActivityLogSchema.index({ user_id: 1, entity_id: 1 });
-ActivityLogSchema.index({ created_at: 1 }, { expireAfterSeconds: 270 * 24 * 60 * 60 }); // TTL: auto-delete after 270 days (~9 months)
+ActivityLogSchema.index({ created_at: 1 }, { expireAfterSeconds: 365 * 24 * 60 * 60 }); // TTL: auto-delete after 365 days (1 year)
 
 module.exports = mongoose.model('ActivityLog', ActivityLogSchema);

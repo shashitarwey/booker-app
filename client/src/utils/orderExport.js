@@ -1,5 +1,6 @@
 import { fmtDisplay } from './formatters';
 import { toCSV, downloadCSV } from './csv';
+import { orderProfit, isFriendOrder, friendEarning } from './profit';
 
 const fmtCSVDate = (iso) => iso ? fmtDisplay(iso.slice(0, 10)) : '';
 
@@ -17,13 +18,19 @@ const orderColumns = [
     { header: 'Order Amount', value: o => o.order_amount },
     { header: 'Return Amount', value: o => o.return_amount },
     { header: 'Cashback', value: o => o.cashback || 0 },
-    { header: 'Profit', value: o => (o.return_amount - o.order_amount) + (o.cashback || 0) },
+    { header: 'Coupon Cashback', value: o => o.coupon_cashback || 0 },
+    { header: 'Coupon in Profit', value: o => (o.coupon_cashback > 0 ? (o.coupon_in_profit === false ? 'No' : 'Yes') : '') },
+    { header: 'Return to Friend', value: o => isFriendOrder(o) ? o.friend_amount : '' },
+    { header: 'Advance to Friend', value: o => isFriendOrder(o) ? (o.advance_amount || 0) : '' },
+    { header: 'Friend Earning', value: o => isFriendOrder(o) ? friendEarning(o) : '' },
+    { header: 'Profit', value: o => orderProfit(o) },
     { header: 'Delivery Status', value: o => o.delivery_status },
     { header: 'Delivered Date', value: o => fmtCSVDate(o.delivered_date) },
     { header: 'Buyer', value: o => o.seller_id?.name || '' },
     { header: 'Location', value: o => o.seller_id?.city || '' },
     { header: 'E-comm Site', value: o => o.ecomm_site },
     { header: 'Card', value: o => cardLabelCSV(o.card_id) },
+    { header: 'Card Holder', value: o => o.card_id?.holder_id?.name || '' },
     { header: 'ID Used', value: o => o.id_used },
     { header: 'Cleared', value: o => o.is_cleared ? 'Yes' : 'No' },
     { header: 'Remark', value: o => o.remark || '' },

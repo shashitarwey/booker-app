@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { createCard, updateCard } from '../api';
-import { BANK_NAMES, CARD_NETWORKS, CASHBACK_PERIODS, MONTHS, ECOMM_SITES } from '../constants';
+import { createCard, updateCard, getPeople, getCards } from '../api';
+import { BANK_NAMES, CARD_NETWORKS, CASHBACK_PERIODS, MONTHS, ECOMM_SITES, RELATIONS, CARD_TYPES } from '../constants';
+import { cardHolderLabel } from '../utils/formatters';
 import SearchableDropdown from '../common/SearchableDropdown';
 
 const EMPTY = {
@@ -9,15 +10,38 @@ const EMPTY = {
   cashback_enabled: false, cashback_percent: 0, cashback_limit: 0, cashback_period: 'monthly', cashback_reset_day: 1, cashback_cycle_start_month: 1,
   cashback_sites: [],
   billing_date: '', due_date: '',
+  holder_id: '', card_type: 'primary', primary_card_id: '',
 };
 
-export default function AddCardModal({ editCard, onClose, onSave }) {
+const personLabel = (p) => p ? `${p.name} (${RELATIONS[p.relation]?.label || p.relation})` : '';
+const idOf = (ref) => (ref && typeof ref === 'object' ? ref._id : ref) || '';
+
+export default function AddCardModal({ editCard, defaultHolderId = '', onClose, onSave }) {
   const [form,   setForm]   = useState(EMPTY);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  const [people, setPeople] = useState([]);
+  const [allCards, setAllCards] = useState([]);
+
+  useEffect(() => {
+    Promise.all([getPeople(), getCards()])
+      .then(([p, c]) => {
+        setPeople(p);
+        setAllCards(c);
+        // New card with no preset holder → default to self
+        if (!editCard && !defaultHolderId) {
+          const self = p.find(x => x.relation === 'self');
+          if (self) setForm(f => (f.holder_id ? f : { ...f, holder_id: self._id }));
+        }
+      })
+      .catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     setForm(editCard ? {
+      holder_id:        idOf(editCard.holder_id),
+      card_type:        editCard.card_type || 'primary',
+      primary_card_id:  idOf(editCard.primary_card_id),
       bank_name:        editCard.bank_name,
       card_network:     editCard.card_network || 'Visa',
       last_four_digit:  editCard.last_four_digit,
@@ -31,8 +55,10 @@ export default function AddCardModal({ editCard, onClose, onSave }) {
       cashback_sites:   Array.isArray(editCard.cashback_sites) ? editCard.cashback_sites : [],
       billing_date:     editCard.billing_date     || '',
       due_date:         editCard.due_date          || '',
-    } : EMPTY);
-  }, [editCard]);
+    } : { ...EMPTY, holder_id: defaultHolderId });
+  }, [editCard, defaultHolderId]);
+
+  const primaryOptions = allCards.filter(c => c.card_type !== 'addon' && c._id !== editCard?._id);
 
   const set = (k, v) => {
     setForm(f => ({ ...f, [k]: v }));
@@ -49,6 +75,7 @@ export default function AddCardModal({ editCard, onClose, onSave }) {
       newErrors.last_four_digit = 'Must be exactly 4 digits';
     }
     if (!form.name_on_card) newErrors.name_on_card = 'Name on Card is required';
+    if (!form.holder_id) newErrors.holder_id = 'Select who holds this card';
 
     if (form.cashback_enabled) {
       if (form.cashback_percent === undefined || form.cashback_percent === null || isNaN(form.cashback_percent)) {
@@ -69,7 +96,8 @@ export default function AddCardModal({ editCard, onClose, onSave }) {
 
     setSaving(true);
     try {
-      editCard ? await updateCard(editCard._id, form) : await createCard(form);
+      const payload = { ...form, primary_card_id: form.card_type === 'addon' ? (form.primary_card_id || null) : null };
+      editCard ? await updateCard(editCard._id, payload) : await createCard(payload);
       onSave();
     } catch (err) {
       alert(err.response?.data?.error || 'Error saving card');
@@ -86,6 +114,54 @@ export default function AddCardModal({ editCard, onClose, onSave }) {
 
         <div className="modal-body">
           <form id="card-form" onSubmit={handleSubmit} noValidate>
+            <div className="form-row">
+              <div className="form-group z-12">
+                <label className="form-label">Card Holder <span style={{ color: 'var(--danger)' }}>*</span></label>
+                <SearchableDropdown
+                  options={people.map(personLabel)}
+                  value={personLabel(people.find(p => p._id === form.holder_id))}
+                  onChange={val => {
+                    const p = people.find(x => personLabel(x) === val);
+                    set('holder_id', p ? p._id : '');
+                  }}
+                  placeholder="Select person"
+                  error={errors.holder_id}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Card Type</label>
+                <div className="segmented">
+                  {CARD_TYPES.map(t => (
+                    <button
+                      type="button"
+                      key={t.value}
+                      className={`segmented-btn ${form.card_type === t.value ? 'is-active' : ''}`}
+                      onClick={() => set('card_type', t.value)}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {form.card_type === 'addon' && (
+              <div className="form-group z-11">
+                <label className="form-label">
+                  Primary Card <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(Optional)</span>
+                </label>
+                <SearchableDropdown
+                  options={primaryOptions.map(cardHolderLabel)}
+                  value={cardHolderLabel(primaryOptions.find(c => c._id === form.primary_card_id))}
+                  onChange={val => {
+                    const c = primaryOptions.find(x => cardHolderLabel(x) === val);
+                    set('primary_card_id', c ? c._id : '');
+                  }}
+                  placeholder="Card this add-on is linked to"
+                />
+              </div>
+            )}
+
             <div className="form-row">
               <div className="form-group z-10">
                 <label className="form-label">Bank Name</label>

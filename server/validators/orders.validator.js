@@ -1,7 +1,6 @@
 const { body, param } = require('express-validator');
 
-const VARIANTS = ['NA', '6/128', '8/128', '8/256', '12/256', '4/64', '4/128', '12/1024', '12/512'];
-const DELIVERY = ['Yes', 'No', 'Cancelled'];
+const DELIVERY = ['Delivered', 'Pending', 'Cancelled'];
 
 const baseRules = (optional = false) => {
     const opt = (chain) => (optional ? chain.optional() : chain);
@@ -14,7 +13,11 @@ const baseRules = (optional = false) => {
         opt(body('return_amount').isFloat({ min: 0 })).withMessage('return_amount must be >= 0'),
         body('quantity').optional({ values: 'falsy' }).isInt({ min: 1 }).withMessage('quantity must be >= 1'),
         body('cashback').optional({ values: 'falsy' }).isFloat({ min: 0 }).withMessage('cashback must be >= 0'),
-        body('variant').optional({ values: 'falsy' }).isIn(VARIANTS).withMessage(`variant must be one of ${VARIANTS.join(', ')}`),
+        body('coupon_cashback').optional({ values: 'falsy' }).isFloat({ min: 0 }).withMessage('coupon_cashback must be >= 0'),
+        body('coupon_in_profit').optional().isBoolean().withMessage('coupon_in_profit must be true or false'),
+        body('friend_amount').optional({ values: 'falsy' }).isFloat({ min: 0 }).withMessage('friend_amount must be >= 0'),
+        body('advance_amount').optional({ values: 'falsy' }).isFloat({ min: 0 }).withMessage('advance_amount must be >= 0'),
+        body('variant').optional({ values: 'falsy' }).isString().trim().isLength({ max: 30 }).withMessage('variant must be 30 characters or fewer'),
         opt(body('model_ordered').isString().trim().notEmpty()).withMessage('model_ordered is required'),
         opt(body('id_used').isString().trim().notEmpty()).withMessage('id_used is required'),
         body('delivery_status').optional({ values: 'falsy' }).isIn(DELIVERY).withMessage(`delivery_status must be one of ${DELIVERY.join(', ')}`),

@@ -45,6 +45,18 @@ export const cardLabel = (card) =>
     card ? `${card.bank_name} - ${card.last_four_digit}` : '';
 
 /**
+ * Card label including the holder name (when the holder is populated).
+ * Used in dropdowns where cards from several people are listed together.
+ * @returns {string} e.g. "HDFC Bank - 1234 · Ravi"
+ */
+export const cardHolderLabel = (card) => {
+    if (!card) return '';
+    const holder = card.holder_id?.name;
+    const addon = card.card_type === 'addon' ? ' (Add-on)' : '';
+    return `${cardLabel(card)}${addon}${holder ? ` · ${holder}` : ''}`;
+};
+
+/**
  * Build a display label for a seller object.
  * @param {{ name: string, city: string }} seller
  * @returns {string} e.g. "Prakash Das (Ranchi)"

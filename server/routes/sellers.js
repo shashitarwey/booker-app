@@ -4,9 +4,12 @@ const multer = require('multer');
 const Seller = require('../models/Seller');
 const Order = require('../models/Order');
 const SellerPayment = require('../models/SellerPayment');
+const { PROFIT_EXPR } = require('../utils/profit');
 const { uploadToCloudinary } = require('../utils/cloudinary');
-const { toObjectId, parsePagination, paginatedResponse, sortByDateThenCreatedAt } = require('../utils/helpers');
+const { toObjectId, parsePagination, paginatedResponse } = require('../utils/helpers');
+const { runningBalanceFeed, byId } = require('../utils/ledgerFeed');
 const { logActivity } = require('../utils/activityLogger');
+const { invalidateCache } = require('../utils/cache');
 const validate = require('../middleware/validate');
 const {
     createRules,
@@ -150,13 +153,14 @@ router.get('/', async (req, res, next) => {
 
         // Aggregate order stats per seller
         const stats = await Order.aggregate([
-            { $match: { user_id: userId, delivery_status: 'Yes' } },
+            { $match: { user_id: userId, delivery_status: 'Delivered' } },
             {
                 $group: {
                     _id: '$seller_id',
                     total_amount_ordered: { $sum: '$order_amount' },
                     total_amount_get: { $sum: '$return_amount' },
-                    total_cashback: { $sum: '$cashback' }
+                    total_cashback: { $sum: '$cashback' },
+                    profit: { $sum: PROFIT_EXPR }
                 }
             }
         ]);
@@ -184,12 +188,12 @@ router.get('/', async (req, res, next) => {
 
         // Inject the dynamically calculated metrics directly
         const sellersWithStats = sellers.map(seller => {
-            const stat = statsMap[seller._id.toString()] || { total_amount_ordered: 0, total_amount_get: 0, total_cashback: 0 };
+            const stat = statsMap[seller._id.toString()] || { total_amount_ordered: 0, total_amount_get: 0, total_cashback: 0, profit: 0 };
             const total_paid = paymentsMap[seller._id.toString()] || 0;
 
             const total_amount_ordered = stat.total_amount_ordered;
             const total_amount_get = stat.total_amount_get;
-            const profit = total_amount_get - total_amount_ordered + (stat.total_cashback || 0);
+            const profit = stat.profit;
             const due_balance = total_amount_get - total_paid;
 
             return {
@@ -220,8 +224,8 @@ router.get('/:id', idRule, validate, async (req, res, next) => {
         const sellerIdObj = toObjectId(seller._id);
 
         const [orderStat] = await Order.aggregate([
-            { $match: { user_id: userId, seller_id: sellerIdObj, delivery_status: 'Yes' } },
-            { $group: { _id: null, total_amount_ordered: { $sum: '$order_amount' }, total_amount_get: { $sum: '$return_amount' }, total_cashback: { $sum: '$cashback' } } }
+            { $match: { user_id: userId, seller_id: sellerIdObj, delivery_status: 'Delivered' } },
+            { $group: { _id: null, total_amount_ordered: { $sum: '$order_amount' }, total_amount_get: { $sum: '$return_amount' }, total_cashback: { $sum: '$cashback' }, profit: { $sum: PROFIT_EXPR } } }
         ]);
 
         const [paymentStat] = await SellerPayment.aggregate([
@@ -229,9 +233,9 @@ router.get('/:id', idRule, validate, async (req, res, next) => {
             { $group: { _id: null, total_paid: { $sum: '$amount' } } }
         ]);
 
-        const stat = orderStat || { total_amount_ordered: 0, total_amount_get: 0, total_cashback: 0 };
+        const stat = orderStat || { total_amount_ordered: 0, total_amount_get: 0, total_cashback: 0, profit: 0 };
         const total_paid = paymentStat?.total_paid || 0;
-        const profit = stat.total_amount_get - stat.total_amount_ordered + (stat.total_cashback || 0);
+        const profit = stat.profit;
         const due_balance = stat.total_amount_get - total_paid;
 
         res.json({
@@ -282,6 +286,7 @@ router.put('/:id', updateRules, validate, async (req, res, next) => {
         );
         const changedFields = Object.keys(update).filter(k => String(oldSeller[k]) !== String(updatedSeller[k]));
         logActivity(req.user.id, 'updated', 'seller', updatedSeller._id, `Updated seller: ${updatedSeller.name}`, updatedSeller, changedFields);
+        invalidateCache(req, 'sellers');
         res.json(updatedSeller);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -291,14 +296,22 @@ router.put('/:id', updateRules, validate, async (req, res, next) => {
 // Delete a seller
 router.delete('/:id', idRule, validate, async (req, res, next) => {
     try {
-        const ordersCount = await Order.countDocuments({ seller_id: req.params.id, user_id: req.user.id });
+        const [ordersCount, paymentsCount] = await Promise.all([
+            Order.countDocuments({ seller_id: req.params.id, user_id: req.user.id }),
+            SellerPayment.countDocuments({ seller_id: req.params.id, user_id: req.user.id }),
+        ]);
         if (ordersCount > 0) {
-            return res.status(400).json({ error: 'Cannot delete seller with existing orders. Please delete or reassign the orders first.' });
+            return res.status(400).json({ error: 'Cannot delete buyer with existing orders. Please delete or reassign the orders first.' });
+        }
+        // Orphaned payments would keep counting in "receivable from buyers"
+        if (paymentsCount > 0) {
+            return res.status(400).json({ error: `This buyer has ${paymentsCount} payment(s). Delete them from the ledger first.` });
         }
 
         const deletedSeller = await Seller.findOneAndDelete({ _id: req.params.id, user_id: req.user.id });
         if (!deletedSeller) return res.status(404).json({ error: 'Seller not found' });
         logActivity(req.user.id, 'deleted', 'seller', deletedSeller._id, `Deleted seller: ${deletedSeller.name}`, deletedSeller);
+        invalidateCache(req, 'sellers');
         res.json({ success: true });
     } catch (err) { next(err); }
 });
@@ -309,64 +322,93 @@ router.get('/:sellerId/payment', sellerIdRule, validate, async (req, res, next) 
         const payments = await SellerPayment.find({
             seller_id: req.params.sellerId,
             user_id: req.user.id
-        }).sort({ payment_date: -1, createdAt: -1 });
+        }).sort({ payment_date: -1, created_at: -1 });
         res.json(payments);
     } catch (err) { next(err); }
 });
 
 // Paginated merged ledger feed: orders + payments with running balance
-// attached, sorted newest-first. Running balance must be computed across
-// the full history (chronological) so the server fetches all entries once,
-// then slices for pagination. For realistic ledger sizes (<10k entries)
-// this is fine and avoids complex cursor-based balance tracking.
+// attached, sorted newest-first. The balance depends on the full chronological
+// history, so MongoDB merges both collections ($unionWith), computes the
+// running sum in a window and returns one page (utils/ledgerFeed.js); only the
+// page's documents are then loaded in full and populated.
+//
+// Balance rules: a Delivered order adds its return_amount, pending/cancelled
+// orders are listed but add nothing, payments subtract. Same-date rows are
+// ordered by created_at (missing sorts first), then orders before payments,
+// then _id — a deterministic version of the old in-memory stable sort.
+const ORDER_CARD_POPULATE = {
+    path: 'card_id',
+    select: 'bank_name last_four_digit card_type holder_id',
+    populate: { path: 'holder_id', select: 'name relation' },
+};
+
+const ledgerOrderItem = (o, runningBalance) => ({
+    id: o._id,
+    type: 'ORDER',
+    date: o.order_date,
+    description: `${o.model_ordered}${o.quantity > 1 ? ` ×${o.quantity}` : ''}`,
+    amount: o.return_amount,
+    // Who booked it: the holder of the card the order was placed on
+    booker: o.card_id?.holder_id
+        ? { _id: o.card_id.holder_id._id, name: o.card_id.holder_id.name, relation: o.card_id.holder_id.relation }
+        : null,
+    raw: o,
+    isCancelled: o.delivery_status === 'Cancelled',
+    isPending: o.delivery_status !== 'Delivered',
+    runningBalance,
+});
+
+const ledgerPaymentItem = (p, runningBalance) => ({
+    id: p._id,
+    type: 'PAYMENT',
+    date: p.payment_date,
+    description: p.notes || 'Payment Received',
+    amount: p.amount,
+    raw: p,
+    isCancelled: false,
+    isPending: false,
+    runningBalance,
+});
+
 router.get('/:sellerId/ledger-feed', sellerIdRule, validate, async (req, res, next) => {
     try {
         const { pageNum, limitNum, skip } = parsePagination(req.query);
+        const match = { user_id: toObjectId(req.user.id), seller_id: toObjectId(req.params.sellerId) };
 
+        // rank: orders before payments on a full date + created_at tie
+        const { rows, total } = await runningBalanceFeed(Order, [
+            { $match: match },
+            { $project: {
+                rank: { $literal: 0 }, date: '$order_date', created_at: 1,
+                delta: { $cond: [{ $eq: ['$delivery_status', 'Delivered'] }, '$return_amount', 0] },
+            } },
+            { $unionWith: { coll: SellerPayment.collection.name, pipeline: [
+                { $match: match },
+                { $project: {
+                    rank: { $literal: 1 }, date: '$payment_date', created_at: 1,
+                    delta: { $subtract: [0, '$amount'] },
+                } },
+            ] } },
+        ], { sortBy: { date: 1, created_at: 1, rank: 1, _id: 1 }, delta: '$delta', skip, limit: limitNum });
+
+        // Hydrate just this page
+        const idsOf = (rank) => rows.filter(r => r.rank === rank).map(r => r._id);
         const [orders, payments] = await Promise.all([
-            Order.find({ seller_id: req.params.sellerId, user_id: req.user.id }).lean(),
-            SellerPayment.find({ seller_id: req.params.sellerId, user_id: req.user.id }).lean(),
+            Order.find({ _id: { $in: idsOf(0) }, user_id: req.user.id }).populate(ORDER_CARD_POPULATE).lean(),
+            SellerPayment.find({ _id: { $in: idsOf(1) }, user_id: req.user.id }).lean(),
         ]);
+        const orderById = byId(orders);
+        const paymentById = byId(payments);
 
-        const merged = [
-            ...orders.map(o => ({
-                id: o._id,
-                type: 'ORDER',
-                date: o.order_date,
-                description: `${o.model_ordered}${o.quantity > 1 ? ` ×${o.quantity}` : ''}`,
-                amount: o.return_amount,
-                raw: o,
-            })),
-            ...payments.map(p => ({
-                id: p._id,
-                type: 'PAYMENT',
-                date: p.payment_date,
-                description: p.notes || 'Payment Received',
-                amount: p.amount,
-                raw: p,
-            })),
-        ];
-
-        sortByDateThenCreatedAt(merged, x => x.date, x => x.raw?.created_at);
-
-        let running = 0;
-        for (const item of merged) {
-            const isCancelled = item.type === 'ORDER' && item.raw.delivery_status === 'Cancelled';
-            const isPending = item.type === 'ORDER' && item.raw.delivery_status !== 'Yes';
-            item.isCancelled = isCancelled;
-            item.isPending = isPending;
-            if (!isCancelled) {
-                if (item.type === 'ORDER' && !isPending) running += item.amount;
-                if (item.type === 'PAYMENT') running -= item.amount;
-            }
-            item.runningBalance = running;
+        const items = [];
+        for (const r of rows) {
+            // A document deleted between the two queries is simply dropped
+            const doc = (r.rank === 0 ? orderById : paymentById).get(String(r._id));
+            if (doc) items.push(r.rank === 0 ? ledgerOrderItem(doc, r.runningBalance) : ledgerPaymentItem(doc, r.runningBalance));
         }
 
-        merged.reverse();
-        const total = merged.length;
-        const slice = merged.slice(skip, skip + limitNum);
-
-        res.json(paginatedResponse(slice, total, pageNum, limitNum));
+        res.json(paginatedResponse(items, total, pageNum, limitNum));
     } catch (err) { next(err); }
 });
 
@@ -393,6 +435,7 @@ router.post('/payment', upload.single('receipt'), paymentCreateRules, validate, 
             receipt_url
         });
         const savedPayment = await newPayment.save();
+        invalidateCache(req, 'seller_payments');
         logActivity(req.user.id, 'created', 'seller_payment', savedPayment._id, `Added payment of ₹${amount} to ${seller.name}`, savedPayment);
         res.status(201).json(savedPayment);
     } catch (err) {
@@ -405,7 +448,8 @@ router.put('/payment/:id', upload.single('receipt'), paymentUpdateRules, validat
     try {
         const { amount, payment_date, notes } = req.body;
         const update = {};
-        if (amount !== undefined) update.amount = Number(amount);
+        // '' means "not provided" (validator skips falsy) — don't save it as ₹0
+        if (amount !== undefined && amount !== '') update.amount = Number(amount);
         if (payment_date !== undefined) update.payment_date = payment_date;
         if (notes !== undefined) update.notes = notes;
 
@@ -425,6 +469,7 @@ router.put('/payment/:id', upload.single('receipt'), paymentUpdateRules, validat
         );
         const changedFields = Object.keys(update).filter(k => String(oldPayment[k]) !== String(updated[k]));
         logActivity(req.user.id, 'updated', 'seller_payment', updated._id, `Updated payment of ₹${updated.amount}`, updated, changedFields);
+        invalidateCache(req, 'seller_payments');
         res.json(updated);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -440,6 +485,7 @@ router.delete('/payment/:id', paymentIdRule, validate, async (req, res, next) =>
         });
         if (!deletedPayment) return res.status(404).json({ error: 'Payment not found' });
         logActivity(req.user.id, 'deleted', 'seller_payment', deletedPayment._id, `Deleted payment of ₹${deletedPayment.amount}`, deletedPayment);
+        invalidateCache(req, 'seller_payments');
         res.json({ success: true });
     } catch (err) { next(err); }
 });

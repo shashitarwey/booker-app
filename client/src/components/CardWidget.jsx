@@ -1,6 +1,6 @@
 import React from 'react';
-import { MoreVertical, Trash2, Plus, CalendarClock, AlertCircle } from 'lucide-react';
-import { NETWORK_COLORS } from '../constants';
+import { MoreVertical, Trash2, Plus, CalendarClock, AlertCircle, Star, Link2 } from 'lucide-react';
+import { NETWORK_COLORS, RELATIONS } from '../constants';
 import { fmtCurrency, ordinalSuffix } from '../utils/formatters';
 
 const BANK_GRADIENTS = [
@@ -43,17 +43,28 @@ const billingStatus = (dueDay) => {
   return { daysLeft, urgency };
 };
 
-const CardWidget = ({ card, profit = undefined, onAddTx, onViewDetails, onEdit, onDelete }) => {
+const CardWidget = ({ card, profit = undefined, showHolder = true, onAddTx, onViewDetails, onEdit, onDelete }) => {
   const spend = card.total_spend || 0;
   const net   = NETWORK_COLORS[card.card_network] || NETWORK_COLORS.Visa;
   const cb    = card.cashback_enabled ? cashbackStatus(card.cashback_earned_cycle || 0, card.cashback_limit) : null;
   const bill  = billingStatus(card.due_date);
+  const holder = card.holder_id && typeof card.holder_id === 'object' ? card.holder_id : null;
+  const isAddon = card.card_type === 'addon';
 
   return (
-    <div className="card-widget" style={{ background: bankGradient(card.bank_name) }}
+    <div className="card-widget has-tab" style={{ background: bankGradient(card.bank_name) }}
          onClick={() => onViewDetails(card)}>
+      {/* Folder-style tab on the top edge: card type at a glance */}
+      <span className={`card-type-tab ${isAddon ? 'is-addon' : 'is-primary'}`}>
+        {isAddon ? <Link2 size={11} strokeWidth={2.6} /> : <Star size={11} strokeWidth={2.6} />}
+        {isAddon ? 'Add-on' : 'Primary'}
+      </span>
       <div className="card-top-row">
-        <span className="card-bank">{card.bank_name}</span>
+        {/* Network always visible here, so the bottom-right can show profit */}
+        <div className="card-top-left">
+          <span className="card-bank">{card.bank_name}</span>
+          <span className="card-network-badge" style={{ background: net.bg, color: net.text }}>{net.label}</span>
+        </div>
         <div className="card-actions">
           <button className="card-more-btn" data-tooltip="Add transaction"
             onClick={e => { e.stopPropagation(); onAddTx(card); }}>
@@ -73,6 +84,15 @@ const CardWidget = ({ card, profit = undefined, onAddTx, onViewDetails, onEdit, 
       <div className="card-chip" />
       <div className="card-last-four-digit">•••• •••• •••• {card.last_four_digit}</div>
       <div className="card-name">{card.name_on_card}</div>
+      {showHolder && holder && (
+        <div className="card-holder-row">
+          {(
+            <span className="card-holder-chip" style={{ color: RELATIONS[holder.relation]?.color }}>
+              {holder.name} · {RELATIONS[holder.relation]?.label || holder.relation}
+            </span>
+          )}
+        </div>
+      )}
 
       <div className="card-spend-row">
         <div>
@@ -82,13 +102,10 @@ const CardWidget = ({ card, profit = undefined, onAddTx, onViewDetails, onEdit, 
         {profit !== undefined && (
           <div style={{ textAlign: 'right' }}>
             <div className="card-spend-label">PROFIT EARNED</div>
-            <div className="card-spend-amount" style={{ color: profit >= 0 ? 'var(--success)' : 'var(--danger)', fontSize: '1.2rem' }}>
+            <div className="card-spend-amount" style={{ /* card face is always dark */ color: profit >= 0 ? '#34d399' : '#f87171', fontSize: '1.2rem' }}>
               {profit > 0 ? '+' : ''}{fmtCurrency(profit)}
             </div>
           </div>
-        )}
-        {profit === undefined && (
-          <div className="card-network-badge" style={{ background: net.bg, color: net.text }}>{net.label}</div>
         )}
       </div>
 

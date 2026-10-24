@@ -1,5 +1,11 @@
 // ─── Today's date helper (always fresh, never stale) ───────────────────────
-export const getToday = () => new Date().toISOString().slice(0, 10);
+// Local calendar date (the user's timezone, e.g. IST), as YYYY-MM-DD.
+// Never use toISOString() for "today": that's UTC, so in India it returns
+// yesterday between 00:00 and 05:30.
+export const getToday = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 
 // ─── Pagination ────────────────────────────────────────────────────────────
 export const PAGE_SIZE = 10;
@@ -49,6 +55,18 @@ export const BANK_NAMES = Object.values(BANKS).sort((a, b) => a.localeCompare(b)
 export const BANK_NAME_TO_CODE = Object.fromEntries(
     Object.entries(BANKS).map(([code, name]) => [name, code])
 );
+
+// ─── Card holders ──────────────────────────────────────────────────────────
+export const RELATIONS = {
+    self:   { label: 'Self',   color: '#58a6ff' },
+    family: { label: 'Family', color: '#a6e3a1' },
+    friend: { label: 'Friend', color: '#f9a875' },
+};
+
+export const CARD_TYPES = [
+    { value: 'primary', label: 'Primary' },
+    { value: 'addon',   label: 'Add-on' },
+];
 
 // ─── Card Networks ─────────────────────────────────────────────────────────
 export const CARD_NETWORKS = ['Visa', 'Mastercard', 'AmEx', 'RuPay'];
@@ -102,6 +120,7 @@ export const ECOMM_SITES = [
 ];
 
 // ─── Phone/device variants ─────────────────────────────────────────────────
+// Fallback only — the live list (incl. user-added variants) comes from GET /api/variants
 export const VARIANTS = [
     'NA',
     '6/128',
@@ -116,8 +135,8 @@ export const VARIANTS = [
 
 // ─── Order delivery status ─────────────────────────────────────────────────
 export const DELIVERY_STATUS_OPTIONS = [
-    { label: 'Pending (No)', value: 'No' },
-    { label: 'Delivered (Yes)', value: 'Yes' },
+    { label: 'Pending', value: 'Pending' },
+    { label: 'Delivered', value: 'Delivered' },
     { label: 'Cancelled', value: 'Cancelled' },
 ];
 

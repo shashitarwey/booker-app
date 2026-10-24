@@ -7,6 +7,7 @@ import { vi } from 'vitest';
 vi.mock('../api', () => ({
   loginUser: vi.fn(),
   registerUser: vi.fn(),
+  clearApiCache: vi.fn(),
 }));
 
 import { loginUser, registerUser } from '../api';

@@ -8,19 +8,21 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 const ENTITY_CONFIG = {
-  order:          { icon: ShoppingBag,   label: 'Order',          color: '#58a6ff' },
+  order:          { icon: ShoppingBag,   label: 'Order',          color: '#7c6cff' },
   seller:         { icon: Users,         label: 'Buyer',          color: '#d2a8ff' },
-  seller_payment: { icon: Wallet,        label: 'Buyer Payment',  color: '#3fb950' },
+  seller_payment: { icon: Wallet,        label: 'Buyer Payment',  color: '#34d399' },
   transaction:    { icon: ArrowLeftRight, label: 'Transaction',    color: '#f0883e' },
-  card:           { icon: CreditCard,    label: 'Card',           color: '#f85149' },
+  card:           { icon: CreditCard,    label: 'Card',           color: '#f87171' },
   customer:       { icon: BookOpen,      label: 'Khata Customer', color: '#f9e2af' },
   customer_entry: { icon: BookOpen,      label: 'Khata Entry',    color: '#a6e3a1' },
+  person:         { icon: Users,         label: 'Person',         color: '#f9a875' },
+  booker_payment: { icon: Wallet,        label: 'Booker Payment', color: '#fbbf24' },
 };
 
 const ACTION_CONFIG = {
-  created: { icon: Plus,   bg: 'rgba(63,185,80,0.12)',  color: '#3fb950', label: 'Created' },
-  updated: { icon: Pencil, bg: 'rgba(88,166,255,0.12)', color: '#58a6ff', label: 'Updated' },
-  deleted: { icon: Trash2, bg: 'rgba(248,81,73,0.12)',  color: '#f85149', label: 'Deleted' },
+  created: { icon: Plus,   bg: 'rgba(52,211,153,0.12)',  color: '#34d399', label: 'Created' },
+  updated: { icon: Pencil, bg: 'rgba(124,108,255,0.12)', color: '#7c6cff', label: 'Updated' },
+  deleted: { icon: Trash2, bg: 'rgba(248,113,113,0.12)',  color: '#f87171', label: 'Deleted' },
 };
 
 const ENTITY_FILTER_OPTIONS = [
@@ -32,6 +34,8 @@ const ENTITY_FILTER_OPTIONS = [
   { key: 'card', label: 'Cards' },
   { key: 'customer', label: 'Khata Customers' },
   { key: 'customer_entry', label: 'Khata Entries' },
+  { key: 'person', label: 'People' },
+  { key: 'booker_payment', label: 'Booker Payments' },
 ];
 
 const HIDDEN_KEYS = new Set(['_id', 'user_id', '__v', 'created_at', 'updated_at', 'createdAt', 'updatedAt']);
@@ -41,6 +45,7 @@ const KEY_LABELS = {
   order_date: 'Order Date', delivered_date: 'Delivery Date', delivery_status: 'Status',
   ecomm_site: 'Source', id_used: 'Account', is_cleared: 'Cleared',
   card_id: 'Card', seller_id: 'Buyer', cashback: 'Cashback', variant: 'Variant',
+  friend_amount: 'Return to Friend', advance_amount: 'Advance to Friend', coupon_cashback: 'Coupon Cashback', coupon_in_profit: 'Coupon in Profit', holder_id: 'Card Holder', card_type: 'Card Type', primary_card_id: 'Primary Card', relation: 'Relation',
   quantity: 'Qty', bank_name: 'Bank', card_network: 'Network',
   last_four_digit: 'Last 4', name_on_card: 'Name on Card',
   cashback_enabled: 'Cashback', cashback_percent: 'CB %', cashback_limit: 'CB Limit',
@@ -94,10 +99,10 @@ function LogItem({ log, isExpanded, onToggle, onViewHistory }) {
           <div className="al-info">
             <div className="al-desc">{log.description}</div>
             <div className="al-tags">
-              <span className="al-tag al-tag-entity" style={{ color: entity.color }}>
+              <span className="al-tag al-tag-entity" style={{ '--tag': entity.color }}>
                 <EntityIcon size={12} /> {entity.label}
               </span>
-              <span className="al-tag al-tag-action" style={{ color: action.color }}>
+              <span className="al-tag al-tag-action" style={{ '--tag': action.color }}>
                 {action.label}
               </span>
               {isUpdate && changed.size > 0 && (

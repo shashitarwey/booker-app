@@ -131,4 +131,16 @@ describe('Sellers Routes', () => {
       expect(res.status).toBe(200);
     });
   });
+
+  describe('integrity guards', () => {
+    it('blocks deleting a buyer that has payments, and ignores an empty amount on payment edit', async () => {
+      const seller = (await request(app).post('/api/sellers').set(authHeader(token)).send({ name: 'Pay Only', city: 'X' })).body;
+      const pay = (await request(app).post('/api/sellers/payment').set(authHeader(token)).send({ seller_id: seller._id, amount: 5000, payment_date: '2026-03-01' })).body;
+      const del = await request(app).delete(`/api/sellers/${seller._id}`).set(authHeader(token));
+      expect(del.status).toBe(400);
+      const edit = await request(app).put(`/api/sellers/payment/${pay._id}`).set(authHeader(token)).send({ amount: '', notes: 'x' });
+      expect(edit.status).toBe(200);
+      expect(edit.body.amount).toBe(5000);
+    });
+  });
 });

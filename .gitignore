@@ -17,3 +17,10 @@ yarn-error.log
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Database backups (encrypted, but never commit them)
+backups/
+
+# Local logs and Vite cache
+logs/
+.vite/

@@ -1,10 +1,13 @@
+const mongoose = require('mongoose');
 const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
 const Card = require('../models/Card');
 const Seller = require('../models/Seller');
-const { pickFields, parsePagination, paginatedResponse, toObjectId } = require('../utils/helpers');
-const { invalidateSummaryCache } = require('../utils/cache');
+const { PROFIT_EXPR, FRIEND_EARNING_EXPR } = require('../utils/profit');
+const { familyPersonIds } = require('../utils/people');
+const { pickFields, parsePagination, paginatedResponse, toObjectId, escapeRegex } = require('../utils/helpers');
+const { invalidateCache } = require('../utils/cache');
 const { logActivity } = require('../utils/activityLogger');
 const validate = require('../middleware/validate');
 const { createRules, updateRules, idRule, bulkStatusRules, bulkClearRules, bulkDeleteRules } = require('../validators/orders.validator');
@@ -35,11 +38,14 @@ const { createRules, updateRules, idRule, bulkStatusRules, bulkClearRules, bulkD
  *         name: card_id
  *         schema: { type: string }
  *       - in: query
+ *         name: person_id
+ *         schema: { type: string, description: "Only orders on cards held by this person, or 'family' for self + family" }
+ *       - in: query
  *         name: delivery_status
- *         schema: { type: string, enum: [Yes, No, Cancelled] }
+ *         schema: { type: string, enum: [Delivered, Pending, Cancelled] }
  *       - in: query
  *         name: model_ordered
- *         schema: { type: string, description: "Partial match search" }
+ *         schema: { type: string, description: "Free-text search (case-insensitive, literal substring) across model_ordered, variant, remark, id_used and ecomm_site" }
  *       - in: query
  *         name: ecomm_site
  *         schema: { type: string }
@@ -77,8 +83,126 @@ const { createRules, updateRules, idRule, bulkStatusRules, bulkClearRules, bulkD
 const ORDER_FIELDS = [
     'card_id', 'seller_id', 'order_date', 'delivered_date',
     'order_amount', 'return_amount', 'quantity', 'cashback',
-    'variant', 'model_ordered', 'id_used', 'delivery_status', 'ecomm_site', 'is_cleared', 'remark'
+    'variant', 'model_ordered', 'id_used', 'delivery_status', 'ecomm_site', 'is_cleared', 'remark',
+    'friend_amount', 'advance_amount', 'coupon_cashback', 'coupon_in_profit'
 ];
+
+const CARD_POPULATE = {
+    path: 'card_id',
+    select: 'bank_name last_four_digit card_network card_type holder_id',
+    populate: { path: 'holder_id', select: 'name relation' },
+};
+
+// True when a write touches any field resolveFriendAmount() is responsible for
+const touchesFriendFields = (data) =>
+    data.card_id !== undefined || data.friend_amount !== undefined || data.advance_amount !== undefined;
+
+const toAmount = (raw) => (raw === '' || raw === null || raw === undefined ? NaN : Number(raw));
+
+/**
+ * Keep friend_amount / advance_amount consistent with the card's holder:
+ *  - friend card  → friend_amount must be a number >= 0; optional
+ *                   advance_amount must be 0..friend_amount (0 → null)
+ *  - other cards  → both are null
+ * Only runs when one of those fields (or the card) is part of the write, so
+ * partial updates (remark, is_cleared…) never trip over it.
+ * Returns an error message or null.
+ */
+function resolveFriendAmount(card, data, oldOrder = null) {
+    if (!touchesFriendFields(data)) return null;
+
+    const isFriendCard = card?.holder_id?.relation === 'friend';
+    if (!isFriendCard) {
+        data.friend_amount = null;
+        data.advance_amount = null;
+        return null;
+    }
+    const amount = toAmount(data.friend_amount !== undefined ? data.friend_amount : oldOrder?.friend_amount);
+    if (!Number.isFinite(amount) || amount < 0) {
+        return "Return amount to friend is required for orders on a friend's card";
+    }
+    data.friend_amount = amount;
+
+    const rawAdvance = data.advance_amount !== undefined ? data.advance_amount : oldOrder?.advance_amount;
+    const advance = rawAdvance === '' || rawAdvance === null || rawAdvance === undefined ? 0 : Number(rawAdvance);
+    if (!Number.isFinite(advance) || advance < 0) return 'Advance amount must be 0 or more';
+    if (advance > amount) return 'Advance cannot be more than the return amount to friend';
+    data.advance_amount = advance > 0 ? advance : null;
+    return null;
+}
+
+// Fetch a user's card with its holder populated (null if not found / not theirs)
+const findUserCard = (userId, cardId) =>
+    Card.findOne({ _id: cardId, user_id: userId }).populate('holder_id', 'name relation');
+
+// Resolve ?person_id= into a card_id filter value. An explicit card_id must
+// belong to that person, otherwise nothing matches.
+async function personCardFilter(userId, personId, cardId) {
+    const holder = personId === 'family' ? { $in: await familyPersonIds(userId) } : personId;
+    const cards = await Card.find({ user_id: userId, holder_id: holder }, '_id').lean();
+    const ids = cards.map(c => c._id.toString());
+    if (cardId) return ids.includes(String(cardId)) ? [cardId] : [];
+    return ids;
+}
+
+// Fields the ?model_ordered= free-text search looks in. The param keeps its
+// old name because the client already sends it.
+const SEARCH_FIELDS = ['model_ordered', 'variant', 'remark', 'id_used', 'ecomm_site'];
+
+// Build the $or clause for a free-text search. Input is escaped so it's
+// matched literally — a raw "(" used to throw (500) and arbitrary patterns
+// allowed regex injection. Always combined with user_id in the caller, so the
+// user_id-prefixed indexes still bound the scan. Plain RegExp values work in
+// both find() and aggregate $match.
+function buildSearchOr(term) {
+    const needle = String(term).trim();
+    if (!needle) return null;
+    const re = new RegExp(escapeRegex(needle), 'i');
+    return SEARCH_FIELDS.map(f => ({ [f]: re }));
+}
+
+// ── Activity-log snapshot labels ────────────────────────────────────────────
+// Logged snapshots show card_id / seller_id as readable labels rather than
+// ids. Shared by the single-order handlers and the bulk label maps.
+const cardLabel = (c) => `${c.bank_name} •••• ${c.last_four_digit}`;
+const sellerLabel = (s) => `${s.name}, ${s.city}`;
+
+const LABEL_POPULATE = {
+    card: { path: 'card_id', select: 'bank_name last_four_digit' },
+    seller: { path: 'seller_id', select: 'name city' },
+};
+
+/**
+ * Snapshot of an order for logActivity with card_id → "Bank •••• 1234" and
+ * seller_id → "Name, City". A missing card/seller (e.g. card since deleted)
+ * leaves the raw id in place.
+ */
+function orderSnapshot(order, card, seller) {
+    const snap = order.toObject();
+    if (card) snap.card_id = cardLabel(card);
+    if (seller) snap.seller_id = sellerLabel(seller);
+    return snap;
+}
+
+/**
+ * Run a single-order query (findOneAndUpdate / findOneAndDelete), populating
+ * only the label refs the handler doesn't already have loaded — so the
+ * snapshot costs no extra round trips beyond the populate itself. The doc is
+ * depopulated before returning so the response, changed-field diff and
+ * snapshot all still see raw ids. Returns { order, card, seller }.
+ */
+async function execWithLabelRefs(query, known = {}) {
+    let { card = null, seller = null } = known;
+    if (!card) query.populate(LABEL_POPULATE.card);
+    if (!seller) query.populate(LABEL_POPULATE.seller);
+    const order = await query;
+    if (order) {
+        if (!card) card = order.card_id;
+        if (!seller) seller = order.seller_id;
+        order.depopulate();
+    }
+    return { order, card, seller };
+}
 
 // GET orders for the logged-in user with filters + server-side pagination
 router.get('/', async (req, res, next) => {
@@ -88,7 +212,7 @@ router.get('/', async (req, res, next) => {
             delivery_date_from, delivery_date_to,
             seller_id, card_id, delivery_status,
             model_ordered, ecomm_site, is_cleared,
-            all
+            person_id, all
         } = req.query;
 
         const filter = { user_id: req.user.id };
@@ -107,14 +231,21 @@ router.get('/', async (req, res, next) => {
 
         if (seller_id) filter.seller_id = seller_id;
         if (card_id) filter.card_id = card_id;
+        let personCardIds = null;
+        if (person_id) {
+            if (person_id !== 'family' && !mongoose.isValidObjectId(person_id)) return res.status(400).json({ error: 'Invalid person_id' });
+            personCardIds = await personCardFilter(req.user.id, person_id, card_id);
+            filter.card_id = { $in: personCardIds };
+        }
         if (delivery_status) filter.delivery_status = delivery_status;
-        if (model_ordered) filter.model_ordered = { $regex: model_ordered, $options: 'i' };
+        const searchOr = model_ordered ? buildSearchOr(model_ordered) : null;
+        if (searchOr) filter.$or = searchOr;
         if (ecomm_site) filter.ecomm_site = ecomm_site;
         if (is_cleared === 'true') filter.is_cleared = true;
         else if (is_cleared === 'false') filter.is_cleared = false;
 
         const query = Order.find(filter)
-            .populate('card_id', 'bank_name last_four_digit card_network')
+            .populate(CARD_POPULATE)
             .populate('seller_id', 'name city')
             // Tie-break same-day orders by created_at desc so the most
             // recently added order surfaces at the top of its date group.
@@ -147,7 +278,8 @@ router.get('/', async (req, res, next) => {
         }
         if (seller_id) summaryMatch.seller_id = toObjectId(seller_id);
         if (card_id) summaryMatch.card_id = toObjectId(card_id);
-        if (model_ordered) summaryMatch.model_ordered = filter.model_ordered;
+        if (personCardIds) summaryMatch.card_id = { $in: personCardIds.map(toObjectId) };
+        if (searchOr) summaryMatch.$or = searchOr;
         if (ecomm_site) summaryMatch.ecomm_site = ecomm_site;
         if (filter.is_cleared !== undefined) summaryMatch.is_cleared = filter.is_cleared;
         summaryMatch.delivery_status = delivery_status || { $ne: 'Cancelled' };
@@ -158,8 +290,11 @@ router.get('/', async (req, res, next) => {
                 { $match: summaryMatch },
                 { $group: {
                     _id: null,
-                    total_profit: { $sum: { $add: [{ $subtract: ['$return_amount', '$order_amount'] }, '$cashback'] } },
-                    total_order_amount: { $sum: '$order_amount' }
+                    total_profit: { $sum: PROFIT_EXPR },
+                    total_order_amount: { $sum: '$order_amount' },
+                    total_friend_amount: { $sum: { $ifNull: ['$friend_amount', 0] } },
+                    total_advance: { $sum: { $ifNull: ['$advance_amount', 0] } },
+                    total_friend_earning: { $sum: FRIEND_EARNING_EXPR }
                 }}
             ]);
 
@@ -169,9 +304,14 @@ router.get('/', async (req, res, next) => {
             summaryPromise
         ]);
 
-        const summary = totals[0]
-            ? { total_profit: totals[0].total_profit, total_order_amount: totals[0].total_order_amount }
-            : { total_profit: 0, total_order_amount: 0 };
+        const t = totals[0] || {};
+        const summary = {
+            total_profit: t.total_profit || 0,
+            total_order_amount: t.total_order_amount || 0,
+            total_friend_amount: t.total_friend_amount || 0,
+            total_advance: t.total_advance || 0,
+            total_friend_earning: t.total_friend_earning || 0,
+        };
 
         res.json({ ...paginatedResponse(orders, total, pageNum, limitNum), summary });
     } catch (err) { next(err); }
@@ -182,37 +322,32 @@ router.post('/', createRules, validate, async (req, res, next) => {
     try {
         const data = pickFields(req.body, ORDER_FIELDS);
         // Strip empty delivered_date / delivery_status so Mongoose uses defaults
-        // (delivered_date stays undefined, delivery_status defaults to 'No').
+        // (delivered_date stays undefined, delivery_status defaults to 'Pending').
         // These are optional at creation and filled in later when delivered.
         if (!data.delivered_date) delete data.delivered_date;
         if (!data.delivery_status) delete data.delivery_status;
         data.user_id = req.user.id;
 
         // Verify the card belongs to the current user
-        if (data.card_id) {
-            const card = await Card.findOne({ _id: data.card_id, user_id: req.user.id });
-            if (!card) return res.status(400).json({ error: 'Invalid card_id — card not found or not yours' });
-        }
+        const card = await findUserCard(req.user.id, data.card_id);
+        if (!card) return res.status(400).json({ error: 'Invalid card_id — card not found or not yours' });
+        const friendError = resolveFriendAmount(card, data);
+        if (friendError) return res.status(400).json({ error: friendError });
 
         // Verify the seller belongs to the current user
+        let seller = null;
         if (data.seller_id) {
-            const seller = await Seller.findOne({ _id: data.seller_id, user_id: req.user.id });
+            seller = await Seller.findOne({ _id: data.seller_id, user_id: req.user.id });
             if (!seller) return res.status(400).json({ error: 'Invalid seller_id — seller not found or not yours' });
         }
 
         const newOrder = new Order(data);
         await newOrder.save();
-        invalidateSummaryCache(req);
+        invalidateCache(req, 'orders');
         const orderDate = new Date(data.order_date).toLocaleDateString('en-GB');
 
-        // Build snapshot with resolved names
-        const snap = newOrder.toObject();
-        const [cardDoc, sellerDoc] = await Promise.all([
-            Card.findById(newOrder.card_id, 'bank_name last_four_digit'),
-            Seller.findById(newOrder.seller_id, 'name city')
-        ]);
-        if (cardDoc) snap.card_id = `${cardDoc.bank_name} •••• ${cardDoc.last_four_digit}`;
-        if (sellerDoc) snap.seller_id = `${sellerDoc.name}, ${sellerDoc.city}`;
+        // Card + seller were already loaded by the ownership checks above
+        const snap = orderSnapshot(newOrder, card, seller);
 
         logActivity(req.user.id, 'created', 'order', newOrder._id, `Added order: ${data.model_ordered} | ${data.ecomm_site} | ₹${data.order_amount} | ${orderDate}`, snap);
         res.status(201).json(newOrder);
@@ -234,28 +369,37 @@ router.put('/:id', updateRules, validate, async (req, res, next) => {
         // values so the existing status is preserved on update.
         if (data.delivery_status === '') delete data.delivery_status;
 
-        // Verify the card belongs to the current user if being changed
-        if (data.card_id) {
-            const card = await Card.findOne({ _id: data.card_id, user_id: req.user.id });
-            if (!card) return res.status(400).json({ error: 'Invalid card_id — card not found or not yours' });
-        }
-
-        // Verify the seller belongs to the current user if being changed
-        if (data.seller_id) {
-            const seller = await Seller.findOne({ _id: data.seller_id, user_id: req.user.id });
-            if (!seller) return res.status(400).json({ error: 'Invalid seller_id — seller not found or not yours' });
-        }
-
         // Fetch old order to compute changed fields
         const oldOrder = await Order.findOne({ _id: req.params.id, user_id: req.user.id });
         if (!oldOrder) return res.status(404).json({ error: 'Order not found' });
 
-        const updatedOrder = await Order.findOneAndUpdate(
-            { _id: req.params.id, user_id: req.user.id },
-            data,
-            { new: true, runValidators: true }
+        // Verify the (new or existing) card belongs to the current user, and
+        // keep friend_amount in step with the card holder. Both docs are
+        // kept for the activity snapshot so it needn't re-read them.
+        let card = null;
+        let seller = null;
+        if (touchesFriendFields(data)) {
+            card = await findUserCard(req.user.id, data.card_id || oldOrder.card_id);
+            if (!card) return res.status(400).json({ error: 'Invalid card_id — card not found or not yours' });
+            const friendError = resolveFriendAmount(card, data, oldOrder);
+            if (friendError) return res.status(400).json({ error: friendError });
+        }
+
+        // Verify the seller belongs to the current user if being changed
+        if (data.seller_id) {
+            seller = await Seller.findOne({ _id: data.seller_id, user_id: req.user.id });
+            if (!seller) return res.status(400).json({ error: 'Invalid seller_id — seller not found or not yours' });
+        }
+
+        const { order: updatedOrder, card: cardDoc, seller: sellerDoc } = await execWithLabelRefs(
+            Order.findOneAndUpdate(
+                { _id: req.params.id, user_id: req.user.id },
+                data,
+                { new: true, runValidators: true }
+            ),
+            { card, seller }
         );
-        invalidateSummaryCache(req);
+        invalidateCache(req, 'orders');
 
         // Compute which fields actually changed
         const changedFields = Object.keys(data).filter(k => String(oldOrder[k]) !== String(updatedOrder[k]));
@@ -264,14 +408,7 @@ router.put('/:id', updateRules, validate, async (req, res, next) => {
         const orderTag = `${updatedOrder.model_ordered} | ${updatedOrder.ecomm_site} | ₹${updatedOrder.order_amount} | ${oDate}`;
         const desc = `Updated order: ${orderTag}`;
 
-        // Build snapshot with resolved names
-        const snap = updatedOrder.toObject();
-        const [cardDoc, sellerDoc] = await Promise.all([
-            Card.findById(updatedOrder.card_id, 'bank_name last_four_digit'),
-            Seller.findById(updatedOrder.seller_id, 'name city')
-        ]);
-        if (cardDoc) snap.card_id = `${cardDoc.bank_name} •••• ${cardDoc.last_four_digit}`;
-        if (sellerDoc) snap.seller_id = `${sellerDoc.name}, ${sellerDoc.city}`;
+        const snap = orderSnapshot(updatedOrder, cardDoc, sellerDoc);
 
         logActivity(req.user.id, 'updated', 'order', updatedOrder._id, desc, snap, changedFields);
         res.json(updatedOrder);
@@ -283,18 +420,14 @@ router.put('/:id', updateRules, validate, async (req, res, next) => {
 // DELETE an order
 router.delete('/:id', idRule, validate, async (req, res, next) => {
     try {
-        const deletedOrder = await Order.findOneAndDelete({ _id: req.params.id, user_id: req.user.id });
+        const { order: deletedOrder, card: cardDoc, seller: sellerDoc } = await execWithLabelRefs(
+            Order.findOneAndDelete({ _id: req.params.id, user_id: req.user.id })
+        );
         if (!deletedOrder) return res.status(404).json({ error: 'Order not found' });
-        invalidateSummaryCache(req);
+        invalidateCache(req, 'orders');
         const delDate = new Date(deletedOrder.order_date).toLocaleDateString('en-GB');
 
-        const snap = deletedOrder.toObject();
-        const [cardDoc, sellerDoc] = await Promise.all([
-            Card.findById(deletedOrder.card_id, 'bank_name last_four_digit'),
-            Seller.findById(deletedOrder.seller_id, 'name city')
-        ]);
-        if (cardDoc) snap.card_id = `${cardDoc.bank_name} •••• ${cardDoc.last_four_digit}`;
-        if (sellerDoc) snap.seller_id = `${sellerDoc.name}, ${sellerDoc.city}`;
+        const snap = orderSnapshot(deletedOrder, cardDoc, sellerDoc);
 
         logActivity(req.user.id, 'deleted', 'order', deletedOrder._id, `Deleted order: ${deletedOrder.model_ordered} | ${deletedOrder.ecomm_site} | ₹${deletedOrder.order_amount} | ${delDate}`, snap);
         res.json({ success: true });
@@ -313,8 +446,8 @@ async function buildLabelMaps(userId, orders) {
         Card.find({ _id: { $in: cardIds }, user_id: userId }, 'bank_name last_four_digit').lean(),
         Seller.find({ _id: { $in: sellerIds }, user_id: userId }, 'name city').lean(),
     ]);
-    const cardMap = Object.fromEntries(cards.map(c => [c._id.toString(), `${c.bank_name} •••• ${c.last_four_digit}`]));
-    const sellerMap = Object.fromEntries(sellers.map(s => [s._id.toString(), `${s.name}, ${s.city}`]));
+    const cardMap = Object.fromEntries(cards.map(c => [c._id.toString(), cardLabel(c)]));
+    const sellerMap = Object.fromEntries(sellers.map(s => [s._id.toString(), sellerLabel(s)]));
     return { cardMap, sellerMap };
 }
 
@@ -332,16 +465,16 @@ router.post('/bulk/status', bulkStatusRules, validate, async (req, res, next) =>
     try {
         const { ids, delivery_status, delivered_date } = req.body;
         const update = { delivery_status };
-        if (delivery_status === 'Yes' && delivered_date) {
+        if (delivery_status === 'Delivered' && delivered_date) {
             update.delivered_date = delivered_date;
-        } else if (delivery_status !== 'Yes') {
+        } else if (delivery_status !== 'Delivered') {
             update.delivered_date = null;
         }
         await Order.updateMany(
             { _id: { $in: ids }, user_id: req.user.id },
             update
         );
-        invalidateSummaryCache(req);
+        invalidateCache(req, 'orders');
 
         // Re-fetch updated docs so each activity log has the post-update snapshot
         const updated = await Order.find({ _id: { $in: ids }, user_id: req.user.id });
@@ -361,7 +494,7 @@ router.post('/bulk/clear', bulkClearRules, validate, async (req, res, next) => {
             { _id: { $in: ids }, user_id: req.user.id },
             { is_cleared }
         );
-        invalidateSummaryCache(req);
+        invalidateCache(req, 'orders');
 
         const updated = await Order.find({ _id: { $in: ids }, user_id: req.user.id });
         const { cardMap, sellerMap } = await buildLabelMaps(req.user.id, updated);
@@ -380,7 +513,7 @@ router.post('/bulk/delete', bulkDeleteRules, validate, async (req, res, next) =>
         const { cardMap, sellerMap } = await buildLabelMaps(req.user.id, toDelete);
 
         await Order.deleteMany({ _id: { $in: ids }, user_id: req.user.id });
-        invalidateSummaryCache(req);
+        invalidateCache(req, 'orders');
 
         for (const o of toDelete) {
             const snap = o.toObject();

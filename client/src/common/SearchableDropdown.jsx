@@ -8,7 +8,11 @@ export default function SearchableDropdown({
   placeholder = 'Select…',
   required = false,
   error = '',
-  disabled = false
+  disabled = false,
+  // Optional async (value) => void. When set, typing a value that isn't in
+  // `options` offers "+ Add …" which calls onCreate, then selects the value.
+  onCreate = null,
+  createLabel = 'Add',
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState(value || '');
@@ -37,6 +41,23 @@ export default function SearchableDropdown({
   const filtered = isExactMatch 
     ? options 
     : options.filter(opt => opt.toLowerCase().includes(query.toLowerCase()));
+
+  const trimmed = query.trim();
+  const canCreate = Boolean(onCreate) && trimmed !== ''
+    && !options.some(opt => opt.toLowerCase() === trimmed.toLowerCase());
+  const [creating, setCreating] = useState(false);
+
+  const handleCreate = async () => {
+    setCreating(true);
+    try {
+      await onCreate(trimmed);
+      handleSelect(trimmed);
+    } catch {
+      // caller reports the error; keep the menu open so the user can retry
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const handleSelect = (opt) => {
     setQuery(opt);
@@ -84,6 +105,16 @@ export default function SearchableDropdown({
 
       {open && (
         <div className="custom-dropdown-menu">
+          {canCreate && (
+            <button
+              type="button"
+              className="custom-dropdown-item custom-dropdown-create"
+              onClick={handleCreate}
+              disabled={creating}
+            >
+              {creating ? 'Adding…' : `+ ${createLabel} "${trimmed}"`}
+            </button>
+          )}
           {filtered.length > 0 ? (
             filtered.map(opt => (
               <div
@@ -94,7 +125,7 @@ export default function SearchableDropdown({
                 {opt}
               </div>
             ))
-          ) : (
+          ) : canCreate ? null : (
             <div className="custom-dropdown-empty">
               No results. You can still use "{query}"
               <br />

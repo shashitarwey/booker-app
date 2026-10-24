@@ -1,6 +1,6 @@
 /* ── Header ───────────────────────────────────────────────────── */
 .app-header {
-  background: linear-gradient(135deg, #1a1f2e 0%, #0d1117 60%, #1a1a2e 100%);
+  background: linear-gradient(135deg, #1a1f2e 0%, #0a0d14 60%, #1a1a2e 100%);
   border-bottom: 1px solid var(--border);
   padding: 0 32px;
   position: sticky;
@@ -30,7 +30,7 @@
   gap: 12px;
   font-size: 1.25rem;
   font-weight: 700;
-  background: linear-gradient(90deg, #58a6ff, #bc8cff);
+  background: linear-gradient(90deg, #7c6cff, #2dd4bf);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -64,63 +64,11 @@
 }
 
 /* ── Hero total bar ───────────────────────────────────────────── */
-.hero-bar {
-  background: linear-gradient(135deg, #1a2540 0%, #0d1117 50%, #1a1a30 100%);
-  padding: 40px 32px 32px;
-  border-bottom: 1px solid var(--border);
-  position: relative;
-  z-index: 10;
-}
-
-.hero-bar::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 20% 80%, rgba(88, 166, 255, 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 20%, rgba(188, 140, 255, 0.08) 0%, transparent 60%);
-  pointer-events: none;
-}
-
-[data-theme="light"] .hero-bar {
-  background: linear-gradient(135deg, #f0f4ff 0%, #f8f9fa 50%, #f0f0ff 100%);
-}
-
-[data-theme="light"] .hero-bar::before {
-  background: radial-gradient(ellipse at 20% 80%, rgba(31, 111, 235, 0.05) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 20%, rgba(140, 100, 255, 0.05) 0%, transparent 60%);
-}
-
-[data-theme="light"] .hero-amount {
-  background: linear-gradient(90deg, #1a1a2e, #4a4a6a);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
 
 .hero-inner {
   max-width: 1320px;
   margin: 0 auto;
   position: relative;
-}
-
-.hero-label {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-.hero-amount {
-  font-size: clamp(1.6rem, 3.5vw, 2.4rem);
-  font-weight: 800;
-  background: linear-gradient(90deg, #e6edf3, #8b949e);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  line-height: 1;
-  margin-bottom: 20px;
 }
 
 .hero-meta {
@@ -169,7 +117,7 @@
 .period-pill.active {
   background: var(--accent);
   border-color: var(--accent);
-  color: #0d1117;
+  color: #0a0d14;
   font-weight: 600;
 }
 
@@ -186,7 +134,7 @@
 .period-pill.pill-fy.active {
   background: #00c8aa;
   border-color: #00c8aa;
-  color: #0d1117;
+  color: #0a0d14;
 }
 
 /* Custom date range row */
@@ -251,7 +199,6 @@
   padding: 0 0 32px 0;
   /* Removed horizontal padding so it aligns with hero-inner bounds */
 }
-
 
 /* ── Header user greeting ────────────────────────────────────── */
 .header-user {

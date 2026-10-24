@@ -9,11 +9,11 @@ export default defineConfig({
             registerType: 'autoUpdate',
             includeAssets: ['icon-192x192.png', 'icon-512x512.png'],
             manifest: {
-                name: 'CardVault — Credit Card Spend Analyser',
-                short_name: 'CardVault',
+                name: 'Booker — Orders, Cards & Bookers',
+                short_name: 'Booker',
                 description: 'Track all your credit card spends in one place',
-                theme_color: '#0d1117',
-                background_color: '#0d1117',
+                theme_color: '#0a0d14',
+                background_color: '#0a0d14',
                 display: 'standalone',
                 scope: '/',
                 start_url: '/',
@@ -41,7 +41,7 @@ export default defineConfig({
                 runtimeCaching: [
                     {
                         // Cache API calls with network-first strategy
-                        urlPattern: /^https?:\/\/.*\/api\/.*/i,
+                        urlPattern: /^https?:\/\/.*\/api\/(?!export).*/i, // never cache the full-data backup
                         handler: 'NetworkFirst',
                         options: {
                             cacheName: 'api-cache',

@@ -1,0 +1,45 @@
+name: Database Backup
+
+# Weekly encrypted dump of the production database, kept as a workflow
+# artifact for 90 days. Needs repository secrets:
+#   MONGO_URI          - production connection string
+#   BACKUP_PASSPHRASE  - 12+ chars; store it outside GitHub too, it's needed to restore
+# Restore: download the artifact, then
+#   MONGO_URI=... BACKUP_PASSPHRASE=... npm run restore -- booker-<stamp>.bkp
+
+on:
+  schedule:
+    - cron: '30 21 * * 6' # Sunday 03:00 IST
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        working-directory: server
+        run: npm ci --omit=dev
+
+      - name: Dump and encrypt
+        working-directory: server
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: npm run backup -- --out ../backups
+
+      - name: Upload backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: booker-db-backup-${{ github.run_number }}
+          path: backups/*.bkp
+          retention-days: 90
+          if-no-files-found: error

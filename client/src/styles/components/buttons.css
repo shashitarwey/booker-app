@@ -15,14 +15,14 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #1f6feb, #388bfd);
+  background: linear-gradient(135deg, #5b4be6, #9b8cff);
   color: #fff;
-  box-shadow: 0 4px 14px rgba(31, 111, 235, 0.3);
+  box-shadow: 0 4px 14px rgba(91, 75, 230, 0.3);
 }
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(31, 111, 235, 0.45);
+  box-shadow: 0 6px 20px rgba(91, 75, 230, 0.45);
 }
 
 .btn-secondary {
@@ -53,7 +53,7 @@
 }
 
 .btn-danger:hover {
-  background: #da3633;
+  background: #ef4444;
 }
 
 .dropdown-item {
@@ -84,29 +84,4 @@
 }
 
 /* ── FAB ─────────────────────────────────────────────────────── */
-.fab {
-  position: fixed;
-  bottom: 32px;
-  right: 32px;
-  z-index: 200;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #1f6feb, #388bfd);
-  color: #fff;
-  font-size: 1.6rem;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 8px 24px rgba(31, 111, 235, 0.45);
-  transition: transform 0.2s cubic-bezier(.34, 1.56, .64, 1), box-shadow 0.2s;
-}
-
-.fab:hover {
-  transform: scale(1.1);
-  box-shadow: 0 12px 32px rgba(31, 111, 235, 0.6);
-}
 

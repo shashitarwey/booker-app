@@ -5,84 +5,9 @@
   padding-bottom: 24px;
 }
 
-.ledger-hero-divider {
-  width: 1px;
-  height: 28px;
-  background: var(--border);
-  flex-shrink: 0;
-}
-
-.ledger-hero-meta {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
-.ledger-hero-dot {
-  opacity: 0.4;
-}
-
 /* ── Stats bar (below hero) ────────────────────────────────── */
-.ledger-stats-bar {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-}
-
-.ledger-stats-inner {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 0 16px;
-}
-
-.ledger-stats-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
-}
-
-.ledger-stat-item {
-  flex: 1 1 auto;
-  min-width: 0;
-  padding: 14px 18px;
-  border-right: 1px solid var(--border);
-}
-
-.ledger-stat-item:last-child {
-  border-right: none;
-}
-
-.ledger-stat-label {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: var(--text-muted);
-  font-size: 0.72rem;
-  font-weight: 500;
-  margin-bottom: 4px;
-}
-
-.ledger-stat-value {
-  font-weight: 700;
-  font-size: 1.05rem;
-}
 
 /* ── Timeline container ────────────────────────────────────── */
-.ledger-timeline {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 28px 16px 48px;
-}
-
-.ledger-loading {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-width: 400px;
-  margin: 60px auto;
-}
 
 .ledger-loading-more {
   text-align: center;
@@ -100,243 +25,22 @@
 }
 
 /* ── Date separator ────────────────────────────────────────── */
-.ledger-date-sep {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 28px 0 18px;
-}
-
-.ledger-date-line {
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-
-.ledger-date-pill {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 4px 14px;
-  white-space: nowrap;
-  letter-spacing: 0.04em;
-}
 
 /* ── Ledger entry (chat bubble alignment) ──────────────────── */
-.ledger-entry {
-  display: flex;
-  margin-bottom: 10px;
-}
-
-.ledger-entry-left {
-  justify-content: flex-start;
-}
-
-.ledger-entry-right {
-  justify-content: flex-end;
-}
 
 /* ── Ledger card (the bubble) ──────────────────────────────── */
-.ledger-card {
-  width: 58%;
-  padding: 14px 16px;
-  position: relative;
-  overflow: hidden;
-}
-
-.ledger-card-order {
-  background: rgba(248, 113, 113, 0.04);
-  border: 1px solid rgba(248, 113, 113, 0.18);
-}
-
-.ledger-card-payment {
-  background: rgba(134, 239, 172, 0.05);
-  border: 1px solid rgba(134, 239, 172, 0.20);
-}
-
-.ledger-card-cancelled {
-  background: rgba(80, 80, 80, 0.06);
-  border: 1px solid rgba(100, 100, 100, 0.25);
-  opacity: 0.6;
-}
-
-.ledger-card-pending {
-  background: rgba(156, 163, 175, 0.06);
-  border: 1px solid rgba(156, 163, 175, 0.25);
-}
 
 /* Strikethrough overlay for cancelled */
-.ledger-card-strike {
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    -45deg,
-    rgba(120, 120, 120, 0.07),
-    rgba(120, 120, 120, 0.07) 2px,
-    transparent 2px,
-    transparent 9px
-  );
-  border-radius: inherit;
-  pointer-events: none;
-}
 
 /* Header row */
-.ledger-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-}
-
-.ledger-card-type {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  opacity: 0.85;
-  text-transform: uppercase;
-}
-
-.ledger-card-order .ledger-card-type {
-  color: #fca5a5;
-}
-
-.ledger-card-payment .ledger-card-type {
-  color: #86efac;
-}
-
-.ledger-card-cancelled .ledger-card-type,
-.ledger-card-pending .ledger-card-type {
-  color: var(--text-muted);
-}
-
-.ledger-card-actions {
-  display: flex;
-  gap: 4px;
-}
-
-.ledger-action-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 2px;
-  display: flex;
-  opacity: 0.7;
-  transition: opacity 0.15s;
-  border-radius: 4px;
-}
-
-.ledger-action-btn:hover {
-  opacity: 1;
-}
-
-.ledger-action-edit {
-  color: var(--accent);
-}
-
-.ledger-action-delete {
-  color: var(--danger);
-}
 
 /* Amount */
-.ledger-card-amount {
-  font-size: 1.15rem;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.ledger-card-order .ledger-card-amount {
-  color: #fca5a5;
-}
-
-.ledger-card-payment .ledger-card-amount {
-  color: #86efac;
-}
-
-.ledger-card-cancelled .ledger-card-amount,
-.ledger-card-pending .ledger-card-amount {
-  color: var(--text-muted);
-}
-
-.ledger-card-struck {
-  text-decoration: line-through;
-}
 
 /* Description */
-.ledger-card-desc {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-}
-
-.ledger-card-cancelled .ledger-card-desc {
-  margin-bottom: 0;
-}
-
-.ledger-not-delivered {
-  margin-left: 8px;
-  font-size: 0.65rem;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 1px 5px;
-}
-
-.ledger-card-delivered {
-  display: inline-block;
-  margin-bottom: 8px;
-  font-size: 0.7rem;
-  color: #86efac;
-  background: rgba(134, 239, 172, 0.08);
-  border: 1px solid rgba(134, 239, 172, 0.2);
-  border-radius: 4px;
-  padding: 2px 6px;
-}
 
 /* Inline receipt image (always visible inside the card) */
-.ledger-receipt-inline {
-  margin: 4px 0 8px;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  animation: fadeIn 0.2s ease;
-}
-
-.ledger-receipt-img {
-  display: block;
-  width: 100%;
-  border-radius: 8px;
-  object-fit: contain;
-}
 
 /* Running balance footer */
-.ledger-card-footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding-top: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.ledger-card-order .ledger-card-footer {
-  border-top-color: rgba(248, 113, 113, 0.12);
-}
-
-.ledger-card-payment .ledger-card-footer {
-  border-top-color: rgba(134, 239, 172, 0.12);
-}
-
-.ledger-balance-label {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-}
-
-.ledger-balance-value {
-  font-size: 0.82rem;
-  font-weight: 700;
-}
 
 /* ── Khata entry type toggle (in AddKhataEntryModal) ─────────── */
 .khata-type-toggle {
@@ -363,13 +67,13 @@
 
 .khata-type-gave.is-active {
   background: rgba(248, 113, 113, 0.15);
-  color: #fca5a5;
+  color: var(--ink-red);
   border-color: rgba(248, 113, 113, 0.35);
 }
 
 .khata-type-got.is-active {
   background: rgba(134, 239, 172, 0.15);
-  color: #86efac;
+  color: var(--ink-green);
   border-color: rgba(134, 239, 172, 0.35);
 }
 
@@ -407,7 +111,7 @@
 
 .khata-btn-gave {
   background: rgba(248, 113, 113, 0.14);
-  color: #fca5a5;
+  color: var(--ink-red);
   border: 1px solid rgba(248, 113, 113, 0.35);
 }
 
@@ -417,7 +121,7 @@
 
 .khata-btn-got {
   background: rgba(134, 239, 172, 0.14);
-  color: #86efac;
+  color: var(--ink-green);
   border: 1px solid rgba(134, 239, 172, 0.35);
 }
 
@@ -449,43 +153,7 @@
   .ledger-hero {
     padding: 14px 12px;
   }
-
-  .ledger-stats-row {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr;
-    gap: 0;
-  }
-
-  .ledger-stat-item {
-    border-bottom: 1px solid var(--border);
-    padding: 10px 14px;
-  }
-
-  .ledger-stat-item:nth-child(odd) {
-    border-right: 1px solid var(--border);
-  }
-
-  .ledger-stat-item:nth-child(even) {
-    border-right: none;
-  }
-
-  .ledger-stat-item:nth-last-child(-n+2) {
-    border-bottom: none;
-  }
-
-  .ledger-stat-value {
-    font-size: 0.95rem;
-  }
-
-  .ledger-timeline {
-    padding: 20px 12px 40px;
-  }
-
-  .ledger-card {
-    width: 75%;
-  }
-
-  .ledger-date-sep {
-    margin: 20px 0 14px;
-  }
 }
+
+/* "Booked by …" line on order entries */
+

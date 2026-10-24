@@ -87,12 +87,19 @@ async function set(key, value, ttl = DEFAULT_TTL) {
 async function invalidate(pattern) {
     if (!isConnected) return;
     try {
+        // SCAN instead of KEYS: KEYS blocks Redis while it walks every key
         const client = getClient();
-        const keys = await client.keys(pattern);
-        if (keys.length > 0) {
-            await client.del(...keys);
-            logger.info('Cache invalidated', { pattern, count: keys.length });
-        }
+        let cursor = '0';
+        let count = 0;
+        do {
+            const [next, keys] = await client.scan(cursor, 'MATCH', pattern, 'COUNT', 200);
+            cursor = next;
+            if (keys.length) {
+                await client.del(...keys);
+                count += keys.length;
+            }
+        } while (cursor !== '0');
+        if (count) logger.info('Cache invalidated', { pattern, count });
     } catch {
         // silently ignore
     }
@@ -144,8 +151,45 @@ function cacheMiddleware(ttl = DEFAULT_TTL) {
     };
 }
 
+// Cached GET endpoints, by area (cacheMiddleware keys are "route:<user>:<url>")
+const CACHED_AREAS = {
+    summary: '/api/summary',
+    analytics: '/api/analytics',
+    people: '/api/people',
+    reports: '/api/reports',
+};
+
+// Which cached areas each kind of write makes stale. One place to reason
+// about cache correctness instead of every route guessing.
+const AFFECTS = {
+    orders:          ['summary', 'analytics', 'people', 'reports'],
+    cards:           ['summary', 'analytics', 'people', 'reports'],
+    people:          ['summary', 'analytics', 'people', 'reports'],
+    transactions:    ['summary', 'reports'],
+    sellers:         ['analytics', 'people', 'reports'], // buyer names: profit-by-buyer, booker khata, report entries
+    seller_payments: ['analytics'],          // receivable from buyers
+    booker_payments: ['analytics', 'people'], // payable to bookers, pending dues
+};
+
 /**
- * Express middleware: invalidate a user's cached summary data after mutations.
+ * Invalidate only the cached areas a write affects.
+ * Usage: invalidateCache(req, 'orders')
+ */
+function invalidateCache(req, change) {
+    const uid = req.user?.id;
+    if (!uid) return;
+    const areas = AFFECTS[change];
+    if (!areas) {
+        logger.warn('invalidateCache: unknown change type, clearing all', { change });
+        invalidate(`route:${uid}:*`).catch(() => { });
+        return;
+    }
+    for (const area of areas) invalidate(`route:${uid}:${CACHED_AREAS[area]}*`).catch(() => { });
+}
+
+/**
+ * Express middleware: invalidate ALL of a user's cached data after mutations.
+ * Prefer invalidateCache(req, change), which only clears affected areas.
  * Usage: router.post('/path', handler, invalidateSummaryCache)
  */
 function invalidateSummaryCache(req, res, next) {
@@ -166,6 +210,6 @@ getClient();
 
 module.exports = {
     get, set, del, invalidate,
-    cacheMiddleware, invalidateSummaryCache,
+    cacheMiddleware, invalidateSummaryCache, invalidateCache,
     isRedisConnected,
 };

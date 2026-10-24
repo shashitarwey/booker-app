@@ -1,32 +1,44 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { ChevronLeft, TrendingUp, Users, ShoppingBag, IndianRupee, BarChart3, Percent, CalendarDays, Sparkles, Send, RotateCcw, User } from 'lucide-react';
+import { ChevronLeft, TrendingUp, Users, ShoppingBag, BarChart3, Percent, CalendarDays, Sparkles, Send, RotateCcw, User } from 'lucide-react';
 import { getProfitAnalytics, askAI } from '../api';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import {
-  ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  ResponsiveContainer, BarChart, Bar, Cell, LabelList,
+  XAxis, YAxis, CartesianGrid, Tooltip,
 } from 'recharts';
 import DateRangeDropdown from '../common/DateRangeDropdown';
-import { pickTruthy } from '../utils/formatters';
+import BookerAnalytics from '../components/BookerAnalytics';
+import { pickTruthy, fmtCurrency, fmtSignedCurrency, profitColor } from '../utils/formatters';
+import { pctLabel } from '../utils/profit';
+import { useTheme } from '../context/ThemeContext';
 
-const COLORS = ['#58a6ff', '#bc8cff', '#3fb950', '#f85149', '#e3b341', '#f778ba', '#79c0ff', '#d2a8ff', '#7ee787', '#ffa657'];
+const kFmt = (v) => (Math.abs(v) >= 1000 ? `₹${(v / 1000).toFixed(Math.abs(v) >= 10000 ? 0 : 1)}k` : `₹${Math.round(v)}`);
 
-function fmtCurrency(val) {
-  if (val == null) return '₹0';
-  return '₹' + Math.round(val).toLocaleString('en-IN');
-}
-
-const CustomTooltip = ({ active, payload, label }) => {
+// Monthly bars show profit; the tooltip carries the amounts behind it.
+const MonthTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
+  const m = payload[0].payload;
   return (
     <div className="analytics-tooltip">
       <p className="analytics-tooltip-label">{label}</p>
-      {payload.map((p, i) => (
-        <p key={i} style={{ color: p.color }}>
-          {p.name}: {fmtCurrency(p.value)}
-        </p>
-      ))}
+      <p>Profit: {fmtSignedCurrency(m.profit)} {pctLabel(m.profit, m.order_amount)}</p>
+      <p>Orders: {m.order_count}</p>
+      <p>Ordered: {fmtCurrency(m.order_amount)}</p>
+      <p>Returned: {fmtCurrency(m.return_amount)}</p>
+    </div>
+  );
+};
+
+const RowTooltip = ({ active, payload, nameKey, showShare }) => {
+  if (!active || !payload?.length) return null;
+  const r = payload[0].payload;
+  return (
+    <div className="analytics-tooltip">
+      <p className="analytics-tooltip-label">{r[nameKey]}{r.seller_city ? ` · ${r.seller_city}` : ''}</p>
+      <p>Profit: {fmtSignedCurrency(r.profit)} {pctLabel(r.profit, r.order_amount)}</p>
+      <p>Orders: {r.order_count} · Ordered {fmtCurrency(r.order_amount)}</p>
+      {showShare && <p>Share of order volume: {r.share.toFixed(1)}%</p>}
     </div>
   );
 };
@@ -40,6 +52,7 @@ const SUGGESTED_QUESTIONS = [
 
 export default function OrderAnalyticsPage() {
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [dateFrom, setDateFrom] = useState('');
@@ -131,28 +144,16 @@ export default function OrderAnalyticsPage() {
   const noData = !data || !data.totals || data.totals.order_count === 0;
   const { monthly = [], bySeller = [], byEcommSite = [], totals = {}, fy = {} } = data || {};
 
-  // Donut pie data — sort desc and cap at 6 + "Others" so labels/legend stay tidy.
-  const sortedEcomm = [...byEcommSite].sort((a, b) => b.order_amount - a.order_amount);
-  const TOP_N = 6;
-  const topEcomm = sortedEcomm.slice(0, TOP_N);
-  const restEcomm = sortedEcomm.slice(TOP_N);
-  const pieData = [
-    ...topEcomm.map((s, i) => ({ name: s.ecomm_site, value: s.order_amount, fill: COLORS[i % COLORS.length] })),
-    ...(restEcomm.length ? [{
-      name: `Others (${restEcomm.length})`,
-      value: restEcomm.reduce((sum, s) => sum + s.order_amount, 0),
-      fill: 'var(--text-muted)',
-    }] : []),
-  ];
-
-  // Dynamic YAxis width for buyer chart — long names were being clipped at 100px.
-  const longestSellerName = bySeller.reduce((max, s) => Math.max(max, (s.seller_name || '').length), 0);
-  const sellerYAxisWidth = Math.min(180, Math.max(80, longestSellerName * 7));
-
-  // Profit-by-platform bar uses the same byEcommSite data, sorted by profit desc.
-  const profitByPlatform = [...byEcommSite].sort((a, b) => b.profit - a.profit);
-  const longestPlatformName = profitByPlatform.reduce((max, p) => Math.max(max, (p.ecomm_site || '').length), 0);
-  const platformYAxisWidth = Math.min(160, Math.max(70, longestPlatformName * 7));
+  const margin = totals.order_amount > 0 ? (totals.profit / totals.order_amount) * 100 : 0;
+  const totalOrdered = byEcommSite.reduce((sum, p) => sum + p.order_amount, 0);
+  const withLabel = (rows) => rows.map(r => ({ ...r, barLabel: `${fmtSignedCurrency(r.profit)} ${pctLabel(r.profit, r.order_amount)}` }));
+  const buyerRows = withLabel([...bySeller].sort((a, b) => b.profit - a.profit));
+  const platformRows = withLabel([...byEcommSite].sort((a, b) => b.profit - a.profit))
+    .map(r => ({ ...r, share: totalOrdered > 0 ? (r.order_amount / totalOrdered) * 100 : 0 }));
+  const narrow = typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches;
+  const labelMargin = narrow ? 96 : 120;
+  const yWidth = (rows, key) => Math.min(narrow ? 96 : 170, Math.max(70, rows.reduce((m, r) => Math.max(m, (r[key] || '').length), 0) * 7 + 12));
+  const seriesColor = theme === 'light' ? '#5b4be6' : '#7c6cff';
 
   return (
     <>
@@ -275,204 +276,85 @@ export default function OrderAnalyticsPage() {
           </div>
         ) : (
           <>
-            {/* Summary Cards */}
+            {/* Analytics-only tiles. Order/return totals live on the dashboard;
+                net profit is in the header badge. */}
             <div className="stats-row">
-              <div className="stat-card">
-                <div className="stat-card-header">
-                  <div className="stat-card-icon" style={{ background: 'rgba(88,166,255,0.12)', color: '#58a6ff' }}>
-                    <ShoppingBag size={16} />
+              {[
+                { icon: ShoppingBag, label: 'Delivered Orders', value: totals.order_count },
+                { icon: Percent, label: 'Profit Margin', value: `${margin.toFixed(2)}%`, color: profitColor(totals.profit) },
+                { icon: TrendingUp, label: 'Avg Profit / Order', value: fmtCurrency(totals.order_count > 0 ? totals.profit / totals.order_count : 0), color: profitColor(totals.profit) },
+                { icon: CalendarDays, label: 'Per Day Profit (FY)', value: fmtCurrency(fy.per_day_profit), color: profitColor(fy.per_day_profit || 0), tooltip: `FY started ${fy.start} · ${fy.days} day${fy.days !== 1 ? 's' : ''} elapsed` },
+              ].map(t => (
+                <div key={t.label} className="stat-card" data-tooltip={t.tooltip}>
+                  <div className="stat-card-header">
+                    <div className="stat-card-icon analytics-stat-icon"><t.icon size={16} /></div>
+                    <span className="stat-card-label">{t.label}</span>
                   </div>
-                  <span className="stat-card-label">Total Orders</span>
+                  <div className="stat-card-value" style={t.color ? { color: t.color } : undefined}>{t.value}</div>
                 </div>
-                <div className="stat-card-value">{totals.order_count}</div>
-              </div>
-
-              <div className="stat-card">
-                <div className="stat-card-header">
-                  <div className="stat-card-icon" style={{ background: 'rgba(248,81,73,0.12)', color: '#f85149' }}>
-                    <IndianRupee size={16} />
-                  </div>
-                  <span className="stat-card-label">Order Amount</span>
-                </div>
-                <div className="stat-card-value">{fmtCurrency(totals.order_amount)}</div>
-              </div>
-
-              <div className="stat-card">
-                <div className="stat-card-header">
-                  <div className="stat-card-icon" style={{ background: 'rgba(63,185,80,0.12)', color: '#3fb950' }}>
-                    <IndianRupee size={16} />
-                  </div>
-                  <span className="stat-card-label">Return Amount</span>
-                </div>
-                <div className="stat-card-value">{fmtCurrency(totals.return_amount)}</div>
-              </div>
-
-              <div className="stat-card">
-                <div className="stat-card-header">
-                  <div className="stat-card-icon" style={{ background: totals.profit >= 0 ? 'rgba(63,185,80,0.12)' : 'rgba(248,81,73,0.12)', color: totals.profit >= 0 ? '#3fb950' : '#f85149' }}>
-                    <TrendingUp size={16} />
-                  </div>
-                  <span className="stat-card-label">Net Profit</span>
-                </div>
-                <div className="stat-card-value" style={{ color: totals.profit >= 0 ? 'var(--success)' : 'var(--danger)' }}>
-                  {fmtCurrency(totals.profit)}
-                </div>
-              </div>
-
-              <div className="stat-card">
-                <div className="stat-card-header">
-                  <div className="stat-card-icon" style={{ background: 'rgba(188,140,255,0.12)', color: '#bc8cff' }}>
-                    <Percent size={16} />
-                  </div>
-                  <span className="stat-card-label">Profit Margin</span>
-                </div>
-                <div className="stat-card-value" style={{ color: totals.profit >= 0 ? 'var(--success)' : 'var(--danger)' }}>
-                  {totals.order_amount > 0
-                    ? `${((totals.profit / totals.order_amount) * 100).toFixed(2)}%`
-                    : '0.00%'}
-                </div>
-              </div>
-
-              <div className="stat-card">
-                <div className="stat-card-header">
-                  <div className="stat-card-icon" style={{ background: 'rgba(227,179,65,0.12)', color: '#e3b341' }}>
-                    <TrendingUp size={16} />
-                  </div>
-                  <span className="stat-card-label">Avg Profit / Order</span>
-                </div>
-                <div className="stat-card-value" style={{ color: totals.profit >= 0 ? 'var(--success)' : 'var(--danger)' }}>
-                  {totals.order_count > 0
-                    ? fmtCurrency(totals.profit / totals.order_count)
-                    : '₹0'}
-                </div>
-              </div>
-
-              {/* Per-day FY profit — always FY-to-date, ignores the date filter. */}
-              <div className="stat-card" data-tooltip={`FY started ${fy.start} · ${fy.days} day${fy.days !== 1 ? 's' : ''} elapsed`}>
-                <div className="stat-card-header">
-                  <div className="stat-card-icon" style={{ background: 'rgba(247,120,186,0.12)', color: '#f778ba' }}>
-                    <CalendarDays size={16} />
-                  </div>
-                  <span className="stat-card-label">Per Day Profit (FY)</span>
-                </div>
-                <div className="stat-card-value" style={{ color: (fy.per_day_profit || 0) >= 0 ? 'var(--success)' : 'var(--danger)' }}>
-                  {fmtCurrency(fy.per_day_profit)}
-                </div>
-              </div>
+              ))}
             </div>
 
-            {/* Monthly grouped bars — order/return on left axis, profit on right
-                axis so the much smaller profit bar stays visible against the
-                large order/return amounts. */}
+            {/* One measure, one axis: profit per month. Amounts are in the tooltip. */}
             {monthly.length > 0 && (
               <div className="analytics-chart-card">
-                <h3 className="analytics-chart-title">Monthly Profit Trend</h3>
-                <ResponsiveContainer width="100%" height={320}>
-                  <BarChart data={monthly} margin={{ top: 10, right: 10, left: -10, bottom: 0 }} barGap={4} barCategoryGap="20%">
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                    <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
-                    <YAxis yAxisId="left" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
-                    <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: '#3fb950' }} tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
-                    <Legend wrapperStyle={{ fontSize: 12 }} />
-                    <Bar yAxisId="left" dataKey="order_amount" name="Order Amount" fill="#58a6ff" radius={[3, 3, 0, 0]} />
-                    <Bar yAxisId="left" dataKey="return_amount" name="Return Amount" fill="#bc8cff" radius={[3, 3, 0, 0]} />
-                    <Bar yAxisId="right" dataKey="profit" name="Profit" radius={[3, 3, 0, 0]}>
-                      {monthly.map((m, i) => (
-                        <Cell key={i} fill={m.profit >= 0 ? '#3fb950' : '#f85149'} />
-                      ))}
+                <h3 className="analytics-chart-title"><TrendingUp size={16} /> Monthly Profit Trend</h3>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={monthly} margin={{ top: 18, right: 10, left: -6, bottom: 0 }} barCategoryGap="28%">
+                    <CartesianGrid stroke="var(--border)" vertical={false} />
+                    <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} tickFormatter={kFmt} axisLine={false} tickLine={false} width={56} />
+                    <Tooltip content={<MonthTooltip />} cursor={{ fill: 'var(--accent-soft)' }} />
+                    <Bar dataKey="profit" radius={[4, 4, 0, 0]} maxBarSize={44}>
+                      {monthly.map((m, i) => <Cell key={i} fill={m.profit >= 0 ? seriesColor : 'var(--danger)'} />)}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             )}
 
-            {/* Two-column: Seller Bar Chart + E-Commerce Pie */}
+            {/* Bookers / own cards / cash position */}
+            <BookerAnalytics data={data} />
+
             <div className="analytics-charts-row">
-              {/* Profit by Seller */}
-              {bySeller.length > 0 && (
+              {/* Profit by buyer — one series, one colour; label = ₹ (margin) */}
+              {buyerRows.length > 0 && (
                 <div className="analytics-chart-card">
-                  <h3 className="analytics-chart-title">
-                    <Users size={16} /> Profit by Buyer
-                  </h3>
-                  <ResponsiveContainer width="100%" height={Math.max(250, bySeller.length * 40)}>
-                    <BarChart data={bySeller} layout="vertical" margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                      <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
-                      <YAxis type="category" dataKey="seller_name" width={sellerYAxisWidth} tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="profit" name="Profit" radius={[0, 4, 4, 0]}>
-                        {bySeller.map((entry, i) => (
-                          <Cell key={i} fill={entry.profit >= 0 ? COLORS[i % COLORS.length] : '#f85149'} />
-                        ))}
+                  <h3 className="analytics-chart-title"><Users size={16} /> Profit by Buyer</h3>
+                  <ResponsiveContainer width="100%" height={Math.max(180, buyerRows.length * 40)}>
+                    <BarChart data={buyerRows} layout="vertical" margin={{ top: 5, right: labelMargin, left: 0, bottom: 5 }} barCategoryGap={8}>
+                      <CartesianGrid horizontal={false} stroke="var(--border)" />
+                      <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} tickFormatter={kFmt} axisLine={false} tickLine={false} />
+                      <YAxis type="category" dataKey="seller_name" width={yWidth(buyerRows, 'seller_name')} tick={{ fontSize: 12, fill: 'var(--text)' }} axisLine={false} tickLine={false} />
+                      <Tooltip content={<RowTooltip nameKey="seller_name" />} cursor={{ fill: 'var(--accent-soft)' }} />
+                      <Bar dataKey="profit" radius={[0, 4, 4, 0]} maxBarSize={22}>
+                        {buyerRows.map((r, i) => <Cell key={i} fill={r.profit >= 0 ? seriesColor : 'var(--danger)'} />)}
+                        <LabelList dataKey="barLabel" position="right" style={{ fontSize: 11, fill: 'var(--text-muted)' }} />
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               )}
 
-              {/* Order Volume by E-Commerce Site — donut with side legend.
-                  Slice labels were overlapping; legend keeps it readable. */}
-              {byEcommSite.length > 0 && (
+              {/* By platform — replaces the separate volume donut + profit bars */}
+              {platformRows.length > 0 && (
                 <div className="analytics-chart-card">
-                  <h3 className="analytics-chart-title">
-                    <ShoppingBag size={16} /> Orders by Platform
-                  </h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="40%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={3}
-                        dataKey="value"
-                      >
-                        {pieData.map((entry, i) => (
-                          <Cell key={i} fill={entry.fill} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(val) => fmtCurrency(val)} />
-                      <Legend
-                        layout="vertical"
-                        verticalAlign="middle"
-                        align="right"
-                        wrapperStyle={{ fontSize: 12, paddingLeft: 8 }}
-                        formatter={(value, entry) => {
-                          const total = pieData.reduce((s, p) => s + p.value, 0);
-                          const pct = total > 0 ? ((entry.payload.value / total) * 100).toFixed(0) : 0;
-                          return `${value} — ${pct}%`;
-                        }}
-                      />
-                    </PieChart>
+                  <h3 className="analytics-chart-title"><ShoppingBag size={16} /> By Platform</h3>
+                  <ResponsiveContainer width="100%" height={Math.max(180, platformRows.length * 40)}>
+                    <BarChart data={platformRows} layout="vertical" margin={{ top: 5, right: labelMargin, left: 0, bottom: 5 }} barCategoryGap={8}>
+                      <CartesianGrid horizontal={false} stroke="var(--border)" />
+                      <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} tickFormatter={kFmt} axisLine={false} tickLine={false} />
+                      <YAxis type="category" dataKey="ecomm_site" width={yWidth(platformRows, 'ecomm_site')} tick={{ fontSize: 12, fill: 'var(--text)' }} axisLine={false} tickLine={false} />
+                      <Tooltip content={<RowTooltip nameKey="ecomm_site" showShare />} cursor={{ fill: 'var(--accent-soft)' }} />
+                      <Bar dataKey="profit" radius={[0, 4, 4, 0]} maxBarSize={22}>
+                        {platformRows.map((r, i) => <Cell key={i} fill={r.profit >= 0 ? seriesColor : 'var(--danger)'} />)}
+                        <LabelList dataKey="barLabel" position="right" style={{ fontSize: 11, fill: 'var(--text-muted)' }} />
+                      </Bar>
+                    </BarChart>
                   </ResponsiveContainer>
                 </div>
               )}
             </div>
-
-            {/* Profit by Platform — horizontal bar, mirrors Profit by Buyer.
-                Reuses byEcommSite so no extra backend work. */}
-            {profitByPlatform.length > 0 && (
-              <div className="analytics-chart-card">
-                <h3 className="analytics-chart-title">
-                  <TrendingUp size={16} /> Profit by Platform
-                </h3>
-                <ResponsiveContainer width="100%" height={Math.max(220, profitByPlatform.length * 40)}>
-                  <BarChart data={profitByPlatform} layout="vertical" margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
-                    <YAxis type="category" dataKey="ecomm_site" width={platformYAxisWidth} tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="profit" name="Profit" radius={[0, 4, 4, 0]}>
-                      {profitByPlatform.map((entry, i) => (
-                        <Cell key={i} fill={entry.profit >= 0 ? COLORS[i % COLORS.length] : '#f85149'} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
           </>
         )}
       </div>

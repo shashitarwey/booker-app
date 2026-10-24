@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Customer = require('../models/Customer');
 const CustomerEntry = require('../models/CustomerEntry');
-const { toObjectId, parsePagination, paginatedResponse, sortByDateThenCreatedAt } = require('../utils/helpers');
+const { toObjectId, parsePagination, paginatedResponse } = require('../utils/helpers');
+const { runningBalanceFeed } = require('../utils/ledgerFeed');
 const { logActivity } = require('../utils/activityLogger');
 const validate = require('../middleware/validate');
 const {
@@ -189,38 +190,32 @@ router.get('/:customerId/entries', customerIdRule, validate, async (req, res, ne
         const entries = await CustomerEntry.find({
             customer_id: req.params.customerId,
             user_id: req.user.id
-        }).sort({ entry_date: -1, createdAt: -1 });
+        }).sort({ entry_date: -1, created_at: -1 });
         res.json(entries);
     } catch (err) { next(err); }
 });
 
-// Paginated entries feed with running balance attached. Like seller ledger-feed:
-// running balance must be computed from the full chronological history, so the
-// server fetches all entries once, walks forward to compute per-entry balance,
-// then returns the requested slice newest-first. Client appends for infinite scroll.
+// Paginated entries feed with running balance attached, newest-first. The
+// balance depends on the full chronological history, so MongoDB computes it
+// with a window over all entries (gave +, got −) and returns only the requested
+// page — see utils/ledgerFeed.js. Same-day entries are ordered by created_at,
+// then _id, so pages are stable. Client appends for infinite scroll.
 router.get('/:customerId/entries-feed', customerIdRule, validate, async (req, res, next) => {
     try {
         const { pageNum, limitNum, skip } = parsePagination(req.query);
 
-        const entries = await CustomerEntry.find({
-            customer_id: req.params.customerId,
-            user_id: req.user.id
-        }).lean();
+        const { rows, total } = await runningBalanceFeed(CustomerEntry, [
+            { $match: { user_id: toObjectId(req.user.id), customer_id: toObjectId(req.params.customerId) } },
+        ], {
+            sortBy: { entry_date: 1, created_at: 1, _id: 1 },
+            delta: { $cond: [{ $eq: ['$type', 'gave'] }, '$amount', { $subtract: [0, '$amount'] }] },
+            skip,
+            limit: limitNum,
+        });
 
-        sortByDateThenCreatedAt(entries, x => x.entry_date, x => x.created_at);
-
-        let running = 0;
-        for (const e of entries) {
-            if (e.type === 'gave') running += e.amount;
-            else running -= e.amount;
-            e.runningBalance = running;
-        }
-
-        entries.reverse();
-        const total = entries.length;
-        const slice = entries.slice(skip, skip + limitNum);
-
-        res.json(paginatedResponse(slice, total, pageNum, limitNum));
+        // Rows are the raw entry documents with runningBalance appended last,
+        // exactly what the previous lean() + loop produced
+        res.json(paginatedResponse(rows, total, pageNum, limitNum));
     } catch (err) { next(err); }
 });
 
@@ -261,7 +256,8 @@ router.put('/entry/:id', entryUpdateRules, validate, async (req, res, next) => {
         const { type, amount, entry_date, notes } = req.body;
         const update = {};
         if (type !== undefined) update.type = type;
-        if (amount !== undefined) update.amount = Number(amount);
+        // '' means "not provided" (validator skips falsy) — don't save it as ₹0
+        if (amount !== undefined && amount !== '') update.amount = Number(amount);
         if (entry_date !== undefined) update.entry_date = entry_date;
         if (notes !== undefined) update.notes = notes;
 

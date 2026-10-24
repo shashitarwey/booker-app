@@ -1,0 +1,131 @@
+/* ── ITR card spend report ─────────────────────────────────── */
+
+.report-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.report-filter-icon {
+  color: var(--text-muted);
+  align-self: center;
+  flex-shrink: 0;
+  margin-right: 2px;
+}
+
+.report-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 720px; margin-bottom: 24px; }
+
+.report-person {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm), var(--shadow);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.report-person-head {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.report-person-id {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.report-person-name { font-weight: 800; font-size: 1.05rem; letter-spacing: -0.02em; }
+
+.report-person-totals { display: flex; gap: 28px; }
+
+.report-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.report-big { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.03em; margin-top: 2px; }
+
+.report-person-actions { display: flex; gap: 8px; }
+
+.report-muted { color: var(--text-muted); font-size: 0.75rem; margin-top: 2px; white-space: normal; }
+
+.report-table td, .report-months td { vertical-align: top; }
+
+.report-bank-row td {
+  background: var(--surface2);
+  font-size: 0.85rem;
+}
+
+.report-bank-name { font-weight: 800; }
+
+.report-sft {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 10px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--amber);
+  background: color-mix(in srgb, var(--amber) 14%, transparent);
+}
+
+.report-type {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.report-type.is-addon { background: color-mix(in srgb, var(--amber) 14%, transparent); color: var(--ink-amber); }
+
+.report-total-row td { background: var(--surface2); font-weight: 800; }
+
+.report-months th, .report-months td { padding: 10px 10px; }
+
+.report-empty { padding: 20px; color: var(--text-muted); }
+
+.report-footnote {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  max-width: 900px;
+  margin-top: 8px;
+}
+
+@media (max-width: 640px) {
+  .report-kpis { grid-template-columns: 1fr 1fr; }
+  .report-person-totals { gap: 18px; }
+  .report-person-actions { width: 100%; }
+  .report-person-actions .btn { flex: 1; justify-content: center; }
+}
+
+/* Phone layout for the report */
+.report-mobile { display: none; }
+
+@media (max-width: 640px) {
+  .report-table-wrap { display: none; }
+  .report-mobile { display: block; padding: 4px 14px 12px; }
+  .report-m-bank { padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .report-m-bank:last-child { border-bottom: none; }
+  .report-m-bank-head { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .report-m-card { padding: 10px 12px; border-radius: 10px; background: var(--surface2); margin-bottom: 8px; }
+  .report-m-card-row { display: flex; align-items: center; gap: 8px; }
+  .report-m-total { margin-left: auto; font-weight: 800; }
+  .report-person-head { padding: 14px; gap: 14px; }
+}

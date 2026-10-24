@@ -35,8 +35,8 @@ describe('Constants', () => {
 
   it('DELIVERY_STATUS_OPTIONS has expected statuses', () => {
     const values = DELIVERY_STATUS_OPTIONS.map(d => d.value);
-    expect(values).toContain('Yes');
-    expect(values).toContain('No');
+    expect(values).toContain('Delivered');
+    expect(values).toContain('Pending');
     expect(values).toContain('Cancelled');
   });
 });

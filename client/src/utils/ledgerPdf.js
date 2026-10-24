@@ -12,7 +12,7 @@ import { buildStatementHtml, fmtAmt, balanceParts, splitByRange } from './pdfSta
  *   is rolled into the opening (previous) balance so the running balance
  *   stays continuous with the full ledger.
  */
-export const downloadLedgerPdf = (seller, items, range = {}) => {
+export const downloadLedgerPdf = (seller, items, range = {}, opts = {}) => {
     // Only delivered orders + all payments. Pending and cancelled orders excluded.
     const filtered = items.filter(item =>
         item.type === 'PAYMENT' || (!item.isPending && !item.isCancelled)
@@ -89,10 +89,12 @@ export const downloadLedgerPdf = (seller, items, range = {}) => {
     const net = balanceParts(netBalance);
     const opening = balanceParts(openingBalance);
     const balanceVerb = netBalance > 0 ? 'will give' : netBalance < 0 ? 'will get' : 'is clear';
+    // opts lets other ledgers (booker khata) reuse this layout with their own wording
+    const balanceLine = opts.balanceLine ? opts.balanceLine(netBalance) : `${seller.name} ${balanceVerb}`;
 
     const html = buildStatementHtml({
         documentTitle: `${seller.name} - Ledger Statement`,
-        brandSubtitle: 'Ledger Statement',
+        brandSubtitle: opts.brandSubtitle || 'Ledger Statement',
         statementTitle: `${seller.name}${seller.city ? ` (${seller.city})` : ''} Statement`,
         dateRange: `${format(firstDate, 'dd MMM yyyy')} - ${format(lastDate, 'dd MMM yyyy')}`,
         openingDate: format(firstDate, 'dd MMM yyyy'),
@@ -102,17 +104,17 @@ export const downloadLedgerPdf = (seller, items, range = {}) => {
         groups,
         entriesCount: within.length,
         summary: {
-            debitLabel: 'Total Debit(-)',
-            creditLabel: 'Total Credit(+)',
+            debitLabel: opts.debitLabel || 'Total Debit(-)',
+            creditLabel: opts.creditLabel || 'Total Credit(+)',
             debit: fmtAmt(totalDebit),
             credit: fmtAmt(totalCredit),
             balance: net.text,
             balanceSuffix: net.suffix,
-            balanceLine: `${seller.name} ${balanceVerb}`,
+            balanceLine,
         },
         columns: {
-            debitHeader: 'Debit(-)',
-            creditHeader: 'Credit(+)',
+            debitHeader: opts.debitHeader || 'Debit(-)',
+            creditHeader: opts.creditHeader || 'Credit(+)',
             deliveryHeader: 'Delivery Date',
         },
         generatedAt: format(today, "hh:mm a | dd MMM ''yy"),

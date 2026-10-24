@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { User, ChevronLeft, Trash2, AlertTriangle } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { User, ChevronLeft, Trash2, AlertTriangle, DatabaseBackup, Download, Upload } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { updateProfile, requestAccountDeletion, cancelAccountDeletion, getAccountStatus } from '../api';
+import { updateProfile, requestAccountDeletion, cancelAccountDeletion, getAccountStatus, exportAccount, importAccount } from '../api';
 import { toast } from 'react-hot-toast';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -30,6 +30,11 @@ export default function ProfilePage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmText, setConfirmText] = useState('');
+
+  // Backup / restore
+  const [exporting, setExporting] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+  const fileRef = useRef(null);
 
   const profileChanged = name.trim() !== user?.name || email.trim().toLowerCase() !== user?.email;
 
@@ -86,6 +91,41 @@ export default function ProfilePage() {
       toast.error(parseError(err));
     } finally {
       setDeleteLoading(false);
+    }
+  };
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      await exportAccount();
+      toast.success('Backup downloaded');
+    } catch (err) {
+      toast.error(parseError(err));
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleRestore = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    let backup;
+    try {
+      backup = JSON.parse(await file.text());
+    } catch {
+      toast.error('That file is not a Booker backup');
+      return;
+    }
+    setRestoring(true);
+    try {
+      const { restored } = await importAccount(backup);
+      toast.success(`Restored ${restored.orders} orders, ${restored.cards} cards and ${restored.people} people`);
+      // Reload so every page picks up the restored data
+      setTimeout(() => window.location.assign('/'), 800);
+    } catch (err) {
+      toast.error(parseError(err));
+      setRestoring(false);
     }
   };
 
@@ -150,6 +190,27 @@ export default function ProfilePage() {
               </button>
             </div>
           </form>
+        </div>
+
+        {/* ── Your Data: backup & restore ─── */}
+        <div className="profile-card">
+          <div className="profile-card-header">
+            <DatabaseBackup size={20} />
+            <h2>Your Data</h2>
+          </div>
+          <p className="danger-zone-desc">
+            Download everything (people, cards, orders, buyers, ledgers, khata, payments) as one file. Keep it somewhere safe.
+            To restore, sign in to a <strong>new, empty account</strong> and upload the file. It never overwrites existing data.
+          </p>
+          <div className="profile-data-actions">
+            <button className="btn btn-primary" onClick={handleExport} disabled={exporting}>
+              <Download size={14} /> {exporting ? 'Preparing…' : 'Download all my data'}
+            </button>
+            <button className="btn btn-secondary" onClick={() => fileRef.current?.click()} disabled={restoring}>
+              <Upload size={14} /> {restoring ? 'Restoring…' : 'Restore from backup'}
+            </button>
+            <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={handleRestore} />
+          </div>
         </div>
 
         {/* ── Danger Zone: Account Deletion ─── */}

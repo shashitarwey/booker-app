@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { todayAsUtcDate } = require('./dates');
 
 /**
  * Pick only the specified fields from an object.
@@ -42,51 +43,48 @@ function buildDateRange(fromDate, toDate) {
     return range;
 }
 
+// Clamp a day-of-month to the month's length (e.g. 31 in Feb → 28/29), at UTC midnight
+const clampDay = (year, month, day) => {
+    const max = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+    return new Date(Date.UTC(year, month, Math.min(day, max)));
+};
+
+// All cycle start dates around refDate, ascending
+function cycleStarts(resetDay, period, startMonth, refDate) {
+    const y = refDate.getUTCFullYear();
+    if (period === 'monthly') {
+        const out = [];
+        for (let k = -13; k <= 13; k++) out.push(clampDay(y, refDate.getUTCMonth() + k, resetDay));
+        return out;
+    }
+    // quarterly / half-yearly / yearly: anchored to startMonth
+    // e.g. startMonth=3 (March), quarterly, resetDay=16 → Mar 16, Jun 16, Sep 16, Dec 16…
+    const step = { 'quarterly': 3, 'half-yearly': 6, 'yearly': 12 }[period] || 3;
+    const anchor = startMonth - 1;
+    const out = [];
+    for (let baseYear = y - 2; baseYear <= y + 1; baseYear++) {
+        for (let mo = anchor; mo < anchor + 12; mo += step) out.push(clampDay(baseYear, mo, resetDay));
+    }
+    return out.sort((a, b) => a - b);
+}
+
 /**
- * Compute the start date of the current cashback cycle for a card.
+ * Cashback cycle containing refDate: { start, end } (end exclusive), UTC midnight.
  * @param {number} resetDay    - Day of month the cycle resets (1-31)
  * @param {string} period      - 'monthly' | 'quarterly' | 'half-yearly' | 'yearly'
- * @param {number} startMonth  - Month when first cycle begins (1-12). Only used for non-monthly periods.
- * @returns {Date} Start of the current cycle (UTC midnight)
+ * @param {number} startMonth  - Month when the first cycle begins (1-12); non-monthly only
+ * @param {Date}   [refDate]   - defaults to today in the business timezone
  */
-function getCashbackCycleStart(resetDay = 1, period = 'monthly', startMonth = 1) {
-    const now = new Date();
-    const y = now.getUTCFullYear();
-    const m = now.getUTCMonth(); // 0-based
+function getCashbackCycle(resetDay = 1, period = 'monthly', startMonth = 1, refDate = todayAsUtcDate()) {
+    const starts = cycleStarts(resetDay || 1, period || 'monthly', startMonth || 1, refDate);
+    let idx = 0;
+    for (let k = 0; k < starts.length; k++) if (starts[k] <= refDate) idx = k;
+    return { start: starts[idx], end: starts[idx + 1] };
+}
 
-    // Clamp resetDay to last day of a given month (e.g. day 31 in Feb → 28/29)
-    const clamp = (year, month, day) => {
-        const max = new Date(year, month + 1, 0).getDate();
-        return new Date(Date.UTC(year, month, Math.min(day, max)));
-    };
-
-    if (period === 'monthly') {
-        // For monthly, just find the most recent reset day
-        const thisMonth = clamp(y, m, resetDay);
-        return thisMonth <= now ? thisMonth : clamp(y, m - 1, resetDay);
-    }
-
-    // For quarterly/half-yearly/yearly: cycles are anchored to startMonth
-    // e.g. startMonth=3 (March), quarterly, resetDay=16 →
-    //   Mar 16, Jun 16, Sep 16, Dec 16, Mar 16 (next year)…
-    const step = { 'quarterly': 3, 'half-yearly': 6, 'yearly': 12 }[period] || 3;
-    const anchor = startMonth - 1; // Convert 1-based to 0-based
-
-    // Generate all cycle start months for this year and previous year
-    // by stepping forward from the anchor month
-    const candidates = [];
-    for (let baseYear = y - 1; baseYear <= y + 1; baseYear++) {
-        for (let mo = anchor; mo < anchor + 12; mo += step) {
-            candidates.push(clamp(baseYear, mo, resetDay));
-        }
-    }
-
-    // Find the most recent candidate that is <= now
-    candidates.sort((a, b) => b - a); // Descending
-    for (const c of candidates) {
-        if (c <= now) return c;
-    }
-    return candidates[candidates.length - 1];
+/** Start of the cashback cycle containing refDate (default: today). */
+function getCashbackCycleStart(resetDay = 1, period = 'monthly', startMonth = 1, refDate = todayAsUtcDate()) {
+    return getCashbackCycle(resetDay, period, startMonth, refDate).start;
 }
 
 /**
@@ -123,28 +121,13 @@ function paginatedResponse(items, total, current, size) {
 }
 
 /**
- * Sort an array chronologically by a primary date, with `created_at` as a
- * deterministic tiebreaker when two items share the same primary date.
- *
- * Used by ledger-feed endpoints: entries sorted ascending here will — after a
- * subsequent `.reverse()` for newest-first display — place the most recently
- * created same-day entry at the top of its group. Without the tiebreaker,
- * same-date items fall back to Mongo's natural return order (non-deterministic).
- *
- * Mutates and returns the array.
- *
- * @param {Array} arr - array to sort
- * @param {(item: any) => any} getDate - extracts the primary sort date
- * @param {(item: any) => any} getCreatedAt - extracts created_at tiebreaker
- * @returns {Array} the sorted array (same reference)
+ * Escape a user-supplied string for literal use inside a RegExp, so search
+ * input like "(" or ".*" can't throw or act as a pattern.
+ * @param {string} str
+ * @returns {string}
  */
-function sortByDateThenCreatedAt(arr, getDate, getCreatedAt) {
-    arr.sort((a, b) => {
-        const dateDiff = new Date(getDate(a)) - new Date(getDate(b));
-        if (dateDiff !== 0) return dateDiff;
-        return new Date(getCreatedAt(a) || 0) - new Date(getCreatedAt(b) || 0);
-    });
-    return arr;
+function escapeRegex(str) {
+    return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-module.exports = { pickFields, toObjectId, buildDateRange, getCashbackCycleStart, parsePagination, paginatedResponse, sortByDateThenCreatedAt };
+module.exports = { pickFields, toObjectId, buildDateRange, getCashbackCycleStart, getCashbackCycle, parsePagination, paginatedResponse, escapeRegex };

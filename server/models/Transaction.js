@@ -4,6 +4,10 @@ const mongoose = require('mongoose');
  * Transaction Model
  *
  * Fields:
+ *  user_id     – owner (denormalised from the card so ownership-scoped
+ *                queries don't need a Card lookup first). Not `required`
+ *                because legacy docs predate it — utils/migrations.js
+ *                backfills them from their card on startup.
  *  card_id     – reference to Card
  *  amount      – spend amount in ₹
  *  description – merchant / note
@@ -11,6 +15,10 @@ const mongoose = require('mongoose');
  */
 const transactionSchema = new mongoose.Schema(
     {
+        user_id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        },
         card_id: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Card',
@@ -34,6 +42,7 @@ const transactionSchema = new mongoose.Schema(
     { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } }
 );
 
+transactionSchema.index({ user_id: 1, date: -1 });
 transactionSchema.index({ card_id: 1, date: -1 });
 
 module.exports = mongoose.model('Transaction', transactionSchema);

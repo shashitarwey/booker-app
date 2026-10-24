@@ -1,9 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
-import { CreditCard, LogOut, Sun, Moon, Search, Menu, X as XIcon, ShoppingBag, Users, UserCog, BarChart3, History, BookOpen } from 'lucide-react';
+import { CreditCard, LogOut, Sun, Moon, Search, Menu, X as XIcon, ShoppingBag, Users, UserCog, BarChart3, History, BookOpen, ContactRound, LayoutDashboard, FileText } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import GlobalSearch from '../common/GlobalSearch';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+
+const NAV_ITEMS = [
+  { to: '/',          label: 'Dashboard',        icon: LayoutDashboard, end: true },
+  { to: '/people/family', label: 'People',      icon: ContactRound },
+  { to: '/orders',    label: 'Orders',           icon: ShoppingBag },
+  { to: '/sellers',   label: 'Buyers',           icon: Users },
+  { to: '/khata',     label: 'Khata Book',       icon: BookOpen },
+  { to: '/analytics', label: 'Analytics',        icon: BarChart3 },
+  { to: '/reports/spends', label: 'ITR Spend Report', icon: FileText },
+  { to: '/activity',  label: 'Activity Log',     icon: History },
+];
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -36,6 +47,49 @@ export default function Navbar() {
 
   return (
     <>
+      {/* Desktop sidebar (≥900px). The top header below takes over on smaller screens. */}
+      {user && (
+        <aside className="app-sidebar">
+          <Link to="/" className="sidebar-brand">
+            <div className="sidebar-brand-mark"><CreditCard size={18} /></div>
+            <span>Booker</span>
+          </Link>
+
+          <button className="sidebar-search" onClick={() => setShowSearch(true)} title="Search (⌘K)">
+            <Search size={15} />
+            <span>Search</span>
+            <kbd>⌘K</kbd>
+          </button>
+
+          <nav className="sidebar-nav">
+            {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
+              <NavLink key={to} to={to} end={end} title={label} aria-label={label} className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+                <Icon size={18} />
+                <span>{label}</span>
+              </NavLink>
+            ))}
+          </nav>
+
+          <div className="sidebar-footer">
+            <Link to="/profile" className="sidebar-user">
+              <div className="sidebar-user-avatar">{(user.name || '?').charAt(0).toUpperCase()}</div>
+              <div className="sidebar-user-meta">
+                <div className="sidebar-user-name">{user.name}</div>
+                <div className="sidebar-user-sub">View profile</div>
+              </div>
+            </Link>
+            <div className="sidebar-footer-actions">
+              <button className="icon-btn" onClick={toggleTheme} aria-label="Toggle theme" title={theme === 'dark' ? 'Light theme' : 'Dark theme'}>
+                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
+              <button className="icon-btn" onClick={logout} aria-label="Logout" title="Logout">
+                <LogOut size={16} />
+              </button>
+            </div>
+          </div>
+        </aside>
+      )}
+
       <header className="app-header">
         <div className="header-inner">
           {/* Hamburger — mobile only */}
@@ -51,20 +105,8 @@ export default function Navbar() {
 
           <Link to="/" className="d-flex items-center" style={{ gap: '12px', textDecoration: 'none', cursor: 'pointer', color: 'var(--text)' }}>
             <div className="logo-icon"><CreditCard size={22} /></div>
-            <span className="logo-text hide-on-mobile">CardVault</span>
+            <span className="logo-text hide-on-mobile">Booker</span>
           </Link>
-
-          {/* Desktop nav links — hidden on mobile */}
-          {user && (
-            <div className="nav-links hide-on-mobile">
-              <Link to="/" className="text-sm font-medium" style={{ textDecoration: 'none', color: 'var(--text)' }}>Dashboard</Link>
-              <Link to="/orders" className="text-sm font-medium" style={{ textDecoration: 'none', color: 'var(--text)' }}>Orders</Link>
-              <Link to="/sellers" className="text-sm font-medium" style={{ textDecoration: 'none', color: 'var(--text)' }}>Buyers</Link>
-              <Link to="/khata" className="text-sm font-medium" style={{ textDecoration: 'none', color: 'var(--text)' }}>Khata</Link>
-              <Link to="/analytics" className="text-sm font-medium" style={{ textDecoration: 'none', color: 'var(--text)' }}>Analytics</Link>
-              <Link to="/activity" className="text-sm font-medium" style={{ textDecoration: 'none', color: 'var(--text)' }}>Activity</Link>
-            </div>
-          )}
 
           {/* Global search trigger — desktop */}
           {user && (
@@ -129,27 +171,14 @@ export default function Navbar() {
           <nav className="mobile-menu-drawer">
             <div className="mobile-menu-user">👋 {user.name}</div>
             <div className="mobile-menu-links">
-              <Link to="/" className={`mobile-menu-link${location.pathname === '/' ? ' active' : ''}`}>
-                <CreditCard size={18} /> Dashboard
-              </Link>
-              <Link to="/orders" className={`mobile-menu-link${location.pathname === '/orders' ? ' active' : ''}`}>
-                  <ShoppingBag size={18} /> Orders
-                </Link>
-                <Link to="/sellers" className={`mobile-menu-link${location.pathname.startsWith('/sellers') ? ' active' : ''}`}>
-                  <Users size={18} /> Buyers
-              </Link>
-              <Link to="/khata" className={`mobile-menu-link${location.pathname.startsWith('/khata') ? ' active' : ''}`}>
-                  <BookOpen size={18} /> Khata Book
-              </Link>
-              <Link to="/profile" className={`mobile-menu-link${location.pathname === '/profile' ? ' active' : ''}`}>
-                  <UserCog size={18} /> Profile
-              </Link>
-              <Link to="/analytics" className={`mobile-menu-link${location.pathname === '/analytics' ? ' active' : ''}`}>
-                  <BarChart3 size={18} /> Analytics
-              </Link>
-              <Link to="/activity" className={`mobile-menu-link${location.pathname === '/activity' ? ' active' : ''}`}>
-                  <History size={18} /> Activity Log
-              </Link>
+              {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
+                <NavLink key={to} to={to} end={end} className={({ isActive }) => `mobile-menu-link${isActive ? ' active' : ''}`}>
+                  <Icon size={18} /> {label}
+                </NavLink>
+              ))}
+              <NavLink to="/profile" className={({ isActive }) => `mobile-menu-link${isActive ? ' active' : ''}`}>
+                <UserCog size={18} /> Profile
+              </NavLink>
             </div>
             <div className="mobile-menu-footer">
               <button className="mobile-menu-logout" onClick={() => { setMobileMenuOpen(false); logout(); }}>

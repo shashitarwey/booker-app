@@ -3,9 +3,8 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const Transaction = require('../models/Transaction');
 const Card = require('../models/Card');
-const Order = require('../models/Order');
 const { buildDateRange } = require('../utils/helpers');
-const { invalidateSummaryCache } = require('../utils/cache');
+const { invalidateCache } = require('../utils/cache');
 const { logActivity } = require('../utils/activityLogger');
 const validate = require('../middleware/validate');
 const { createRules, idRule } = require('../validators/transactions.validator');
@@ -76,6 +75,10 @@ router.get('/', async (req, res, next) => {
         const pageSize = Math.max(1, Math.min(100, parseInt(limit)));
 
         // ── 1. Resolve card IDs belonging to this user ──────────────────────
+        // Still needed even though transactions now carry user_id: orders are
+        // NOT cascade-deleted with their card, so the merged view only stays
+        // identical if orders keep being limited to the user's existing cards.
+        // cardId must also be verified as the user's, and bankName mapped.
         let userCardIds = [];
         if (cardId) {
             const c = await Card.findOne({ _id: cardId, user_id: req.user.id }, '_id');
@@ -94,7 +97,11 @@ router.get('/', async (req, res, next) => {
         }
 
         // ── 2. Build date filter ────────────────────────────────────────────
+        const userId = new mongoose.Types.ObjectId(req.user.id);
         const dateRange = buildDateRange(from_date, to_date);
+        // Transactions stay matched on card_id rather than user_id: the card
+        // ids are already in hand (see above), and legacy docs not yet
+        // backfilled by utils/migrations.js must not silently drop out.
         const txMatch = { card_id: { $in: userCardIds } };
         if (dateRange) txMatch.date = dateRange;
 
@@ -123,6 +130,9 @@ router.get('/', async (req, res, next) => {
                     pipeline: [
                         {
                             $match: {
+                                // user_id first so { user_id, card_id, delivery_status }
+                                // bounds the scan; card_id keeps deleted-card orders out
+                                user_id: userId,
                                 card_id: { $in: userCardIds },
                                 delivery_status: { $ne: 'Cancelled' },
                                 ...(ordDateRange ? { order_date: ordDateRange } : {}),
@@ -141,7 +151,8 @@ router.get('/', async (req, res, next) => {
                 },
             },
             // Sort by date descending
-            { $sort: { date: -1 } },
+            // _id tie-break: many rows share a calendar day, keep paging stable
+            { $sort: { date: -1, _id: -1 } },
             // Use $facet for parallel count + totalAmount + paginated items
             {
                 $facet: {
@@ -215,8 +226,8 @@ router.post('/', createRules, validate, async (req, res, next) => {
         // Verify card belongs to current user
         const card = await Card.findOne({ _id: card_id, user_id: req.user.id });
         if (!card) return res.status(400).json({ error: 'Card not found or not yours' });
-        const tx = await Transaction.create({ card_id, amount, description, date });
-        invalidateSummaryCache(req);
+        const tx = await Transaction.create({ user_id: req.user.id, card_id, amount, description, date });
+        invalidateCache(req, 'transactions');
         logActivity(req.user.id, 'created', 'transaction', tx._id, `Added transaction: ₹${amount} — ${description || 'No description'}`, tx);
         res.status(201).json(tx);
     } catch (err) {
@@ -227,12 +238,17 @@ router.post('/', createRules, validate, async (req, res, next) => {
 // DELETE /api/transactions/:id
 router.delete('/:id', idRule, validate, async (req, res, next) => {
     try {
-        // Verify ownership through the card
-        const tx = await Transaction.findById(req.params.id).populate('card_id', 'user_id');
-        if (!tx || String(tx.card_id.user_id) !== req.user.id)
-            return res.status(404).json({ error: 'Transaction not found' });
+        // Ownership via the denormalised user_id — no Card lookup needed
+        let tx = await Transaction.findOne({ _id: req.params.id, user_id: req.user.id });
+        if (!tx) {
+            // Legacy doc the startup backfill hasn't reached (or failed on):
+            // fall back to the old check through its card.
+            const legacy = await Transaction.findOne({ _id: req.params.id, user_id: null }).populate('card_id', 'user_id');
+            if (legacy?.card_id && String(legacy.card_id.user_id) === req.user.id) tx = legacy;
+        }
+        if (!tx) return res.status(404).json({ error: 'Transaction not found' });
         await tx.deleteOne();
-        invalidateSummaryCache(req);
+        invalidateCache(req, 'transactions');
         logActivity(req.user.id, 'deleted', 'transaction', tx._id, `Deleted transaction: ₹${tx.amount} — ${tx.description || 'No description'}`, tx);
         res.json({ success: true });
     } catch (err) { next(err); }

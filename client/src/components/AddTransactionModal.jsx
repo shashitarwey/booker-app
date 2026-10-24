@@ -1,17 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, Trash2 } from 'lucide-react';
 import { createTransaction, deleteTransaction, getTransactions } from '../api';
 import ConfirmModal from '../common/ConfirmModal';
 import { toast } from 'react-hot-toast';
 import SearchableDropdown from '../common/SearchableDropdown';
 import SingleDatePicker from '../common/SingleDatePicker';
+import { getToday } from '../constants';
 
 export default function AddTransactionModal({ card, cards, onClose, onSave }) {
   const [form, setForm] = useState({
     card_id:     card?._id || '',
     amount:      '',
     description: '',
-    date:        new Date().toISOString().slice(0, 10),
+    date:        getToday(),
   });
   const [txList,   setTxList]   = useState([]);
   const [errors,   setErrors]   = useState({});
@@ -19,17 +20,20 @@ export default function AddTransactionModal({ card, cards, onClose, onSave }) {
   const [loading,  setLoading]  = useState(false);
   const [confirm,  setConfirm]  = useState(null);
 
-  useEffect(() => { if (form.card_id) fetchTxs(); }, [form.card_id]);
-
-  const fetchTxs = async () => {
+  // GET /transactions returns { items, page, totalAmount } — card
+  // transactions merged with orders on the card, newest first.
+  const fetchTxs = useCallback(async () => {
+    if (!form.card_id) return;
     setLoading(true);
     try {
       const res = await getTransactions({ cardId: form.card_id, limit: 5 });
-      setTxList(res.data || []);
+      setTxList(res.items || []);
     }
-    catch (err) { console.error('Failed to load cards', err); }
+    catch (err) { console.error('Failed to load recent transactions', err); }
     finally { setLoading(false); }
-  };
+  }, [form.card_id]);
+
+  useEffect(() => { fetchTxs(); }, [fetchTxs]);
 
   const set = (key, val) => {
     setForm(f => ({ ...f, [key]: val }));
@@ -117,7 +121,7 @@ export default function AddTransactionModal({ card, cards, onClose, onSave }) {
                   <label className="form-label">Date</label>
                   <SingleDatePicker
                     value={form.date}
-                    maxDate={new Date().toISOString().slice(0, 10)}
+                    maxDate={getToday()}
                     onChange={val => set('date', val)}
                   />
                   {errors.date && <div className="form-error">{errors.date}</div>}
@@ -151,9 +155,14 @@ export default function AddTransactionModal({ card, cards, onClose, onSave }) {
                         </div>
                         <div className="d-flex items-center gap-12">
                           <span className="tx-amount">₹{tx.amount.toLocaleString('en-IN')}</span>
-                          <button className="tx-delete" onClick={() => handleDelete(tx)} data-tooltip="Delete">
-                            <Trash2 size={14} />
-                          </button>
+                          {/* Orders show up here too; they're managed from the Orders page */}
+                          {tx.is_order
+                            ? <span className="tx-order-tag">Order</span>
+                            : (
+                              <button className="tx-delete" onClick={() => handleDelete(tx)} data-tooltip="Delete">
+                                <Trash2 size={14} />
+                              </button>
+                            )}
                         </div>
                       </div>
                     ))

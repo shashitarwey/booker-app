@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getSellers, deleteSeller } from '../api';
 import { Plus, Trash2, Pencil, BookText, Wallet, MapPin, TrendingUp, TrendingDown, ChevronLeft, Phone, Users, History } from 'lucide-react';
 import { fmtCurrency, fmtSignedCurrency, profitColor } from '../utils/formatters';
+import { pctLabel } from '../utils/profit';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import AddSellerModal from '../components/AddSellerModal';
@@ -61,6 +62,14 @@ export default function SellersPage() {
     setShowAddModal(true);
   };
 
+  const sellerMenuItems = (seller) => [
+    { label: 'Add Payment', icon: <Wallet size={15} />,   color: 'var(--success)', onClick: () => setPaymentSeller(seller) },
+    { label: 'View Ledger', icon: <BookText size={15} />,  color: 'var(--info)',    onClick: () => navigate(`/sellers/${seller._id}/ledger`) },
+    { label: 'Edit Buyer', icon: <Pencil size={15} />,    color: 'var(--text)',    onClick: () => handleEdit(seller) },
+    { label: 'View Activity', icon: <History size={15} />, color: 'var(--info)', onClick: () => navigate(`/activity?entityId=${seller._id}&entity=seller`) },
+    { label: 'Delete Buyer', icon: <Trash2 size={15} />,  color: 'var(--danger)',  className: 'border-top', onClick: () => handleDelete(seller) },
+  ];
+
   // Pagination (server-side)
   const totalPages = Math.ceil(totalSellers / pageSize);
 
@@ -68,6 +77,7 @@ export default function SellersPage() {
   const totalDue      = sellers.reduce((s, x) => s + (x.due_balance  || 0), 0);
   const totalReceived = sellers.reduce((s, x) => s + (x.total_received || 0), 0);
   const totalProfit   = sellers.reduce((s, x) => s + (x.profit        || 0), 0);
+  const totalOrdered  = sellers.reduce((s, x) => s + (x.total_amount_ordered || 0), 0);
 
   return (
     <>
@@ -104,7 +114,7 @@ export default function SellersPage() {
           <div className="stats-row">
             <div className="stat-card">
               <div className="stat-card-header">
-                <div className="stat-card-icon" style={{ background: 'rgba(248, 81, 73, 0.12)', color: 'var(--danger)' }}>
+                <div className="stat-card-icon" style={{ background: 'rgba(248, 113, 113, 0.12)', color: 'var(--danger)' }}>
                   <TrendingDown size={16} />
                 </div>
                 <span className="stat-card-label">Amount Due</span>
@@ -116,7 +126,7 @@ export default function SellersPage() {
 
             <div className="stat-card">
               <div className="stat-card-header">
-                <div className="stat-card-icon" style={{ background: 'rgba(63, 185, 80, 0.12)', color: 'var(--success)' }}>
+                <div className="stat-card-icon" style={{ background: 'rgba(52, 211, 153, 0.12)', color: 'var(--success)' }}>
                   <Wallet size={16} />
                 </div>
                 <span className="stat-card-label">Amount Received</span>
@@ -128,13 +138,13 @@ export default function SellersPage() {
 
             <div className="stat-card">
               <div className="stat-card-header">
-                <div className="stat-card-icon" style={{ background: 'rgba(88, 166, 255, 0.12)', color: 'var(--accent)' }}>
+                <div className="stat-card-icon" style={{ background: 'rgba(124, 108, 255, 0.12)', color: 'var(--accent)' }}>
                   <TrendingUp size={16} />
                 </div>
                 <span className="stat-card-label">Total Profit</span>
               </div>
               <div className="stat-card-value" style={{ color: profitColor(totalProfit) }}>
-                {fmtSignedCurrency(totalProfit)}
+                {fmtSignedCurrency(totalProfit)} <span className="profit-pct">{pctLabel(totalProfit, totalOrdered)}</span>
               </div>
             </div>
           </div>
@@ -164,7 +174,37 @@ export default function SellersPage() {
           </div>
         ) : (
           <div className="table-card">
-            <div className="table-responsive-wrapper">
+            {/* Phones: one card per buyer instead of the wide table */}
+            <div className="order-cards">
+              {sellers.map(seller => (
+                <article key={seller._id} className="order-card" onClick={() => navigate(`/sellers/${seller._id}/ledger`)}>
+                  <div className="order-card-top">
+                    <div className="order-card-title">
+                      <div className="order-card-item">{seller.name}</div>
+                      <div className="order-card-sub">
+                        <MapPin size={11} style={{ verticalAlign: '-1px' }} /> {seller.city}{seller.phone ? ` · ${seller.phone}` : ''}
+                      </div>
+                    </div>
+                    <div onClick={e => e.stopPropagation()}>
+                      <ActionMenu id={`m-${seller._id}`} openId={openDropdown} onToggle={setOpenDropdown} items={sellerMenuItems(seller)} />
+                    </div>
+                  </div>
+                  <div className="order-card-amounts" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+                    <div><span>Expected</span><strong>{fmtCurrency(seller.total_amount_get)}</strong></div>
+                    <div><span>Received</span><strong style={{ color: 'var(--success)' }}>{fmtCurrency(seller.total_received || 0)}</strong></div>
+                    <div><span>Due</span><strong style={{ color: profitColor(-(seller.due_balance || 0)) }}>{fmtCurrency(seller.due_balance || 0)}</strong></div>
+                  </div>
+                  <div className="order-card-foot">
+                    <span>Profit</span>
+                    <strong style={{ color: profitColor(seller.profit) }}>
+                      {fmtSignedCurrency(seller.profit)} <span className="profit-pct">{pctLabel(seller.profit, seller.total_amount_ordered)}</span>
+                    </strong>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <div className="table-responsive-wrapper orders-table-wrap">
               <table className="data-table">
                 <thead>
                   <tr>
@@ -207,21 +247,15 @@ export default function SellersPage() {
                       <td className="font-bold" style={{ color: profitColor(-(seller.due_balance || 0)) }}>
                         {fmtCurrency(seller.due_balance || 0)}
                       </td>
-                      <td className="font-medium" style={{ color: profitColor(seller.profit) }}>
-                        {fmtSignedCurrency(seller.profit)}
+                      <td className="font-medium" style={{ color: profitColor(seller.profit), whiteSpace: 'nowrap' }}>
+                        {fmtSignedCurrency(seller.profit)} <span className="profit-pct">{pctLabel(seller.profit, seller.total_amount_ordered)}</span>
                       </td>
                       <td className="text-right">
                         <ActionMenu
                           id={seller._id}
                           openId={openDropdown}
                           onToggle={setOpenDropdown}
-                          items={[
-                            { label: 'Add Payment', icon: <Wallet size={15} />,   color: 'var(--success)', onClick: () => setPaymentSeller(seller) },
-                            { label: 'View Ledger', icon: <BookText size={15} />,  color: 'var(--info)',    onClick: () => navigate(`/sellers/${seller._id}/ledger`) },
-                            { label: 'Edit Buyer', icon: <Pencil size={15} />,    color: 'var(--text)',    onClick: () => handleEdit(seller) },
-                            { label: 'View Activity', icon: <History size={15} />, color: 'var(--info)', onClick: () => navigate(`/activity?entityId=${seller._id}&entity=seller`) },
-                            { label: 'Delete Buyer', icon: <Trash2 size={15} />,  color: 'var(--danger)',  className: 'border-top', onClick: () => handleDelete(seller) },
-                          ]}
+                          items={sellerMenuItems(seller)}
                         />
                       </td>
                     </tr>

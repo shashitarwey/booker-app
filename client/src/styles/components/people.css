@@ -1,0 +1,483 @@
+/* ── People (card holders): list, detail tabs, chips ───────── */
+
+/* Missing z-index utilities used by stacked dropdowns in modals */
+.z-12 { z-index: 12; }
+.z-11 { z-index: 11; }
+.z-7  { z-index: 7; }
+.z-6  { z-index: 6; }
+.z-5  { z-index: 5; }
+
+/* Segmented control (Primary / Add-on, Family / Friend) */
+.segmented {
+  display: inline-flex;
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 3px;
+}
+
+.segmented-btn {
+  flex: 1;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.segmented-btn.is-active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.segmented-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Tab strip — used for relation filters, the per-person strip and Cards/Orders */
+.tab-strip {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+  margin-bottom: 20px;
+}
+
+.tab-strip::-webkit-scrollbar { display: none; }
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.tab-btn:hover { color: var(--text); }
+
+.tab-btn.is-active {
+  color: var(--text);
+  border-color: var(--accent);
+  background: rgba(124, 108, 255, 0.1);
+}
+
+.tab-btn-count {
+  font-size: 0.72rem;
+  padding: 1px 7px;
+  border-radius: 99px;
+  background: var(--surface2);
+  color: var(--text-muted);
+}
+
+/* Underlined section tabs (Cards | Orders) */
+.section-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.section-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.section-tab.is-active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+/* Relation dot inside tabs/badges */
+.relation-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.relation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--surface2);
+  color: var(--tag, var(--text-muted));
+}
+
+[data-theme="light"] .relation-badge { color: color-mix(in srgb, var(--tag, var(--text-muted)) 50%, #000); }
+
+/* Holder / add-on chips on the card widget */
+.card-holder-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.card-holder-chip {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Neutral badge in the orders header (friend totals) */
+.profit-badge-neutral {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+/* OrdersPage rendered inside a person's page */
+.page-hero.page-hero-embedded {
+  background: none;
+  padding: 0;
+  border-bottom: none;
+  margin-bottom: 16px;
+  overflow: visible;
+}
+
+.page-hero.page-hero-embedded::before { display: none; }
+
+.page-content.page-content-embedded {
+  padding: 0;
+  max-width: none;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* "+ Add …" option in SearchableDropdown */
+.custom-dropdown-create {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--accent);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+
+.custom-dropdown-create:disabled { opacity: 0.6; cursor: wait; }
+
+@media (max-width: 768px) {
+  .page-hero.page-hero-embedded { padding: 0; }
+}
+
+/* ── Booker khata tab ─────────────────────────────────────── */
+.khata-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.khata-sum-cell { background: var(--surface); padding: 14px 16px; min-width: 0; }
+
+.khata-sum-cell span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.khata-sum-cell strong { display: block; font-size: 1.15rem; font-weight: 800; margin-top: 6px; letter-spacing: -0.02em; }
+.khata-sum-balance.is-due strong { color: var(--amber); }
+.khata-sum-balance.is-advance strong { color: var(--success); }
+
+.khata-actions { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 14px; }
+
+.khata-list {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.khata-date {
+  padding: 8px 16px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--surface2);
+  letter-spacing: 0.03em;
+}
+
+.khata-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.khata-row.is-cancelled, .khata-row.is-pending { opacity: 0.6; }
+
+.khata-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.khata-icon.is-owed { color: var(--amber); background: color-mix(in srgb, var(--amber) 14%, transparent); }
+.khata-icon.is-paid { color: var(--success); background: color-mix(in srgb, var(--success) 14%, transparent); }
+
+.khata-main { flex: 1; min-width: 0; }
+.khata-desc { font-weight: 600; font-size: 0.88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.khata-sub { font-size: 0.74rem; color: var(--text-muted); margin-top: 2px; }
+
+.khata-amt { text-align: right; flex-shrink: 0; }
+.khata-amount { font-weight: 800; white-space: nowrap; }
+.khata-amount.is-owed { color: var(--amber); }
+.khata-amount.is-paid { color: var(--success); }
+.khata-bal { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; white-space: nowrap; }
+
+.khata-row-actions { display: flex; gap: 2px; flex-shrink: 0; }
+
+@media (max-width: 640px) {
+  .khata-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .khata-sum-cell { padding: 12px; }
+  .khata-sum-cell strong { font-size: 1rem; }
+  .khata-actions .btn { flex: 1; justify-content: center; }
+  .khata-row { padding: 10px 12px; gap: 10px; flex-wrap: wrap; }
+  .khata-row-actions { width: 100%; justify-content: flex-end; margin-top: -4px; }
+}
+
+/* Bookers tab on Khata Book page */
+.booker-khata-row { cursor: pointer; transition: background 0.15s; }
+.booker-khata-row:hover { background: var(--accent-soft); }
+.booker-khata-row .khata-row-actions { align-items: center; gap: 6px; }
+
+@media (max-width: 640px) {
+  .booker-khata-row .khata-row-actions { margin-top: 0; }
+}
+
+/* ── Family group chip / member pills ─────────────────────── */
+.tab-strip-sep { width: 1px; align-self: stretch; background: var(--border-strong); margin: 4px 4px; flex-shrink: 0; }
+
+.member-pills { display: flex; gap: 6px; flex-wrap: wrap; margin: -8px 0 18px; }
+.member-pill {
+  padding: 5px 12px;
+  border-radius: 99px;
+  border: 1px solid transparent;
+  background: var(--surface2);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.member-pill:hover { color: var(--text); }
+.member-pill.is-active { color: var(--accent); background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+
+.family-avatar { background: #a6e3a1; color: #0a0d14; display: grid; place-items: center; }
+
+.member-card-group { margin-bottom: 28px; }
+.member-card-group-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.member-card-group-head > span { font-size: 0.8rem; color: var(--text-muted); }
+.member-card-group-name {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: none; border: none; padding: 0; cursor: pointer;
+  color: var(--text); font: inherit; font-weight: 800; font-size: 0.98rem;
+}
+.member-card-group-name:hover { color: var(--accent); }
+.member-card-group-name .person-avatar { font-size: 0.75rem; }
+
+.dash-section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+
+.tab-btn-add { border-style: dashed; color: var(--text-muted); }
+.tab-btn-add:hover { color: var(--accent); border-color: var(--accent); }
+
+/* Shared LedgerView extras */
+.khata-receipt { display: block; margin-top: 8px; max-width: 160px; max-height: 120px; border-radius: 8px; border: 1px solid var(--border); object-fit: cover; }
+.khata-page-content { padding-bottom: 120px; } /* room for the sticky You Gave / You Got bar */
+
+/* Round initial avatar (PersonAvatar) — used on dashboard, person page, ledgers */
+.person-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #0a0d14;
+  flex-shrink: 0;
+}
+
+/* ── Cards grouped by bank (spend + ₹10L SFT meter in the header) ── */
+.sft-note { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+
+.bank-group { margin-bottom: 26px; }
+.bank-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  flex-wrap: wrap;
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.bank-group-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.bank-group-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.bank-group-name { font-weight: 800; font-size: 1rem; letter-spacing: -0.01em; }
+.bank-group-count { font-size: 0.75rem; color: var(--text-muted); }
+.bank-group-right { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.bank-group-spend { font-weight: 800; font-size: 1.05rem; color: var(--accent); white-space: nowrap; }
+.bank-group-spend span { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); margin-right: 4px; }
+.bank-group-sft { display: flex; flex-direction: column; gap: 4px; min-width: 190px; font-size: 0.72rem; color: var(--text-muted); }
+.bank-group-sft span { display: inline-flex; align-items: center; gap: 4px; }
+.bank-group-track { height: 6px; border-radius: 99px; background: var(--surface2); overflow: hidden; }
+.bank-group-fill { height: 100%; border-radius: 99px; background: var(--accent); }
+.bank-group-sft.is-near { color: var(--amber); }
+.bank-group-sft.is-near .bank-group-fill { background: var(--amber); }
+.bank-group-sft.is-over { color: var(--danger); font-weight: 700; }
+.bank-group-sft.is-over .bank-group-fill { background: var(--danger); }
+.bank-group-note { font-size: 0.75rem; color: var(--text-muted); margin: -6px 0 12px; }
+
+@media (max-width: 640px) {
+  .bank-group-right { width: 100%; justify-content: space-between; }
+  .bank-group-sft { min-width: 0; flex: 1; }
+}
+
+.khata-sum-sub { display: block; font-style: normal; font-size: 0.72rem; color: var(--success); margin-top: 4px; }
+
+/* ── Ledger timeline (buyer ledger, khata, booker khata) ─────────────
+   Owed / gave on the left, paid / got on the right, newest first. */
+.ltl { position: relative; padding: 4px 0 24px; }
+.ltl::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: 50%;
+  width: 1px;
+  background: linear-gradient(var(--border-strong), transparent);
+}
+.ltl-day { position: relative; }
+.ltl-date { display: flex; justify-content: center; margin: 18px 0 14px; position: relative; z-index: 1; }
+.ltl-date span {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+  padding: 4px 12px; border-radius: 99px;
+  background: var(--surface2); border: 1px solid var(--border-strong); color: var(--text-muted);
+}
+.ltl-entry { display: flex; margin-bottom: 12px; position: relative; z-index: 1; }
+.ltl-entry.is-left { justify-content: flex-start; padding-right: calc(50% + 14px); }
+.ltl-entry.is-right { justify-content: flex-end; padding-left: calc(50% + 14px); }
+
+.ltl-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 14px 10px;
+  box-shadow: var(--shadow-sm), var(--shadow);
+  position: relative;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.ltl-card:hover { transform: translateY(-1px); }
+.ltl-entry.is-left .ltl-card { border-top-left-radius: 4px; border-left: 3px solid var(--amber); margin-left: auto; }
+.ltl-entry.is-right .ltl-card { border-top-right-radius: 4px; border-right: 3px solid var(--success); }
+.ltl-card.is-pending { border-style: dashed; border-left-style: dashed; opacity: 0.85; }
+.ltl-card.is-cancelled { opacity: 0.5; }
+.ltl-card.is-cancelled .ltl-amount, .ltl-card.is-cancelled .ltl-title { text-decoration: line-through; }
+
+.ltl-card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ltl-type {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.66rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.ltl-card.is-owed .ltl-type { color: var(--amber); }
+.ltl-card.is-paid .ltl-type { color: var(--success); }
+.ltl-card.is-pending .ltl-type { color: var(--text-muted); }
+.ltl-actions { display: inline-flex; gap: 2px; }
+.ltl-action {
+  width: 26px; height: 26px; border-radius: 7px; border: none; background: transparent;
+  color: var(--text-muted); display: grid; place-items: center; cursor: pointer;
+}
+.ltl-action:hover { background: var(--surface2); color: var(--text); }
+
+.ltl-amount { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em; margin-top: 4px; }
+.ltl-card.is-owed .ltl-amount { color: #fca5a5; }
+.ltl-card.is-paid .ltl-amount { color: #86efac; }
+[data-theme="light"] .ltl-card.is-owed .ltl-amount { color: #b45309; }
+[data-theme="light"] .ltl-card.is-paid .ltl-amount { color: #047857; }
+.ltl-title { font-weight: 600; font-size: 0.88rem; margin-top: 2px; }
+.ltl-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.ltl-chip {
+  font-size: 0.68rem; font-weight: 600; color: var(--text-muted);
+  padding: 2px 8px; border-radius: 99px; background: var(--surface2);
+}
+.ltl-foot {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-strong);
+  font-size: 0.72rem; color: var(--text-muted);
+}
+.ltl-foot strong { font-size: 0.8rem; color: var(--text); }
+
+@media (max-width: 640px) {
+  .ltl::before { display: none; }
+  .ltl-entry.is-left { padding-right: 12%; }
+  .ltl-entry.is-right { padding-left: 12%; }
+  .ltl-card { max-width: none; }
+}
+
+/* Ledger summary: one column per cell on wide screens, 2 per row on phones */
+.khata-summary { grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); }
+@media (max-width: 640px) {
+  .khata-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

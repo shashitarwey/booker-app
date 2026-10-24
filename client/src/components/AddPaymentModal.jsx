@@ -5,9 +5,9 @@ import toast from 'react-hot-toast';
 import SingleDatePicker from '../common/SingleDatePicker';
 import { getToday } from '../constants';
 
-const today = getToday();
 
 export default function AddPaymentModal({ onClose, onSuccess, seller, editPayment }) {
+  const today = getToday(); // per render: stays correct past midnight
   const isEdit = !!editPayment;
 
   const [form, setForm] = useState({
@@ -44,7 +44,8 @@ export default function AddPaymentModal({ onClose, onSuccess, seller, editPaymen
       const submitData = new FormData();
       submitData.append('amount', form.amount);
       submitData.append('payment_date', form.payment_date);
-      if (form.notes) submitData.append('notes', form.notes);
+      // Always send notes when editing so clearing the note is saved
+      if (form.notes || isEdit) submitData.append('notes', form.notes || '');
       if (form.receipt) submitData.append('receipt', form.receipt);
       if (isEdit && removedReceipt && !form.receipt) submitData.append('remove_receipt', 'true');
 

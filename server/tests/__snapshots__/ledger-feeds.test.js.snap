@@ -1,0 +1,1914 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Ledger feeds (characterization) GET /api/customers/:customerId/entries-feed pages newest-first with running balance and tie-breaks 1`] = `
+"[
+  {
+    "items": [
+      {
+        "_id": "<id0>",
+        "user_id": "<id1>",
+        "customer_id": "<id2>",
+        "type": "got",
+        "amount": 0.2,
+        "entry_date": "2026-01-06T00:00:00.000Z",
+        "notes": "E7",
+        "created_at": "2026-01-06T10:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0,
+        "runningBalance": 800.2
+      },
+      {
+        "_id": "<id3>",
+        "user_id": "<id1>",
+        "customer_id": "<id2>",
+        "type": "got",
+        "amount": 0.1,
+        "entry_date": "2026-01-05T00:00:00.000Z",
+        "notes": "E6",
+        "created_at": "2026-01-05T10:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0,
+        "runningBalance": 800.4
+      },
+      {
+        "_id": "<id4>",
+        "user_id": "<id1>",
+        "customer_id": "<id2>",
+        "type": "gave",
+        "amount": 50.5,
+        "entry_date": "2026-01-04T00:00:00.000Z",
+        "notes": "",
+        "updated_at": "<ts>",
+        "__v": 0,
+        "runningBalance": 800.5
+      }
+    ],
+    "page": {
+      "type": "number",
+      "current": 1,
+      "size": 3,
+      "item_total": 7,
+      "has_next": true,
+      "has_previous": false
+    }
+  },
+  {
+    "items": [
+      {
+        "_id": "<id5>",
+        "user_id": "<id1>",
+        "customer_id": "<id2>",
+        "type": "got",
+        "amount": 100,
+        "entry_date": "2026-01-03T00:00:00.000Z",
+        "notes": "E4",
+        "created_at": "2026-01-03T10:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0,
+        "runningBalance": 750
+      },
+      {
+        "_id": "<id6>",
+        "user_id": "<id1>",
+        "customer_id": "<id2>",
+        "type": "gave",
+        "amount": 250,
+        "entry_date": "2026-01-03T00:00:00.000Z",
+        "notes": "E3",
+        "created_at": "2026-01-03T10:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0,
+        "runningBalance": 850
+      },
+      {
+        "_id": "<id7>",
+        "user_id": "<id1>",
+        "customer_id": "<id2>",
+        "type": "gave",
+        "amount": 1000,
+        "entry_date": "2026-01-01T00:00:00.000Z",
+        "notes": "E1",
+        "created_at": "2026-01-01T10:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0,
+        "runningBalance": 600
+      }
+    ],
+    "page": {
+      "type": "number",
+      "current": 2,
+      "size": 3,
+      "item_total": 7,
+      "has_next": true,
+      "has_previous": true
+    }
+  },
+  {
+    "items": [
+      {
+        "_id": "<id8>",
+        "user_id": "<id1>",
+        "customer_id": "<id2>",
+        "type": "got",
+        "amount": 400,
+        "entry_date": "2026-01-01T00:00:00.000Z",
+        "notes": "E2",
+        "created_at": "2026-01-01T09:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0,
+        "runningBalance": -400
+      }
+    ],
+    "page": {
+      "type": "number",
+      "current": 3,
+      "size": 3,
+      "item_total": 7,
+      "has_next": false,
+      "has_previous": true
+    }
+  },
+  {
+    "items": [],
+    "page": {
+      "type": "number",
+      "current": 4,
+      "size": 3,
+      "item_total": 7,
+      "has_next": false,
+      "has_previous": true
+    }
+  }
+]"
+`;
+
+exports[`Ledger feeds (characterization) GET /api/people/:id/khata ?all=true returns every item newest-first with totals and no page 1`] = `
+"{
+  "items": [
+    {
+      "id": "<id0>",
+      "type": "PAYMENT",
+      "subtype": "payment",
+      "date": "2026-03-05T00:00:00.000Z",
+      "amount": 0.2,
+      "description": "early",
+      "isPending": false,
+      "isCancelled": false,
+      "raw": {
+        "_id": "<id0>",
+        "user_id": "<id1>",
+        "person_id": "<id2>",
+        "amount": 0.2,
+        "payment_date": "2026-03-05T00:00:00.000Z",
+        "notes": "early",
+        "created_at": "2026-03-05T01:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "runningBalance": 23299.7
+    },
+    {
+      "id": "<id3>-adv",
+      "type": "PAYMENT",
+      "subtype": "advance",
+      "order_id": "<id3>",
+      "date": "2026-03-05T00:00:00.000Z",
+      "amount": 7000,
+      "description": "Advance · B5 ×2 · Shop",
+      "isPending": false,
+      "isCancelled": false,
+      "raw": {},
+      "runningBalance": 23299.9
+    },
+    {
+      "id": "<id3>",
+      "type": "ORDER",
+      "date": "2026-03-05T00:00:00.000Z",
+      "amount": 7000,
+      "description": "B5 ×2 · Shop",
+      "isPending": false,
+      "isCancelled": false,
+      "raw": {
+        "_id": "<id3>",
+        "user_id": "<id1>",
+        "card_id": {
+          "_id": "<id4>",
+          "bank_name": "HDFC Bank",
+          "last_four_digit": "1111"
+        },
+        "order_date": "2026-03-05T00:00:00.000Z",
+        "order_amount": 900,
+        "return_amount": 1000,
+        "quantity": 2,
+        "cashback": 0,
+        "coupon_cashback": 0,
+        "coupon_in_profit": true,
+        "friend_amount": 7000,
+        "advance_amount": 7000,
+        "variant": "NA",
+        "model_ordered": "B5",
+        "id_used": "a",
+        "delivery_status": "Delivered",
+        "ecomm_site": "Amazon",
+        "seller_id": {
+          "_id": "<id5>",
+          "name": "Shop",
+          "city": "Patna"
+        },
+        "is_cleared": false,
+        "remark": "",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "runningBalance": 30299.9
+    },
+    {
+      "id": "<id6>",
+      "type": "PAYMENT",
+      "subtype": "payment",
+      "date": "2026-03-04T00:00:00.000Z",
+      "amount": 0.1,
+      "description": "Payment made",
+      "isPending": false,
+      "isCancelled": false,
+      "raw": {
+        "_id": "<id6>",
+        "user_id": "<id1>",
+        "person_id": "<id2>",
+        "amount": 0.1,
+        "payment_date": "2026-03-04T00:00:00.000Z",
+        "notes": "",
+        "created_at": "2026-03-04T10:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "runningBalance": 23299.9
+    },
+    {
+      "id": "<id7>",
+      "type": "PAYMENT",
+      "subtype": "payment",
+      "date": "2026-03-03T00:00:00.000Z",
+      "amount": 15000,
+      "description": "UPI",
+      "isPending": false,
+      "isCancelled": false,
+      "raw": {
+        "_id": "<id7>",
+        "user_id": "<id1>",
+        "person_id": "<id2>",
+        "amount": 15000,
+        "payment_date": "2026-03-03T00:00:00.000Z",
+        "notes": "UPI",
+        "created_at": "2026-03-03T10:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "runningBalance": 23300
+    },
+    {
+      "id": "<id8>",
+      "type": "ORDER",
+      "date": "2026-03-03T00:00:00.000Z",
+      "amount": 3000,
+      "description": "B4 · Shop",
+      "isPending": false,
+      "isCancelled": false,
+      "raw": {
+        "_id": "<id8>",
+        "user_id": "<id1>",
+        "card_id": {
+          "_id": "<id9>",
+          "bank_name": "HDFC Bank",
+          "last_four_digit": "2222"
+        },
+        "order_date": "2026-03-03T00:00:00.000Z",
+        "order_amount": 900,
+        "return_amount": 1000,
+        "quantity": 1,
+        "cashback": 0,
+        "coupon_cashback": 0,
+        "coupon_in_profit": true,
+        "friend_amount": 3000,
+        "advance_amount": null,
+        "variant": "NA",
+        "model_ordered": "B4",
+        "id_used": "a",
+        "delivery_status": "Delivered",
+        "ecomm_site": "Amazon",
+        "seller_id": {
+          "_id": "<id5>",
+          "name": "Shop",
+          "city": "Patna"
+        },
+        "is_cleared": false,
+        "remark": "",
+        "created_at": "2026-03-03T10:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "runningBalance": 38300
+    },
+    {
+      "id": "<id10>-adv",
+      "type": "PAYMENT",
+      "subtype": "advance",
+      "order_id": "<id10>",
+      "date": "2026-03-03T00:00:00.000Z",
+      "amount": 9000,
+      "description": "Advance · B3 · Shop",
+      "isPending": false,
+      "isCancelled": true,
+      "raw": {
+        "created_at": "2026-03-03T10:00:00.000Z"
+      },
+      "runningBalance": 35300
+    },
+    {
+      "id": "<id10>",
+      "type": "ORDER",
+      "date": "2026-03-03T00:00:00.000Z",
+      "amount": 9000,
+      "description": "B3 · Shop",
+      "isPending": false,
+      "isCancelled": true,
+      "raw": {
+        "_id": "<id10>",
+        "user_id": "<id1>",
+        "card_id": {
+          "_id": "<id4>",
+          "bank_name": "HDFC Bank",
+          "last_four_digit": "1111"
+        },
+        "order_date": "2026-03-03T00:00:00.000Z",
+        "order_amount": 900,
+        "return_amount": 1000,
+        "quantity": 1,
+        "cashback": 0,
+        "coupon_cashback": 0,
+        "coupon_in_profit": true,
+        "friend_amount": 9000,
+        "advance_amount": 9000,
+        "variant": "NA",
+        "model_ordered": "B3",
+        "id_used": "a",
+        "delivery_status": "Cancelled",
+        "ecomm_site": "Amazon",
+        "seller_id": {
+          "_id": "<id5>",
+          "name": "Shop",
+          "city": "Patna"
+        },
+        "is_cleared": false,
+        "remark": "",
+        "created_at": "2026-03-03T10:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "runningBalance": 35300
+    },
+    {
+      "id": "<id11>-adv",
+      "type": "PAYMENT",
+      "subtype": "advance",
+      "order_id": "<id11>",
+      "date": "2026-03-02T00:00:00.000Z",
+      "amount": 5000,
+      "description": "Advance · B2 · Shop",
+      "isPending": false,
+      "isCancelled": false,
+      "raw": {
+        "created_at": "2026-03-02T10:00:00.000Z"
+      },
+      "runningBalance": 35300
+    },
+    {
+      "id": "<id11>",
+      "type": "ORDER",
+      "date": "2026-03-02T00:00:00.000Z",
+      "amount": 20000,
+      "description": "B2 · Shop",
+      "isPending": true,
+      "isCancelled": false,
+      "raw": {
+        "_id": "<id11>",
+        "user_id": "<id1>",
+        "card_id": {
+          "_id": "<id9>",
+          "bank_name": "HDFC Bank",
+          "last_four_digit": "2222"
+        },
+        "order_date": "2026-03-02T00:00:00.000Z",
+        "order_amount": 900,
+        "return_amount": 1000,
+        "quantity": 1,
+        "cashback": 0,
+        "coupon_cashback": 0,
+        "coupon_in_profit": true,
+        "friend_amount": 20000,
+        "advance_amount": 5000,
+        "variant": "NA",
+        "model_ordered": "B2",
+        "id_used": "a",
+        "delivery_status": "Pending",
+        "ecomm_site": "Amazon",
+        "seller_id": {
+          "_id": "<id5>",
+          "name": "Shop",
+          "city": "Patna"
+        },
+        "is_cleared": false,
+        "remark": "",
+        "created_at": "2026-03-02T10:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "runningBalance": 40300
+    },
+    {
+      "id": "<id12>-adv",
+      "type": "PAYMENT",
+      "subtype": "advance",
+      "order_id": "<id12>",
+      "date": "2026-03-01T00:00:00.000Z",
+      "amount": 10000,
+      "description": "Advance · B1 · Shop",
+      "isPending": false,
+      "isCancelled": false,
+      "raw": {
+        "created_at": "2026-03-01T10:00:00.000Z"
+      },
+      "runningBalance": 40300
+    },
+    {
+      "id": "<id12>",
+      "type": "ORDER",
+      "date": "2026-03-01T00:00:00.000Z",
+      "amount": 50300,
+      "description": "B1 · Shop",
+      "isPending": false,
+      "isCancelled": false,
+      "raw": {
+        "_id": "<id12>",
+        "user_id": "<id1>",
+        "card_id": {
+          "_id": "<id4>",
+          "bank_name": "HDFC Bank",
+          "last_four_digit": "1111"
+        },
+        "order_date": "2026-03-01T00:00:00.000Z",
+        "order_amount": 900,
+        "return_amount": 1000,
+        "quantity": 1,
+        "cashback": 0,
+        "coupon_cashback": 0,
+        "coupon_in_profit": true,
+        "friend_amount": 50300,
+        "advance_amount": 10000,
+        "variant": "NA",
+        "model_ordered": "B1",
+        "id_used": "a",
+        "delivery_status": "Delivered",
+        "ecomm_site": "Amazon",
+        "seller_id": {
+          "_id": "<id5>",
+          "name": "Shop",
+          "city": "Patna"
+        },
+        "is_cleared": false,
+        "remark": "",
+        "created_at": "2026-03-01T10:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "runningBalance": 50300
+    }
+  ],
+  "totals": {
+    "total_due": 60300,
+    "total_advance": 22000,
+    "total_payments": 15000.3,
+    "total_paid": 37000.3,
+    "pending_dues": 23299.699999999997
+  }
+}"
+`;
+
+exports[`Ledger feeds (characterization) GET /api/people/:id/khata pages newest-first with advances, payments, running balance and totals 1`] = `
+"[
+  {
+    "items": [
+      {
+        "id": "<id0>",
+        "type": "PAYMENT",
+        "subtype": "payment",
+        "date": "2026-03-05T00:00:00.000Z",
+        "amount": 0.2,
+        "description": "early",
+        "isPending": false,
+        "isCancelled": false,
+        "raw": {
+          "_id": "<id0>",
+          "user_id": "<id1>",
+          "person_id": "<id2>",
+          "amount": 0.2,
+          "payment_date": "2026-03-05T00:00:00.000Z",
+          "notes": "early",
+          "created_at": "2026-03-05T01:00:00.000Z",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "runningBalance": 23299.7
+      },
+      {
+        "id": "<id3>-adv",
+        "type": "PAYMENT",
+        "subtype": "advance",
+        "order_id": "<id3>",
+        "date": "2026-03-05T00:00:00.000Z",
+        "amount": 7000,
+        "description": "Advance · B5 ×2 · Shop",
+        "isPending": false,
+        "isCancelled": false,
+        "raw": {},
+        "runningBalance": 23299.9
+      },
+      {
+        "id": "<id3>",
+        "type": "ORDER",
+        "date": "2026-03-05T00:00:00.000Z",
+        "amount": 7000,
+        "description": "B5 ×2 · Shop",
+        "isPending": false,
+        "isCancelled": false,
+        "raw": {
+          "_id": "<id3>",
+          "user_id": "<id1>",
+          "card_id": {
+            "_id": "<id4>",
+            "bank_name": "HDFC Bank",
+            "last_four_digit": "1111"
+          },
+          "order_date": "2026-03-05T00:00:00.000Z",
+          "order_amount": 900,
+          "return_amount": 1000,
+          "quantity": 2,
+          "cashback": 0,
+          "coupon_cashback": 0,
+          "coupon_in_profit": true,
+          "friend_amount": 7000,
+          "advance_amount": 7000,
+          "variant": "NA",
+          "model_ordered": "B5",
+          "id_used": "a",
+          "delivery_status": "Delivered",
+          "ecomm_site": "Amazon",
+          "seller_id": {
+            "_id": "<id5>",
+            "name": "Shop",
+            "city": "Patna"
+          },
+          "is_cleared": false,
+          "remark": "",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "runningBalance": 30299.9
+      },
+      {
+        "id": "<id6>",
+        "type": "PAYMENT",
+        "subtype": "payment",
+        "date": "2026-03-04T00:00:00.000Z",
+        "amount": 0.1,
+        "description": "Payment made",
+        "isPending": false,
+        "isCancelled": false,
+        "raw": {
+          "_id": "<id6>",
+          "user_id": "<id1>",
+          "person_id": "<id2>",
+          "amount": 0.1,
+          "payment_date": "2026-03-04T00:00:00.000Z",
+          "notes": "",
+          "created_at": "2026-03-04T10:00:00.000Z",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "runningBalance": 23299.9
+      }
+    ],
+    "page": {
+      "type": "number",
+      "current": 1,
+      "size": 4,
+      "item_total": 12,
+      "has_next": true,
+      "has_previous": false
+    },
+    "totals": {
+      "total_due": 60300,
+      "total_advance": 22000,
+      "total_payments": 15000.3,
+      "total_paid": 37000.3,
+      "pending_dues": 23299.699999999997
+    }
+  },
+  {
+    "items": [
+      {
+        "id": "<id7>",
+        "type": "PAYMENT",
+        "subtype": "payment",
+        "date": "2026-03-03T00:00:00.000Z",
+        "amount": 15000,
+        "description": "UPI",
+        "isPending": false,
+        "isCancelled": false,
+        "raw": {
+          "_id": "<id7>",
+          "user_id": "<id1>",
+          "person_id": "<id2>",
+          "amount": 15000,
+          "payment_date": "2026-03-03T00:00:00.000Z",
+          "notes": "UPI",
+          "created_at": "2026-03-03T10:00:00.000Z",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "runningBalance": 23300
+      },
+      {
+        "id": "<id8>",
+        "type": "ORDER",
+        "date": "2026-03-03T00:00:00.000Z",
+        "amount": 3000,
+        "description": "B4 · Shop",
+        "isPending": false,
+        "isCancelled": false,
+        "raw": {
+          "_id": "<id8>",
+          "user_id": "<id1>",
+          "card_id": {
+            "_id": "<id9>",
+            "bank_name": "HDFC Bank",
+            "last_four_digit": "2222"
+          },
+          "order_date": "2026-03-03T00:00:00.000Z",
+          "order_amount": 900,
+          "return_amount": 1000,
+          "quantity": 1,
+          "cashback": 0,
+          "coupon_cashback": 0,
+          "coupon_in_profit": true,
+          "friend_amount": 3000,
+          "advance_amount": null,
+          "variant": "NA",
+          "model_ordered": "B4",
+          "id_used": "a",
+          "delivery_status": "Delivered",
+          "ecomm_site": "Amazon",
+          "seller_id": {
+            "_id": "<id5>",
+            "name": "Shop",
+            "city": "Patna"
+          },
+          "is_cleared": false,
+          "remark": "",
+          "created_at": "2026-03-03T10:00:00.000Z",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "runningBalance": 38300
+      },
+      {
+        "id": "<id10>-adv",
+        "type": "PAYMENT",
+        "subtype": "advance",
+        "order_id": "<id10>",
+        "date": "2026-03-03T00:00:00.000Z",
+        "amount": 9000,
+        "description": "Advance · B3 · Shop",
+        "isPending": false,
+        "isCancelled": true,
+        "raw": {
+          "created_at": "2026-03-03T10:00:00.000Z"
+        },
+        "runningBalance": 35300
+      },
+      {
+        "id": "<id10>",
+        "type": "ORDER",
+        "date": "2026-03-03T00:00:00.000Z",
+        "amount": 9000,
+        "description": "B3 · Shop",
+        "isPending": false,
+        "isCancelled": true,
+        "raw": {
+          "_id": "<id10>",
+          "user_id": "<id1>",
+          "card_id": {
+            "_id": "<id4>",
+            "bank_name": "HDFC Bank",
+            "last_four_digit": "1111"
+          },
+          "order_date": "2026-03-03T00:00:00.000Z",
+          "order_amount": 900,
+          "return_amount": 1000,
+          "quantity": 1,
+          "cashback": 0,
+          "coupon_cashback": 0,
+          "coupon_in_profit": true,
+          "friend_amount": 9000,
+          "advance_amount": 9000,
+          "variant": "NA",
+          "model_ordered": "B3",
+          "id_used": "a",
+          "delivery_status": "Cancelled",
+          "ecomm_site": "Amazon",
+          "seller_id": {
+            "_id": "<id5>",
+            "name": "Shop",
+            "city": "Patna"
+          },
+          "is_cleared": false,
+          "remark": "",
+          "created_at": "2026-03-03T10:00:00.000Z",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "runningBalance": 35300
+      }
+    ],
+    "page": {
+      "type": "number",
+      "current": 2,
+      "size": 4,
+      "item_total": 12,
+      "has_next": true,
+      "has_previous": true
+    },
+    "totals": {
+      "total_due": 60300,
+      "total_advance": 22000,
+      "total_payments": 15000.3,
+      "total_paid": 37000.3,
+      "pending_dues": 23299.699999999997
+    }
+  },
+  {
+    "items": [
+      {
+        "id": "<id11>-adv",
+        "type": "PAYMENT",
+        "subtype": "advance",
+        "order_id": "<id11>",
+        "date": "2026-03-02T00:00:00.000Z",
+        "amount": 5000,
+        "description": "Advance · B2 · Shop",
+        "isPending": false,
+        "isCancelled": false,
+        "raw": {
+          "created_at": "2026-03-02T10:00:00.000Z"
+        },
+        "runningBalance": 35300
+      },
+      {
+        "id": "<id11>",
+        "type": "ORDER",
+        "date": "2026-03-02T00:00:00.000Z",
+        "amount": 20000,
+        "description": "B2 · Shop",
+        "isPending": true,
+        "isCancelled": false,
+        "raw": {
+          "_id": "<id11>",
+          "user_id": "<id1>",
+          "card_id": {
+            "_id": "<id9>",
+            "bank_name": "HDFC Bank",
+            "last_four_digit": "2222"
+          },
+          "order_date": "2026-03-02T00:00:00.000Z",
+          "order_amount": 900,
+          "return_amount": 1000,
+          "quantity": 1,
+          "cashback": 0,
+          "coupon_cashback": 0,
+          "coupon_in_profit": true,
+          "friend_amount": 20000,
+          "advance_amount": 5000,
+          "variant": "NA",
+          "model_ordered": "B2",
+          "id_used": "a",
+          "delivery_status": "Pending",
+          "ecomm_site": "Amazon",
+          "seller_id": {
+            "_id": "<id5>",
+            "name": "Shop",
+            "city": "Patna"
+          },
+          "is_cleared": false,
+          "remark": "",
+          "created_at": "2026-03-02T10:00:00.000Z",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "runningBalance": 40300
+      },
+      {
+        "id": "<id12>-adv",
+        "type": "PAYMENT",
+        "subtype": "advance",
+        "order_id": "<id12>",
+        "date": "2026-03-01T00:00:00.000Z",
+        "amount": 10000,
+        "description": "Advance · B1 · Shop",
+        "isPending": false,
+        "isCancelled": false,
+        "raw": {
+          "created_at": "2026-03-01T10:00:00.000Z"
+        },
+        "runningBalance": 40300
+      },
+      {
+        "id": "<id12>",
+        "type": "ORDER",
+        "date": "2026-03-01T00:00:00.000Z",
+        "amount": 50300,
+        "description": "B1 · Shop",
+        "isPending": false,
+        "isCancelled": false,
+        "raw": {
+          "_id": "<id12>",
+          "user_id": "<id1>",
+          "card_id": {
+            "_id": "<id4>",
+            "bank_name": "HDFC Bank",
+            "last_four_digit": "1111"
+          },
+          "order_date": "2026-03-01T00:00:00.000Z",
+          "order_amount": 900,
+          "return_amount": 1000,
+          "quantity": 1,
+          "cashback": 0,
+          "coupon_cashback": 0,
+          "coupon_in_profit": true,
+          "friend_amount": 50300,
+          "advance_amount": 10000,
+          "variant": "NA",
+          "model_ordered": "B1",
+          "id_used": "a",
+          "delivery_status": "Delivered",
+          "ecomm_site": "Amazon",
+          "seller_id": {
+            "_id": "<id5>",
+            "name": "Shop",
+            "city": "Patna"
+          },
+          "is_cleared": false,
+          "remark": "",
+          "created_at": "2026-03-01T10:00:00.000Z",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "runningBalance": 50300
+      }
+    ],
+    "page": {
+      "type": "number",
+      "current": 3,
+      "size": 4,
+      "item_total": 12,
+      "has_next": false,
+      "has_previous": true
+    },
+    "totals": {
+      "total_due": 60300,
+      "total_advance": 22000,
+      "total_payments": 15000.3,
+      "total_paid": 37000.3,
+      "pending_dues": 23299.699999999997
+    }
+  },
+  {
+    "items": [],
+    "page": {
+      "type": "number",
+      "current": 4,
+      "size": 4,
+      "item_total": 12,
+      "has_next": false,
+      "has_previous": true
+    },
+    "totals": {
+      "total_due": 60300,
+      "total_advance": 22000,
+      "total_payments": 15000.3,
+      "total_paid": 37000.3,
+      "pending_dues": 23299.699999999997
+    }
+  }
+]"
+`;
+
+exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed defaults to limit 10 and caps limit at 100 1`] = `
+"{
+  "items": [
+    {
+      "id": "<id0>",
+      "type": "PAYMENT",
+      "date": "2026-02-05T00:00:00.000Z",
+      "description": "P6",
+      "amount": 0.2,
+      "raw": {
+        "_id": "<id0>",
+        "user_id": "<id1>",
+        "seller_id": "<id2>",
+        "amount": 0.2,
+        "payment_date": "2026-02-05T00:00:00.000Z",
+        "notes": "P6",
+        "receipt_url": "",
+        "created_at": "2026-02-05T10:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "isCancelled": false,
+      "isPending": false,
+      "runningBalance": 5850.2
+    },
+    {
+      "id": "<id3>",
+      "type": "PAYMENT",
+      "date": "2026-02-04T00:00:00.000Z",
+      "description": "P5",
+      "amount": 0.1,
+      "raw": {
+        "_id": "<id3>",
+        "user_id": "<id1>",
+        "seller_id": "<id2>",
+        "amount": 0.1,
+        "payment_date": "2026-02-04T00:00:00.000Z",
+        "notes": "P5",
+        "receipt_url": "",
+        "created_at": "2026-02-04T10:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "isCancelled": false,
+      "isPending": false,
+      "runningBalance": 5850.4
+    },
+    {
+      "id": "<id4>",
+      "type": "ORDER",
+      "date": "2026-02-03T00:00:00.000Z",
+      "description": "O7",
+      "amount": 1200.5,
+      "booker": {
+        "_id": "<id5>",
+        "name": "Test User",
+        "relation": "self"
+      },
+      "raw": {
+        "_id": "<id4>",
+        "user_id": "<id1>",
+        "card_id": {
+          "_id": "<id6>",
+          "holder_id": {
+            "_id": "<id5>",
+            "relation": "self",
+            "name": "Test User"
+          },
+          "card_type": "primary",
+          "bank_name": "HDFC Bank",
+          "last_four_digit": "1111"
+        },
+        "order_date": "2026-02-03T00:00:00.000Z",
+        "order_amount": 900,
+        "return_amount": 1200.5,
+        "quantity": 1,
+        "cashback": 0,
+        "coupon_cashback": 0,
+        "coupon_in_profit": true,
+        "friend_amount": null,
+        "advance_amount": null,
+        "variant": "8/128",
+        "model_ordered": "O7",
+        "id_used": "a@x.com",
+        "delivery_status": "Delivered",
+        "ecomm_site": "Amazon",
+        "seller_id": "<id2>",
+        "is_cleared": false,
+        "remark": "",
+        "created_at": "2026-02-03T10:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "isCancelled": false,
+      "isPending": false,
+      "runningBalance": 5850.5
+    },
+    {
+      "id": "<id7>",
+      "type": "PAYMENT",
+      "date": "2026-02-02T00:00:00.000Z",
+      "description": "P4",
+      "amount": 50,
+      "raw": {
+        "_id": "<id7>",
+        "user_id": "<id1>",
+        "seller_id": "<id2>",
+        "amount": 50,
+        "payment_date": "2026-02-02T00:00:00.000Z",
+        "notes": "P4",
+        "receipt_url": "",
+        "created_at": "2026-02-02T01:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "isCancelled": false,
+      "isPending": false,
+      "runningBalance": 4650
+    },
+    {
+      "id": "<id8>",
+      "type": "ORDER",
+      "date": "2026-02-02T00:00:00.000Z",
+      "description": "O6",
+      "amount": 800,
+      "booker": {
+        "_id": "<id5>",
+        "name": "Test User",
+        "relation": "self"
+      },
+      "raw": {
+        "_id": "<id8>",
+        "user_id": "<id1>",
+        "card_id": {
+          "_id": "<id6>",
+          "holder_id": {
+            "_id": "<id5>",
+            "relation": "self",
+            "name": "Test User"
+          },
+          "card_type": "primary",
+          "bank_name": "HDFC Bank",
+          "last_four_digit": "1111"
+        },
+        "order_date": "2026-02-02T00:00:00.000Z",
+        "order_amount": 900,
+        "return_amount": 800,
+        "quantity": 1,
+        "cashback": 0,
+        "coupon_cashback": 0,
+        "coupon_in_profit": true,
+        "friend_amount": null,
+        "advance_amount": null,
+        "variant": "8/128",
+        "model_ordered": "O6",
+        "id_used": "a@x.com",
+        "delivery_status": "Delivered",
+        "ecomm_site": "Amazon",
+        "seller_id": "<id2>",
+        "is_cleared": false,
+        "remark": "",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "isCancelled": false,
+      "isPending": false,
+      "runningBalance": 4700
+    },
+    {
+      "id": "<id9>",
+      "type": "ORDER",
+      "date": "2026-02-01T00:00:00.000Z",
+      "description": "O5 ×3",
+      "amount": 2500,
+      "booker": {
+        "_id": "<id10>",
+        "name": "Ravi",
+        "relation": "friend"
+      },
+      "raw": {
+        "_id": "<id9>",
+        "user_id": "<id1>",
+        "card_id": {
+          "_id": "<id11>",
+          "holder_id": {
+            "_id": "<id10>",
+            "name": "Ravi",
+            "relation": "friend"
+          },
+          "card_type": "primary",
+          "bank_name": "HDFC Bank",
+          "last_four_digit": "2222"
+        },
+        "order_date": "2026-02-01T00:00:00.000Z",
+        "order_amount": 900,
+        "return_amount": 2500,
+        "quantity": 3,
+        "cashback": 0,
+        "coupon_cashback": 0,
+        "coupon_in_profit": true,
+        "friend_amount": 2400,
+        "advance_amount": null,
+        "variant": "8/128",
+        "model_ordered": "O5",
+        "id_used": "a@x.com",
+        "delivery_status": "Delivered",
+        "ecomm_site": "Amazon",
+        "seller_id": "<id2>",
+        "is_cleared": false,
+        "remark": "",
+        "created_at": "2026-02-01T10:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "isCancelled": false,
+      "isPending": false,
+      "runningBalance": 3900
+    },
+    {
+      "id": "<id12>",
+      "type": "ORDER",
+      "date": "2026-01-12T00:00:00.000Z",
+      "description": "O4",
+      "amount": 1500,
+      "booker": null,
+      "raw": {
+        "_id": "<id12>",
+        "user_id": "<id1>",
+        "card_id": null,
+        "order_date": "2026-01-12T00:00:00.000Z",
+        "order_amount": 900,
+        "return_amount": 1500,
+        "quantity": 1,
+        "cashback": 0,
+        "coupon_cashback": 0,
+        "coupon_in_profit": true,
+        "friend_amount": null,
+        "advance_amount": null,
+        "variant": "8/128",
+        "model_ordered": "O4",
+        "id_used": "a@x.com",
+        "delivery_status": "Delivered",
+        "ecomm_site": "Amazon",
+        "seller_id": "<id2>",
+        "is_cleared": false,
+        "remark": "",
+        "created_at": "2026-01-12T08:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "isCancelled": false,
+      "isPending": false,
+      "runningBalance": 1400
+    },
+    {
+      "id": "<id13>",
+      "type": "PAYMENT",
+      "date": "2026-01-12T00:00:00.000Z",
+      "description": "Payment Received",
+      "amount": 100,
+      "raw": {
+        "_id": "<id13>",
+        "user_id": "<id1>",
+        "seller_id": "<id2>",
+        "amount": 100,
+        "payment_date": "2026-01-12T00:00:00.000Z",
+        "notes": "",
+        "receipt_url": "",
+        "created_at": "2026-01-12T07:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "isCancelled": false,
+      "isPending": false,
+      "runningBalance": -100
+    },
+    {
+      "id": "<id14>",
+      "type": "PAYMENT",
+      "date": "2026-01-10T00:00:00.000Z",
+      "description": "P2 upi",
+      "amount": 700,
+      "raw": {
+        "_id": "<id14>",
+        "user_id": "<id1>",
+        "seller_id": "<id2>",
+        "amount": 700,
+        "payment_date": "2026-01-10T00:00:00.000Z",
+        "notes": "P2 upi",
+        "receipt_url": "",
+        "created_at": "2026-01-10T10:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "isCancelled": false,
+      "isPending": false,
+      "runningBalance": 0
+    },
+    {
+      "id": "<id15>",
+      "type": "ORDER",
+      "date": "2026-01-10T00:00:00.000Z",
+      "description": "O3",
+      "amount": 500,
+      "booker": {
+        "_id": "<id5>",
+        "name": "Test User",
+        "relation": "self"
+      },
+      "raw": {
+        "_id": "<id15>",
+        "user_id": "<id1>",
+        "card_id": {
+          "_id": "<id6>",
+          "holder_id": {
+            "_id": "<id5>",
+            "relation": "self",
+            "name": "Test User"
+          },
+          "card_type": "primary",
+          "bank_name": "HDFC Bank",
+          "last_four_digit": "1111"
+        },
+        "order_date": "2026-01-10T00:00:00.000Z",
+        "order_amount": 900,
+        "return_amount": 500,
+        "quantity": 1,
+        "cashback": 0,
+        "coupon_cashback": 0,
+        "coupon_in_profit": true,
+        "friend_amount": null,
+        "advance_amount": null,
+        "variant": "8/128",
+        "model_ordered": "O3",
+        "id_used": "a@x.com",
+        "delivery_status": "Cancelled",
+        "ecomm_site": "Amazon",
+        "seller_id": "<id2>",
+        "is_cleared": false,
+        "remark": "",
+        "created_at": "2026-01-10T10:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "isCancelled": true,
+      "isPending": true,
+      "runningBalance": 700
+    },
+    {
+      "id": "<id16>",
+      "type": "ORDER",
+      "date": "2026-01-10T00:00:00.000Z",
+      "description": "O2 ×2",
+      "amount": 2000,
+      "booker": {
+        "_id": "<id10>",
+        "name": "Ravi",
+        "relation": "friend"
+      },
+      "raw": {
+        "_id": "<id16>",
+        "user_id": "<id1>",
+        "card_id": {
+          "_id": "<id11>",
+          "holder_id": {
+            "_id": "<id10>",
+            "name": "Ravi",
+            "relation": "friend"
+          },
+          "card_type": "primary",
+          "bank_name": "HDFC Bank",
+          "last_four_digit": "2222"
+        },
+        "order_date": "2026-01-10T00:00:00.000Z",
+        "order_amount": 900,
+        "return_amount": 2000,
+        "quantity": 2,
+        "cashback": 0,
+        "coupon_cashback": 0,
+        "coupon_in_profit": true,
+        "friend_amount": 1900,
+        "advance_amount": null,
+        "variant": "8/128",
+        "model_ordered": "O2",
+        "id_used": "a@x.com",
+        "delivery_status": "Pending",
+        "ecomm_site": "Amazon",
+        "seller_id": "<id2>",
+        "is_cleared": false,
+        "remark": "",
+        "created_at": "2026-01-10T10:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "isCancelled": false,
+      "isPending": true,
+      "runningBalance": 700
+    },
+    {
+      "id": "<id17>",
+      "type": "ORDER",
+      "date": "2026-01-05T00:00:00.000Z",
+      "description": "O1",
+      "amount": 1000,
+      "booker": {
+        "_id": "<id5>",
+        "name": "Test User",
+        "relation": "self"
+      },
+      "raw": {
+        "_id": "<id17>",
+        "user_id": "<id1>",
+        "card_id": {
+          "_id": "<id6>",
+          "holder_id": {
+            "_id": "<id5>",
+            "relation": "self",
+            "name": "Test User"
+          },
+          "card_type": "primary",
+          "bank_name": "HDFC Bank",
+          "last_four_digit": "1111"
+        },
+        "order_date": "2026-01-05T00:00:00.000Z",
+        "order_amount": 900,
+        "return_amount": 1000,
+        "quantity": 1,
+        "cashback": 0,
+        "coupon_cashback": 0,
+        "coupon_in_profit": true,
+        "friend_amount": null,
+        "advance_amount": null,
+        "variant": "8/128",
+        "model_ordered": "O1",
+        "id_used": "a@x.com",
+        "delivery_status": "Delivered",
+        "ecomm_site": "Amazon",
+        "seller_id": "<id2>",
+        "is_cleared": false,
+        "remark": "",
+        "created_at": "2026-01-05T10:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "isCancelled": false,
+      "isPending": false,
+      "runningBalance": 700
+    },
+    {
+      "id": "<id18>",
+      "type": "PAYMENT",
+      "date": "2026-01-05T00:00:00.000Z",
+      "description": "P1 cash",
+      "amount": 300,
+      "raw": {
+        "_id": "<id18>",
+        "user_id": "<id1>",
+        "seller_id": "<id2>",
+        "amount": 300,
+        "payment_date": "2026-01-05T00:00:00.000Z",
+        "notes": "P1 cash",
+        "receipt_url": "",
+        "created_at": "2026-01-05T09:00:00.000Z",
+        "updated_at": "<ts>",
+        "__v": 0
+      },
+      "isCancelled": false,
+      "isPending": false,
+      "runningBalance": -300
+    }
+  ],
+  "page": {
+    "type": "number",
+    "current": 1,
+    "size": 100,
+    "item_total": 13,
+    "has_next": false,
+    "has_previous": false
+  }
+}"
+`;
+
+exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed pages newest-first with running balance, tie-breaks and flags 1`] = `
+"[
+  {
+    "items": [
+      {
+        "id": "<id0>",
+        "type": "PAYMENT",
+        "date": "2026-02-05T00:00:00.000Z",
+        "description": "P6",
+        "amount": 0.2,
+        "raw": {
+          "_id": "<id0>",
+          "user_id": "<id1>",
+          "seller_id": "<id2>",
+          "amount": 0.2,
+          "payment_date": "2026-02-05T00:00:00.000Z",
+          "notes": "P6",
+          "receipt_url": "",
+          "created_at": "2026-02-05T10:00:00.000Z",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "isCancelled": false,
+        "isPending": false,
+        "runningBalance": 5850.2
+      },
+      {
+        "id": "<id3>",
+        "type": "PAYMENT",
+        "date": "2026-02-04T00:00:00.000Z",
+        "description": "P5",
+        "amount": 0.1,
+        "raw": {
+          "_id": "<id3>",
+          "user_id": "<id1>",
+          "seller_id": "<id2>",
+          "amount": 0.1,
+          "payment_date": "2026-02-04T00:00:00.000Z",
+          "notes": "P5",
+          "receipt_url": "",
+          "created_at": "2026-02-04T10:00:00.000Z",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "isCancelled": false,
+        "isPending": false,
+        "runningBalance": 5850.4
+      },
+      {
+        "id": "<id4>",
+        "type": "ORDER",
+        "date": "2026-02-03T00:00:00.000Z",
+        "description": "O7",
+        "amount": 1200.5,
+        "booker": {
+          "_id": "<id5>",
+          "name": "Test User",
+          "relation": "self"
+        },
+        "raw": {
+          "_id": "<id4>",
+          "user_id": "<id1>",
+          "card_id": {
+            "_id": "<id6>",
+            "holder_id": {
+              "_id": "<id5>",
+              "relation": "self",
+              "name": "Test User"
+            },
+            "card_type": "primary",
+            "bank_name": "HDFC Bank",
+            "last_four_digit": "1111"
+          },
+          "order_date": "2026-02-03T00:00:00.000Z",
+          "order_amount": 900,
+          "return_amount": 1200.5,
+          "quantity": 1,
+          "cashback": 0,
+          "coupon_cashback": 0,
+          "coupon_in_profit": true,
+          "friend_amount": null,
+          "advance_amount": null,
+          "variant": "8/128",
+          "model_ordered": "O7",
+          "id_used": "a@x.com",
+          "delivery_status": "Delivered",
+          "ecomm_site": "Amazon",
+          "seller_id": "<id2>",
+          "is_cleared": false,
+          "remark": "",
+          "created_at": "2026-02-03T10:00:00.000Z",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "isCancelled": false,
+        "isPending": false,
+        "runningBalance": 5850.5
+      },
+      {
+        "id": "<id7>",
+        "type": "PAYMENT",
+        "date": "2026-02-02T00:00:00.000Z",
+        "description": "P4",
+        "amount": 50,
+        "raw": {
+          "_id": "<id7>",
+          "user_id": "<id1>",
+          "seller_id": "<id2>",
+          "amount": 50,
+          "payment_date": "2026-02-02T00:00:00.000Z",
+          "notes": "P4",
+          "receipt_url": "",
+          "created_at": "2026-02-02T01:00:00.000Z",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "isCancelled": false,
+        "isPending": false,
+        "runningBalance": 4650
+      },
+      {
+        "id": "<id8>",
+        "type": "ORDER",
+        "date": "2026-02-02T00:00:00.000Z",
+        "description": "O6",
+        "amount": 800,
+        "booker": {
+          "_id": "<id5>",
+          "name": "Test User",
+          "relation": "self"
+        },
+        "raw": {
+          "_id": "<id8>",
+          "user_id": "<id1>",
+          "card_id": {
+            "_id": "<id6>",
+            "holder_id": {
+              "_id": "<id5>",
+              "relation": "self",
+              "name": "Test User"
+            },
+            "card_type": "primary",
+            "bank_name": "HDFC Bank",
+            "last_four_digit": "1111"
+          },
+          "order_date": "2026-02-02T00:00:00.000Z",
+          "order_amount": 900,
+          "return_amount": 800,
+          "quantity": 1,
+          "cashback": 0,
+          "coupon_cashback": 0,
+          "coupon_in_profit": true,
+          "friend_amount": null,
+          "advance_amount": null,
+          "variant": "8/128",
+          "model_ordered": "O6",
+          "id_used": "a@x.com",
+          "delivery_status": "Delivered",
+          "ecomm_site": "Amazon",
+          "seller_id": "<id2>",
+          "is_cleared": false,
+          "remark": "",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "isCancelled": false,
+        "isPending": false,
+        "runningBalance": 4700
+      }
+    ],
+    "page": {
+      "type": "number",
+      "current": 1,
+      "size": 5,
+      "item_total": 13,
+      "has_next": true,
+      "has_previous": false
+    }
+  },
+  {
+    "items": [
+      {
+        "id": "<id9>",
+        "type": "ORDER",
+        "date": "2026-02-01T00:00:00.000Z",
+        "description": "O5 ×3",
+        "amount": 2500,
+        "booker": {
+          "_id": "<id10>",
+          "name": "Ravi",
+          "relation": "friend"
+        },
+        "raw": {
+          "_id": "<id9>",
+          "user_id": "<id1>",
+          "card_id": {
+            "_id": "<id11>",
+            "holder_id": {
+              "_id": "<id10>",
+              "name": "Ravi",
+              "relation": "friend"
+            },
+            "card_type": "primary",
+            "bank_name": "HDFC Bank",
+            "last_four_digit": "2222"
+          },
+          "order_date": "2026-02-01T00:00:00.000Z",
+          "order_amount": 900,
+          "return_amount": 2500,
+          "quantity": 3,
+          "cashback": 0,
+          "coupon_cashback": 0,
+          "coupon_in_profit": true,
+          "friend_amount": 2400,
+          "advance_amount": null,
+          "variant": "8/128",
+          "model_ordered": "O5",
+          "id_used": "a@x.com",
+          "delivery_status": "Delivered",
+          "ecomm_site": "Amazon",
+          "seller_id": "<id2>",
+          "is_cleared": false,
+          "remark": "",
+          "created_at": "2026-02-01T10:00:00.000Z",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "isCancelled": false,
+        "isPending": false,
+        "runningBalance": 3900
+      },
+      {
+        "id": "<id12>",
+        "type": "ORDER",
+        "date": "2026-01-12T00:00:00.000Z",
+        "description": "O4",
+        "amount": 1500,
+        "booker": null,
+        "raw": {
+          "_id": "<id12>",
+          "user_id": "<id1>",
+          "card_id": null,
+          "order_date": "2026-01-12T00:00:00.000Z",
+          "order_amount": 900,
+          "return_amount": 1500,
+          "quantity": 1,
+          "cashback": 0,
+          "coupon_cashback": 0,
+          "coupon_in_profit": true,
+          "friend_amount": null,
+          "advance_amount": null,
+          "variant": "8/128",
+          "model_ordered": "O4",
+          "id_used": "a@x.com",
+          "delivery_status": "Delivered",
+          "ecomm_site": "Amazon",
+          "seller_id": "<id2>",
+          "is_cleared": false,
+          "remark": "",
+          "created_at": "2026-01-12T08:00:00.000Z",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "isCancelled": false,
+        "isPending": false,
+        "runningBalance": 1400
+      },
+      {
+        "id": "<id13>",
+        "type": "PAYMENT",
+        "date": "2026-01-12T00:00:00.000Z",
+        "description": "Payment Received",
+        "amount": 100,
+        "raw": {
+          "_id": "<id13>",
+          "user_id": "<id1>",
+          "seller_id": "<id2>",
+          "amount": 100,
+          "payment_date": "2026-01-12T00:00:00.000Z",
+          "notes": "",
+          "receipt_url": "",
+          "created_at": "2026-01-12T07:00:00.000Z",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "isCancelled": false,
+        "isPending": false,
+        "runningBalance": -100
+      },
+      {
+        "id": "<id14>",
+        "type": "PAYMENT",
+        "date": "2026-01-10T00:00:00.000Z",
+        "description": "P2 upi",
+        "amount": 700,
+        "raw": {
+          "_id": "<id14>",
+          "user_id": "<id1>",
+          "seller_id": "<id2>",
+          "amount": 700,
+          "payment_date": "2026-01-10T00:00:00.000Z",
+          "notes": "P2 upi",
+          "receipt_url": "",
+          "created_at": "2026-01-10T10:00:00.000Z",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "isCancelled": false,
+        "isPending": false,
+        "runningBalance": 0
+      },
+      {
+        "id": "<id15>",
+        "type": "ORDER",
+        "date": "2026-01-10T00:00:00.000Z",
+        "description": "O3",
+        "amount": 500,
+        "booker": {
+          "_id": "<id5>",
+          "name": "Test User",
+          "relation": "self"
+        },
+        "raw": {
+          "_id": "<id15>",
+          "user_id": "<id1>",
+          "card_id": {
+            "_id": "<id6>",
+            "holder_id": {
+              "_id": "<id5>",
+              "relation": "self",
+              "name": "Test User"
+            },
+            "card_type": "primary",
+            "bank_name": "HDFC Bank",
+            "last_four_digit": "1111"
+          },
+          "order_date": "2026-01-10T00:00:00.000Z",
+          "order_amount": 900,
+          "return_amount": 500,
+          "quantity": 1,
+          "cashback": 0,
+          "coupon_cashback": 0,
+          "coupon_in_profit": true,
+          "friend_amount": null,
+          "advance_amount": null,
+          "variant": "8/128",
+          "model_ordered": "O3",
+          "id_used": "a@x.com",
+          "delivery_status": "Cancelled",
+          "ecomm_site": "Amazon",
+          "seller_id": "<id2>",
+          "is_cleared": false,
+          "remark": "",
+          "created_at": "2026-01-10T10:00:00.000Z",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "isCancelled": true,
+        "isPending": true,
+        "runningBalance": 700
+      }
+    ],
+    "page": {
+      "type": "number",
+      "current": 2,
+      "size": 5,
+      "item_total": 13,
+      "has_next": true,
+      "has_previous": true
+    }
+  },
+  {
+    "items": [
+      {
+        "id": "<id16>",
+        "type": "ORDER",
+        "date": "2026-01-10T00:00:00.000Z",
+        "description": "O2 ×2",
+        "amount": 2000,
+        "booker": {
+          "_id": "<id10>",
+          "name": "Ravi",
+          "relation": "friend"
+        },
+        "raw": {
+          "_id": "<id16>",
+          "user_id": "<id1>",
+          "card_id": {
+            "_id": "<id11>",
+            "holder_id": {
+              "_id": "<id10>",
+              "name": "Ravi",
+              "relation": "friend"
+            },
+            "card_type": "primary",
+            "bank_name": "HDFC Bank",
+            "last_four_digit": "2222"
+          },
+          "order_date": "2026-01-10T00:00:00.000Z",
+          "order_amount": 900,
+          "return_amount": 2000,
+          "quantity": 2,
+          "cashback": 0,
+          "coupon_cashback": 0,
+          "coupon_in_profit": true,
+          "friend_amount": 1900,
+          "advance_amount": null,
+          "variant": "8/128",
+          "model_ordered": "O2",
+          "id_used": "a@x.com",
+          "delivery_status": "Pending",
+          "ecomm_site": "Amazon",
+          "seller_id": "<id2>",
+          "is_cleared": false,
+          "remark": "",
+          "created_at": "2026-01-10T10:00:00.000Z",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "isCancelled": false,
+        "isPending": true,
+        "runningBalance": 700
+      },
+      {
+        "id": "<id17>",
+        "type": "ORDER",
+        "date": "2026-01-05T00:00:00.000Z",
+        "description": "O1",
+        "amount": 1000,
+        "booker": {
+          "_id": "<id5>",
+          "name": "Test User",
+          "relation": "self"
+        },
+        "raw": {
+          "_id": "<id17>",
+          "user_id": "<id1>",
+          "card_id": {
+            "_id": "<id6>",
+            "holder_id": {
+              "_id": "<id5>",
+              "relation": "self",
+              "name": "Test User"
+            },
+            "card_type": "primary",
+            "bank_name": "HDFC Bank",
+            "last_four_digit": "1111"
+          },
+          "order_date": "2026-01-05T00:00:00.000Z",
+          "order_amount": 900,
+          "return_amount": 1000,
+          "quantity": 1,
+          "cashback": 0,
+          "coupon_cashback": 0,
+          "coupon_in_profit": true,
+          "friend_amount": null,
+          "advance_amount": null,
+          "variant": "8/128",
+          "model_ordered": "O1",
+          "id_used": "a@x.com",
+          "delivery_status": "Delivered",
+          "ecomm_site": "Amazon",
+          "seller_id": "<id2>",
+          "is_cleared": false,
+          "remark": "",
+          "created_at": "2026-01-05T10:00:00.000Z",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "isCancelled": false,
+        "isPending": false,
+        "runningBalance": 700
+      },
+      {
+        "id": "<id18>",
+        "type": "PAYMENT",
+        "date": "2026-01-05T00:00:00.000Z",
+        "description": "P1 cash",
+        "amount": 300,
+        "raw": {
+          "_id": "<id18>",
+          "user_id": "<id1>",
+          "seller_id": "<id2>",
+          "amount": 300,
+          "payment_date": "2026-01-05T00:00:00.000Z",
+          "notes": "P1 cash",
+          "receipt_url": "",
+          "created_at": "2026-01-05T09:00:00.000Z",
+          "updated_at": "<ts>",
+          "__v": 0
+        },
+        "isCancelled": false,
+        "isPending": false,
+        "runningBalance": -300
+      }
+    ],
+    "page": {
+      "type": "number",
+      "current": 3,
+      "size": 5,
+      "item_total": 13,
+      "has_next": false,
+      "has_previous": true
+    }
+  },
+  {
+    "items": [],
+    "page": {
+      "type": "number",
+      "current": 4,
+      "size": 5,
+      "item_total": 13,
+      "has_next": false,
+      "has_previous": true
+    }
+  }
+]"
+`;

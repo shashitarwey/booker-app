@@ -12,9 +12,9 @@
 }
 
 .billing-ok {
-  background: rgba(88, 166, 255, 0.12);
+  background: rgba(124, 108, 255, 0.12);
   color: rgba(180, 215, 255, 0.85);
-  border: 1px solid rgba(88, 166, 255, 0.2);
+  border: 1px solid rgba(124, 108, 255, 0.2);
 }
 
 .billing-warning {
@@ -24,9 +24,9 @@
 }
 
 .billing-urgent {
-  background: rgba(248, 81, 73, 0.15);
+  background: rgba(248, 113, 113, 0.15);
   color: #ff7b72;
-  border: 1px solid rgba(248, 81, 73, 0.35);
+  border: 1px solid rgba(248, 113, 113, 0.35);
   animation: billing-pulse 1.8s ease-in-out infinite;
 }
 

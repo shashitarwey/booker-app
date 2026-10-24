@@ -1,30 +1,4 @@
 /* ── Bank Section ────────────────────────────────────────────── */
-.bank-section {
-  margin-bottom: 36px;
-}
-
-.bank-section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 18px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border);
-}
-
-.bank-name-badge {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.bank-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), #bc8cff);
-  flex-shrink: 0;
-}
 
 .bank-name {
   font-size: 1.05rem;
@@ -152,8 +126,6 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-
-
 .card-actions {
   display: flex;
   align-items: center;
@@ -164,8 +136,8 @@
 }
 
 .card-delete-btn:hover {
-  color: #f85149 !important;
-  background: rgba(248, 81, 73, 0.15) !important;
+  color: #f87171 !important;
+  background: rgba(248, 113, 113, 0.15) !important;
 }
 
 .card-last-four-digit {
@@ -207,15 +179,15 @@
 }
 
 .badge-ltf {
-  background: rgba(63, 185, 80, 0.2);
-  border: 1px solid rgba(63, 185, 80, 0.4);
-  color: #3fb950;
+  background: rgba(52, 211, 153, 0.2);
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  color: #34d399;
 }
 
 .badge-fee {
-  background: rgba(248, 81, 73, 0.18);
-  border: 1px solid rgba(248, 81, 73, 0.35);
-  color: #f85149;
+  background: rgba(248, 113, 113, 0.18);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: #f87171;
 }
 
 /* Status badges */
@@ -231,15 +203,17 @@
 }
 
 .badge-success {
-  background: rgba(63, 185, 80, 0.15);
-  border: 1px solid rgba(63, 185, 80, 0.35);
-  color: #3fb950;
+  background: rgba(52, 211, 153, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  color: #34d399;
 }
 
+[data-theme="light"] .badge-success { color: var(--ink-green); }
+
 .badge-danger {
-  background: rgba(248, 81, 73, 0.15);
-  border: 1px solid rgba(248, 81, 73, 0.35);
-  color: #f85149;
+  background: rgba(248, 113, 113, 0.15);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: #f87171;
 }
 
 .badge-surface {
@@ -247,7 +221,6 @@
   border: 1px solid var(--border);
   color: var(--text-muted);
 }
-
 
 /* Card network badge */
 .card-network-badge {
@@ -282,3 +255,36 @@
   color: #fff;
 }
 
+
+/* ── Card widget: network next to bank, Primary / Add-on sticker ─────── */
+.card-top-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.card-top-left .card-bank { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card-top-left .card-network-badge { padding: 2px 7px; font-size: 0.62rem; border-radius: 5px; box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset; }
+
+/* Tab hanging from the inside of the card's top edge (Primary / Add-on).
+   Stays within the card outline; the card gets a little extra top padding. */
+.card-widget.has-tab { padding-top: 30px; }
+
+.card-type-tab {
+  position: absolute;
+  top: 0;
+  left: 24px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 11px;
+  border-radius: 0 0 8px 8px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  box-shadow: 0 3px 8px -3px rgba(0, 0, 0, 0.5);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.card-type-tab.is-primary { background: #7c6cff; color: #fff; }
+.card-type-tab.is-addon { background: #fbbf24; color: #3b2600; }
+
+[data-theme="light"] .card-type-tab.is-primary { background: #5b4be6; }

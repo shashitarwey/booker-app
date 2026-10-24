@@ -18,7 +18,7 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, var(--accent), #bc8cff);
+    background: linear-gradient(90deg, var(--accent), #2dd4bf);
     opacity: 0;
     transition: opacity 0.2s;
 }
@@ -126,7 +126,7 @@
 
 /* ── AI Assistant panel ────────────────────────────────────── */
 .ai-panel {
-    background: linear-gradient(135deg, rgba(188, 140, 255, 0.06) 0%, rgba(88, 166, 255, 0.06) 100%);
+    background: linear-gradient(135deg, rgba(188, 140, 255, 0.06) 0%, rgba(124, 108, 255, 0.06) 100%);
     border: 1px solid var(--border);
     border-radius: 14px;
     padding: 18px 20px;
@@ -153,7 +153,7 @@
 }
 
 .ai-panel-title > svg {
-    color: #bc8cff;
+    color: #2dd4bf;
 }
 
 .ai-panel-subtitle {
@@ -223,11 +223,11 @@
 }
 
 .ai-msg-user .ai-msg-avatar {
-    background: #58a6ff;
+    background: #7c6cff;
 }
 
 .ai-msg-model .ai-msg-avatar {
-    background: linear-gradient(135deg, #bc8cff, #58a6ff);
+    background: linear-gradient(135deg, #2dd4bf, #7c6cff);
 }
 
 .ai-msg-content {
@@ -244,13 +244,13 @@
 }
 
 .ai-msg-user .ai-msg-content {
-    background: rgba(88, 166, 255, 0.1);
-    border-color: rgba(88, 166, 255, 0.3);
+    background: rgba(124, 108, 255, 0.1);
+    border-color: rgba(124, 108, 255, 0.3);
 }
 
 .ai-msg-error .ai-msg-content {
-    background: rgba(248, 81, 73, 0.1);
-    border-color: rgba(248, 81, 73, 0.3);
+    background: rgba(248, 113, 113, 0.1);
+    border-color: rgba(248, 113, 113, 0.3);
     color: var(--danger);
 }
 
@@ -319,3 +319,49 @@
         padding: 10px;
     }
 }
+
+/* ── Booker analytics ──────────────────────────────────────── */
+.viz-note { margin-left: 8px; font-size: 0.72rem; font-weight: 600; color: var(--text-muted); }
+.viz-empty { color: var(--text-muted); font-size: 0.85rem; padding: 24px 0; }
+
+.viz-legend { display: flex; gap: 16px; margin: -6px 0 10px; font-size: 0.78rem; color: var(--text-muted); }
+.viz-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.viz-legend i, .split-legend-head i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+.position-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--border); border-radius: 12px; overflow: hidden; }
+.position-cell { background: var(--surface); padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.position-cell span { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
+.position-cell strong { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.02em; }
+.position-cell em { font-style: normal; font-size: 0.74rem; color: var(--text-muted); }
+
+.split-bar { display: flex; gap: 2px; height: 14px; border-radius: 4px; overflow: hidden; margin: 6px 0 18px; }
+.split-bar > div { height: 100%; }
+.split-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.split-legend-head { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; }
+.split-legend-head span { margin-left: auto; font-weight: 600; color: var(--text-muted); font-size: 0.74rem; }
+.split-legend-value { font-size: 1.25rem; font-weight: 800; margin-top: 6px; letter-spacing: -0.02em; }
+.split-legend-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+@media (max-width: 900px) {
+  .position-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .position-cell strong { font-size: 1.05rem; }
+  .split-legend { grid-template-columns: 1fr; }
+}
+
+.booker-perf-list { display: none; }
+@media (max-width: 640px) {
+  .booker-perf-table { display: none; }
+  .booker-perf-list { display: flex; flex-direction: column; gap: 8px; }
+  .booker-perf-item { background: var(--surface2); border-radius: 10px; padding: 10px 12px; cursor: pointer; }
+  .booker-perf-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .booker-perf-head span { font-size: 0.74rem; color: var(--text-muted); }
+  .booker-perf-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+  .booker-perf-grid span { display: block; font-size: 0.64rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
+  .booker-perf-grid b { display: block; font-size: 0.84rem; margin-top: 2px; }
+  .booker-perf-grid i { font-style: normal; display: block; }
+  .analytics-chart-card { padding: 16px; }
+}
+
+.analytics-stat-icon { background: var(--accent-soft); color: var(--accent); }

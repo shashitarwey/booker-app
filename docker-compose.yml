@@ -9,7 +9,7 @@ services:
       - "5000:5000"
     environment:
       - PORT=5000
-      - MONGO_URI=mongodb://mongo:27017/credit_card_analyser
+      - MONGO_URI=mongodb://mongo:27017/booker_app
       - JWT_SECRET=cardvault_secret_change_in_prod
     restart: unless-stopped
 

@@ -7,6 +7,15 @@ const cardSchema = new mongoose.Schema(
             ref: 'User',
             required: true,
         },
+        // Card holder (self / family member / friend)
+        holder_id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Person',
+            required: [true, 'Card holder is required'],
+        },
+        card_type: { type: String, enum: ['primary', 'addon'], default: 'primary' },
+        // For add-on cards: the primary card it hangs off (may belong to another holder)
+        primary_card_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Card', default: null },
         bank_name: {
             type: String,
             required: [true, 'Bank name is required'],
@@ -44,5 +53,6 @@ const cardSchema = new mongoose.Schema(
 );
 
 cardSchema.index({ user_id: 1, bank_name: 1 });
+cardSchema.index({ user_id: 1, holder_id: 1 });
 
 module.exports = mongoose.model('Card', cardSchema);

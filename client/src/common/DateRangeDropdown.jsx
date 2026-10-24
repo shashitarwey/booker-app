@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import usePopoverPlacement from './usePopoverPlacement';
 import { DayPicker } from 'react-day-picker';
 import { subMonths, startOfMonth, endOfMonth, startOfQuarter, parseISO, differenceInDays } from 'date-fns';
 import { Calendar as CalendarIcon, ChevronDown } from 'lucide-react';
@@ -32,6 +33,10 @@ const getPresets = () => {
 export default function DateRangeDropdown({ dateFrom, dateTo, activePreset, onChange, showRangeBelow = false }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
+  const triggerRef = useRef(null);
+  const popoverRef = useRef(null);
+  // Stays on-screen: flips left/up or caps height as needed (CSS centres it on phones)
+  const popoverStyle = usePopoverPlacement(open, triggerRef, popoverRef);
 
   const presets = getPresets();
 
@@ -118,6 +123,8 @@ export default function DateRangeDropdown({ dateFrom, dateTo, activePreset, onCh
   return (
     <div className="date-range-dropdown" ref={containerRef}>
       <button
+        ref={triggerRef}
+        title={rangeText || 'Any date'}
         className={`date-range-trigger ${hasRange ? 'has-value' : ''}`}
         onClick={() => setOpen(!open)}
       >
@@ -141,7 +148,7 @@ export default function DateRangeDropdown({ dateFrom, dateTo, activePreset, onCh
       )}
 
       {open && (
-        <div className="date-range-popover fade-in">
+        <div className="date-range-popover fade-in" ref={popoverRef} style={popoverStyle}>
           <div className="date-range-sidebar">
             <div className="date-presets-title">Presets</div>
             {presets.map(p => (

@@ -1,80 +1,41 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getCustomer, getCustomerEntries, getCustomerEntriesFeed, deleteCustomerEntry } from '../api';
 import { ChevronLeft, Phone, TrendingUp, TrendingDown, Wallet, Trash2, Pencil, BookOpen, ArrowUpRight, ArrowDownLeft, FileDown } from 'lucide-react';
-import { fmtCurrency, fmtDisplay, profitColor } from '../utils/formatters';
+import { fmtCurrency } from '../utils/formatters';
 import { downloadKhataPdf } from '../utils/khataPdf';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../common/ConfirmModal';
 import AddKhataEntryModal from '../components/AddKhataEntryModal';
 import ReportRangeModal from '../components/ReportRangeModal';
+import LedgerView, { LedgerSummary } from '../components/LedgerView';
 
 export default function KhataDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [customer, setCustomer] = useState(null);
-  const [entries, setEntries] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [showEntryModal, setShowEntryModal] = useState(false);
   const [entryType, setEntryType] = useState('gave');
   const [editEntry, setEditEntry] = useState(null);
   const [confirm, setConfirm] = useState(null);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
-  const sentinelRef = useRef(null);
-  const PAGE_LIMIT = 20;
+  const [reloadKey, setReloadKey] = useState(0);
+  const [hasEntries, setHasEntries] = useState(false);
 
-  const loadInitial = useCallback(async () => {
-    setLoading(true);
-    setEntries([]);
-    setPage(1);
+  const loadCustomer = useCallback(async () => {
     try {
-      const [cust, feedRes] = await Promise.all([
-        getCustomer(id),
-        getCustomerEntriesFeed(id, { page: 1, limit: PAGE_LIMIT }),
-      ]);
-      setCustomer(cust);
-      setEntries(feedRes.items);
-      setHasMore(feedRes.page.has_next);
+      setCustomer(await getCustomer(id));
     } catch {
       toast.error('Failed to load khata');
-    } finally {
-      setLoading(false);
     }
   }, [id]);
 
-  const loadMore = useCallback(async () => {
-    if (loadingMore || !hasMore) return;
-    const nextPage = page + 1;
-    setLoadingMore(true);
-    try {
-      const feedRes = await getCustomerEntriesFeed(id, { page: nextPage, limit: PAGE_LIMIT });
-      setEntries(prev => [...prev, ...feedRes.items]);
-      setHasMore(feedRes.page.has_next);
-      setPage(nextPage);
-    } catch {
-      toast.error('Failed to load more entries');
-    } finally {
-      setLoadingMore(false);
-    }
-  }, [id, page, hasMore, loadingMore]);
+  useEffect(() => { loadCustomer(); }, [loadCustomer]);
 
-  useEffect(() => { loadInitial(); }, [loadInitial]);
-
-  useEffect(() => {
-    if (!hasMore || loading) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) loadMore(); },
-      { rootMargin: '200px' }
-    );
-    const node = sentinelRef.current;
-    if (node) observer.observe(node);
-    return () => observer.disconnect();
-  }, [hasMore, loading, loadMore]);
+  // Balances shift after any edit → refresh totals + entries from page 1
+  const reloadAll = () => { loadCustomer(); setReloadKey(k => k + 1); };
 
   const openAdd = (type) => {
     setEditEntry(null);
@@ -96,8 +57,7 @@ export default function KhataDetailPage() {
         try {
           await deleteCustomerEntry(entry._id);
           toast.success('Entry deleted');
-          // Running balances shift — refresh from page 1
-          loadInitial();
+          reloadAll();
         } catch {
           toast.error('Failed to delete entry');
         }
@@ -122,56 +82,45 @@ export default function KhataDetailPage() {
     }
   };
 
-  // Entries come from the server newest-first with `runningBalance` attached.
-  // Group them by date preserving insertion order (newest date first).
-  const dateGroups = [];
-  let currentGroup = null;
-  for (const e of entries) {
-    const key = e.entry_date.slice(0, 10);
-    if (!currentGroup || currentGroup.key !== key) {
-      currentGroup = { key, entries: [] };
-      dateGroups.push(currentGroup);
-    }
-    currentGroup.entries.push(e);
-  }
-
   const totalGave = customer?.total_gave || 0;
   const totalGot = customer?.total_got || 0;
   const balance = customer?.balance || 0;
+
+  const describe = (entry) => ({
+    key: entry._id,
+    date: entry.entry_date,
+    direction: entry.type === 'gave' ? 'owed' : 'paid',
+    label: entry.type === 'gave' ? 'You gave' : 'You got',
+    title: entry.notes || (entry.type === 'gave' ? 'Given' : 'Received'),
+    subtitle: '',
+    counted: true,
+    actions: [
+      { icon: <Pencil size={14} />, title: 'Edit entry', onClick: () => openEdit(entry) },
+      { icon: <Trash2 size={14} />, title: 'Delete entry', onClick: () => handleDelete(entry) },
+    ],
+  });
 
   return (
     <>
       <div className="page-hero ledger-hero">
         <div className="page-hero-inner">
           <div className="page-hero-left">
-            <button
-              className="btn-back-circle"
-              onClick={() => navigate('/khata')}
-              data-tooltip="Back to Khata"
-            >
+            <button className="btn-back-circle" onClick={() => navigate('/khata')} data-tooltip="Back to Khata">
               <ChevronLeft size={22} />
             </button>
-            <div className="ledger-hero-divider" />
             <div className="page-hero-title-group">
-              <h1 className="page-hero-title">
-                {customer ? customer.name : 'Loading…'}
-              </h1>
+              <h1 className="page-hero-title">{customer ? customer.name : 'Loading…'}</h1>
               {customer && (
-                <div className="ledger-hero-meta">
-                  {customer.phone ? (<><Phone size={12} /> {customer.phone} <span className="ledger-hero-dot">·</span></>) : null}
-                  <span>Khata Book</span>
-                </div>
+                <span className="page-hero-subtitle">
+                  {customer.phone ? <><Phone size={12} style={{ verticalAlign: '-1px' }} /> {customer.phone} · </> : null}Khata Book
+                </span>
               )}
             </div>
           </div>
 
           {customer && (
             <div className="page-hero-actions">
-              <button
-                className="btn btn-secondary btn-sm"
-                onClick={() => setShowReportModal(true)}
-                disabled={loading || pdfLoading || entries.length === 0}
-              >
+              <button className="btn btn-secondary btn-sm" onClick={() => setShowReportModal(true)} disabled={pdfLoading || !hasEntries}>
                 <FileDown size={14} /> {pdfLoading ? 'Preparing…' : 'Download Report'}
               </button>
             </div>
@@ -179,120 +128,30 @@ export default function KhataDetailPage() {
         </div>
       </div>
 
-      {/* Stats */}
-      {customer && !loading && (
-        <div className="ledger-stats-bar">
-          <div className="ledger-stats-inner">
-            <div className="ledger-stats-row">
-              {[
-                { label: 'You Gave',  value: totalGave, color: '#fca5a5', icon: <TrendingDown size={14} /> },
-                { label: 'You Got',   value: totalGot,  color: '#86efac', icon: <TrendingUp size={14} /> },
-                { label: 'Balance',   value: Math.abs(balance), color: profitColor(-balance), icon: <Wallet size={14} />, suffix: '' },
-              ].map((stat, i) => (
-                <div key={i} className="ledger-stat-item">
-                  <div className="ledger-stat-label">
-                    {stat.icon} {stat.label}
-                  </div>
-                  <div className="ledger-stat-value" style={{ color: stat.color }}>
-                    {fmtCurrency(stat.value)} {stat.suffix || ''}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Timeline */}
-      <div className="ledger-timeline" style={{ paddingBottom: '130px' }}>
-        {loading ? (
-          <div className="ledger-loading">
-            {[1, 2, 3].map(i => <div key={i} className="shimmer shimmer-table-row" />)}
-          </div>
-        ) : entries.length === 0 ? (
-          <div className="empty-state-card">
-            <div className="empty-icon empty-icon-sellers">
-              <BookOpen size={32} />
-            </div>
-            <div className="empty-title">No entries yet</div>
-            <div className="empty-sub">Tap "You Gave" or "You Got" below to record the first entry.</div>
-          </div>
-        ) : (
-          dateGroups.map(group => (
-            <div key={group.key}>
-              <div className="ledger-date-sep">
-                <div className="ledger-date-line" />
-                <span className="ledger-date-pill">{fmtDisplay(group.key)}</span>
-                <div className="ledger-date-line" />
-              </div>
-
-              {group.entries.map(entry => {
-                const isGave = entry.type === 'gave';
-                const isLeft = isGave;
-                const cardClass = `ledger-card ${isGave ? 'ledger-card-order' : 'ledger-card-payment'}`;
-                const borderRadius = isLeft ? '4px 14px 14px 14px' : '14px 4px 14px 14px';
-
-                return (
-                  <div key={entry._id} className={`ledger-entry ${isLeft ? 'ledger-entry-left' : 'ledger-entry-right'}`}>
-                    <div className={cardClass} style={{ borderRadius }}>
-                      <div className="ledger-card-header">
-                        <span className="ledger-card-type">
-                          {isGave ? 'You Gave' : 'You Got'}
-                        </span>
-                        <div className="ledger-card-actions">
-                          <button
-                            onClick={() => openEdit(entry)}
-                            title="Edit entry"
-                            className="ledger-action-btn ledger-action-edit"
-                          >
-                            <Pencil size={13} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(entry)}
-                            title="Delete entry"
-                            className="ledger-action-btn ledger-action-delete"
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="ledger-card-amount">
-                        {fmtCurrency(entry.amount)}
-                      </div>
-
-                      {entry.notes && (
-                        <div className="ledger-card-desc">
-                          {entry.notes}
-                        </div>
-                      )}
-
-                      <div className="ledger-card-footer">
-                        <span className="ledger-balance-label">Balance</span>
-                        <span className="ledger-balance-value" style={{ color: entry.runningBalance > 0 ? '#fca5a5' : entry.runningBalance < 0 ? '#86efac' : 'var(--text)' }}>
-                          {fmtCurrency(Math.abs(entry.runningBalance))}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ))
+      <div className="page-content khata-page-content">
+        {customer && (
+          <LedgerSummary cells={[
+            { icon: <TrendingDown size={13} />, label: 'You gave', value: fmtCurrency(totalGave) },
+            { icon: <TrendingUp size={13} />, label: 'You got', value: fmtCurrency(totalGot) },
+            { icon: <Wallet size={13} />, label: 'Balance', value: balance > 0 ? `You'll get ${fmtCurrency(balance)}` : balance < 0 ? `You'll give ${fmtCurrency(-balance)}` : 'Settled', tone: balance > 0 ? 'due' : balance < 0 ? 'advance' : undefined },
+          ]} />
         )}
 
-        {/* Infinite scroll sentinel + loading state */}
-        {!loading && entries.length > 0 && (
-          <>
-            {loadingMore && (
-              <div className="ledger-loading-more">Loading more…</div>
-            )}
-            {hasMore && <div ref={sentinelRef} style={{ height: 1 }} />}
-            {!hasMore && entries.length > 20 && (
-              <div className="ledger-end-marker">— End of khata —</div>
-            )}
-          </>
-        )}
+        <LedgerView
+          reloadKey={`${id}-${reloadKey}`}
+          fetchPage={(page, limit) => getCustomerEntriesFeed(id, { page, limit })}
+          onLoaded={(res) => setHasEntries(res.items.length > 0)}
+          describe={describe}
+          balanceText={(bal) => `Bal ${fmtCurrency(Math.abs(bal))}`}
+          endLabel="— End of khata —"
+          empty={
+            <div className="empty-state-card">
+              <div className="empty-icon empty-icon-sellers"><BookOpen size={32} /></div>
+              <div className="empty-title">No entries yet</div>
+              <div className="empty-sub">Tap "You Gave" or "You Got" below to record the first entry.</div>
+            </div>
+          }
+        />
       </div>
 
       {/* Sticky action bar at bottom with You Gave / You Got */}
@@ -331,7 +190,7 @@ export default function KhataDetailPage() {
           editEntry={editEntry}
           defaultType={entryType}
           onClose={() => { setShowEntryModal(false); setEditEntry(null); }}
-          onSuccess={() => { setShowEntryModal(false); setEditEntry(null); loadInitial(); }}
+          onSuccess={() => { setShowEntryModal(false); setEditEntry(null); reloadAll(); }}
         />
       )}
 

@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { ensureSelfPerson } = require('../utils/people');
 const authMiddleware = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const {
@@ -162,6 +163,7 @@ router.post('/register', registerRules, validate, async (req, res) => {
 
         const passwordHash = await bcrypt.hash(password, 12);
         const user = await User.create({ name, email, password: passwordHash });
+        await ensureSelfPerson(user._id, user.name);
 
         res.status(201).json({ token: signToken(user), user: { id: user._id, name: user.name, email: user.email } });
     } catch (err) {

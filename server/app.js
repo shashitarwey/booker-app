@@ -19,10 +19,14 @@ app.use(cors({
         cb(new Error('Not allowed by CORS'));
     },
     credentials: true,
+    exposedHeaders: ['Content-Disposition'], // backup download filename
 }));
 
 // ── Body parsing with explicit size limit ────────────────────────────────────
-app.use(express.json({ limit: '1mb' }));
+// Backup restore uploads a whole account as JSON; everything else stays at 1mb
+const jsonSmall = express.json({ limit: '1mb' });
+const jsonLarge = express.json({ limit: '25mb' });
+app.use((req, res, next) => (req.path === '/api/export/import' ? jsonLarge : jsonSmall)(req, res, next));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // ── Rate limiting on auth routes ─────────────────────────────────────────────
@@ -43,10 +47,14 @@ app.use('/api/transactions', authMiddleware, require('./routes/transactions'));
 app.use('/api/orders', authMiddleware, require('./routes/orders'));
 app.use('/api/sellers', authMiddleware, require('./routes/sellers'));
 app.use('/api/customers', authMiddleware, require('./routes/customers'));
+app.use('/api/people', authMiddleware, require('./routes/people'));
+app.use('/api/variants', authMiddleware, require('./routes/variants'));
+app.use('/api/reports', authMiddleware, require('./routes/reports'));
 app.use('/api/summary', authMiddleware, require('./routes/summary'));
 app.use('/api/analytics', authMiddleware, require('./routes/analytics'));
 app.use('/api/activity', authMiddleware, require('./routes/activity'));
 app.use('/api/ai', authMiddleware, require('./routes/ai'));
+app.use('/api/export', authMiddleware, require('./routes/export'));
 
 // ── Health check endpoint (public) ───────────────────────────────────────────
 app.get('/api/health', async (_req, res) => {
@@ -79,7 +87,7 @@ const swaggerSpec = swaggerJsdoc({
     definition: {
         openapi: '3.0.0',
         info: {
-            title: 'CardVault API',
+            title: 'Booker API',
             version: '1.0.0',
             description: 'Credit Card Spend Tracker & Financial Analyser API',
         },
@@ -100,7 +108,7 @@ const swaggerSpec = swaggerJsdoc({
 
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
     customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'CardVault API Docs',
+    customSiteTitle: 'Booker API Docs',
 }));
 app.get('/api/docs.json', (_req, res) => res.json(swaggerSpec));
 

@@ -78,15 +78,15 @@
 }
 
 .cashback-pct.safe {
-  color: #3fb950;
+  color: #34d399;
 }
 
 .cashback-pct.warn {
-  color: #d29922;
+  color: #fbbf24;
 }
 
 .cashback-pct.danger {
-  color: #f85149;
+  color: #f87171;
 }
 
 .progress-track {
@@ -103,15 +103,15 @@
 }
 
 .progress-bar.safe {
-  background: linear-gradient(90deg, #238636, #3fb950);
+  background: linear-gradient(90deg, #238636, #34d399);
 }
 
 .progress-bar.warn {
-  background: linear-gradient(90deg, #9e6a03, #d29922);
+  background: linear-gradient(90deg, #9e6a03, #fbbf24);
 }
 
 .progress-bar.danger {
-  background: linear-gradient(90deg, #da3633, #f85149);
+  background: linear-gradient(90deg, #ef4444, #f87171);
 }
 
 .cashback-limit-note {

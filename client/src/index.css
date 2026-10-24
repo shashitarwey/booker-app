@@ -1,7 +1,7 @@
-/* ── CardVault CSS Barrel ──────────────────────────────────── */
+/* ── Booker CSS Barrel ──────────────────────────────────── */
 /* All styles are split into modular files for maintainability  */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 @import './styles/base.css';
 @import './styles/layout.css';
@@ -17,6 +17,13 @@
 @import './styles/components/profile.css';
 @import './styles/components/analytics.css';
 @import './styles/components/ledger.css';
+@import './styles/components/people.css';
 
 /* Must be last — contains @media overrides */
 @import './styles/layout-mobile.css';
+
+/* Visual theme layer (sidebar shell, surfaces, buttons) — after mobile so it
+   restyles colours/surfaces without touching mobile spacing */
+@import './styles/theme.css';
+@import './styles/components/dashboard.css';
+@import './styles/components/report.css';

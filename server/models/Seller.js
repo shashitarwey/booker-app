@@ -5,9 +5,10 @@ const SellerSchema = new mongoose.Schema({
     name: { type: String, required: true },
     city: { type: String, required: true },
     phone: { type: String, trim: true, default: '' },
-    total_amount_ordered: { type: Number, default: 0 },
-    total_amount_get: { type: Number, default: 0 },
-    profit: { type: Number, default: 0 }
+    // Buyer stats (total_amount_ordered / total_amount_get / profit) are not
+    // stored — routes/sellers.js computes them live from Order. Older docs may
+    // still carry those fields; they're never read and get overwritten in
+    // every response, so they're harmless.
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
 SellerSchema.index({ user_id: 1, name: 1 });

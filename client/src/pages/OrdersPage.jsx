@@ -1,34 +1,49 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { getOrders, getAllOrders, deleteOrder, updateOrder, getCards, getAllSellers, bulkUpdateStatus, bulkMarkCleared } from '../api';
+import { getOrders, getAllOrders, deleteOrder, updateOrder, getCards, getAllSellers, getPeople, bulkUpdateStatus, bulkMarkCleared } from '../api';
 import AddOrderModal from '../components/AddOrderModal';
 import OrderRemarkModal from '../components/OrderRemarkModal';
-import ActionMenu from '../common/ActionMenu';
 import Pagination from '../common/Pagination';
-import { ShoppingBag, MapPin, Pencil, Trash2, Filter, Search, X as XIcon, ChevronLeft, Download, MessageSquare, CheckSquare, Square, Truck, CheckCircle, History } from 'lucide-react';
+import { ShoppingBag, Pencil, Trash2, Filter, Search, X as XIcon, ChevronLeft, Download, MessageSquare, History } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { ECOMM_SITES, STATUS_FILTER_OPTIONS } from '../constants';
-import { fmtCurrency, fmtSignedCurrency, cardLabel, sellerLabel, pickTruthy } from '../utils/formatters';
+import { ECOMM_SITES, getToday } from '../constants';
+import { fmtSignedCurrency, cardLabel, cardHolderLabel, sellerLabel, pickTruthy } from '../utils/formatters';
+import { isFriendOrder } from '../utils/profit';
 import { exportOrdersCSV } from '../utils/orderExport';
-import DateRangeDropdown from '../common/DateRangeDropdown';
-import SearchableDropdown from '../common/SearchableDropdown';
 import ConfirmModal from '../common/ConfirmModal';
+import OrderFilters from '../components/orders/OrderFilters';
+import OrderCardList from '../components/orders/OrderCardList';
+import OrdersTable from '../components/orders/OrdersTable';
+import BulkBar from '../components/orders/BulkBar';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const EMPTY_FILTERS = {
   order_date_from: '', order_date_to: '',
   delivery_date_from: '', delivery_date_to: '',
-  seller_id: '', card_id: '', delivery_status: '',
+  seller_id: '', card_id: '', delivery_status: '', person_id: '',
   model_ordered: '', ecomm_site: '', is_cleared: ''
 };
 
-export default function OrdersPage() {
+const EMPTY_SUMMARY = { total_profit: 0, total_order_amount: 0, total_friend_amount: 0, total_friend_earning: 0 };
+
+/**
+ * Order tracker. Rendered standalone at /orders, or embedded in a person's
+ * page with `person` set — then every query, filter, card dropdown and total
+ * is scoped to orders placed on that person's cards.
+ */
+export default function OrdersPage({ person = null, onChanged }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const embedded = Boolean(person);
+  const scope = person ? { person_id: person._id } : {};
+  const isFriendScope = person?.relation === 'friend';
+  // Family group view spans several holders, so it still names who holds each card
+  const showHolder = !embedded || Boolean(person?.isGroup);
   const [orders, setOrders] = useState([]);
   const [totalOrders, setTotalOrders] = useState(0);
-  const [summary, setSummary] = useState({ total_profit: 0, total_order_amount: 0 });
+  const [summary, setSummary] = useState(EMPTY_SUMMARY);
   const [cards, setCards] = useState([]);
   const [sellers, setSellers] = useState([]);
+  const [people, setPeople] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editOrder, setEditOrder] = useState(null);
@@ -41,7 +56,7 @@ export default function OrdersPage() {
   const [selected, setSelected] = useState(new Set());
 
   // Pre-fill seller filter if navigated from SellersPage
-  const initSellerId = location.state?.seller_id || '';
+  const initSellerId = embedded ? '' : (location.state?.seller_id || '');
   const [filters, setFilters] = useState({ ...EMPTY_FILTERS, seller_id: initSellerId });
   const [orderDatePreset, setOrderDatePreset] = useState('');
   const [deliveryDatePreset, setDeliveryDatePreset] = useState('');
@@ -49,17 +64,19 @@ export default function OrdersPage() {
 
   const fetchOrders = useCallback(async (f, p = page, ps = pageSize) => {
     try {
-      const params = { ...pickTruthy(f || filters), page: p, limit: ps };
+      const params = { ...pickTruthy(f || filters), ...scope, page: p, limit: ps };
       const { items, page: pageInfo, summary: s } = await getOrders(params);
       setOrders(items);
       setTotalOrders(pageInfo.item_total);
-      setSummary(s || { total_profit: 0, total_order_amount: 0 });
+      setSummary(s || EMPTY_SUMMARY);
+      onChanged?.();
     } catch (err) { console.error('Failed to load orders', err);
       toast.error('Failed to load orders');
     }
-  }, [filters, page, pageSize]);
+  }, [filters, page, pageSize, person?._id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const clearFilters = async () => {
+    setSelected(new Set()); // hidden rows must not stay selected for bulk actions
     setFilters(EMPTY_FILTERS);
     setOrderDatePreset('');
     setDeliveryDatePreset('');
@@ -68,6 +85,7 @@ export default function OrdersPage() {
   };
 
   const handleSearchChange = (value) => {
+    setSelected(new Set());
     const next = { ...filters, model_ordered: value };
     setFilters(next);
     setPage(1);
@@ -79,12 +97,16 @@ export default function OrdersPage() {
     try {
       setLoading(true);
       const initParams = initSellerId ? { seller_id: initSellerId } : {};
-      const [ordersRes, fetchedCards, fetchedSellers] = await Promise.all([
-        getOrders({ ...initParams, page: p, limit: ps }), getCards(), getAllSellers()
+      const [ordersRes, fetchedCards, fetchedSellers, fetchedPeople] = await Promise.all([
+        getOrders({ ...initParams, ...scope, page: p, limit: ps }),
+        getCards(person ? { holder_id: person._id } : undefined),
+        getAllSellers(),
+        embedded ? Promise.resolve([]) : getPeople(),
       ]);
+      setPeople(fetchedPeople);
       setOrders(ordersRes.items);
       setTotalOrders(ordersRes.page.item_total);
-      setSummary(ordersRes.summary || { total_profit: 0, total_order_amount: 0 });
+      setSummary(ordersRes.summary || EMPTY_SUMMARY);
       setCards(fetchedCards);
       setSellers(fetchedSellers);
     } catch (err) { console.error('Failed to load orders', err);
@@ -124,13 +146,14 @@ export default function OrdersPage() {
   const handleExportCSV = async () => {
     setExporting(true);
     try {
-      const allOrders = await getAllOrders(pickTruthy(filters));
+      const allOrders = await getAllOrders({ ...pickTruthy(filters), ...scope });
       if (!allOrders || allOrders.length === 0) {
         toast.error('No orders to export');
         return;
       }
-      const today = new Date().toISOString().slice(0, 10);
-      exportOrdersCSV(allOrders, `orders_${today}.csv`);
+      const today = getToday();
+      const prefix = person ? `orders_${person.name.replace(/\s+/g, '_')}` : 'orders';
+      exportOrdersCSV(allOrders, `${prefix}_${today}.csv`);
       toast.success(`Exported ${allOrders.length} order${allOrders.length === 1 ? '' : 's'}`);
     } catch {
       toast.error('Failed to export orders');
@@ -168,7 +191,7 @@ export default function OrdersPage() {
   const clearSelection = () => setSelected(new Set());
 
   const handleBulkStatus = (status) => {
-    const label = status === 'Yes' ? 'Delivered' : status === 'No' ? 'Pending' : 'Cancelled';
+    const label = status;
     setConfirm({
       title: 'Update Status',
       confirmLabel: label,
@@ -176,7 +199,7 @@ export default function OrdersPage() {
       onConfirm: async () => {
         setConfirm(null);
         try {
-          const delivered_date = status === 'Yes' ? new Date().toISOString().slice(0, 10) : '';
+          const delivered_date = status === 'Delivered' ? getToday() : '';
           await bulkUpdateStatus([...selected], status, delivered_date);
           toast.success(`${selected.size} order(s) marked as ${label}`);
           clearSelection();
@@ -238,9 +261,24 @@ export default function OrdersPage() {
     : '0.00';
 
   const sellerOptions = sellers.map(s => ({ label: sellerLabel(s), value: s._id }));
-  const cardOptions   = cards.map(c => ({ label: cardLabel(c), value: c._id }));
+  // Booker filter narrows the card dropdown to that person's cards
+  const cardOptions   = cards
+    .filter(c => !filters.person_id || String(c.holder_id?._id || c.holder_id) === filters.person_id)
+    .map(c => ({ label: showHolder ? cardHolderLabel(c) : cardLabel(c), value: c._id }));
+  const personOptions = people.map(p => ({
+    label: p.relation === 'self' ? `${p.name} (You)` : `${p.name} (${p.relation === 'friend' ? 'Booker' : 'Family'})`,
+    value: p._id,
+  }));
+  const showFriendCol = isFriendScope || orders.some(isFriendOrder);
   const sourceOptions = ['All', ...ECOMM_SITES];
   const hasActiveFilters = Object.entries(filters).some(([k, v]) => k !== 'model_ordered' && v);
+
+  const orderMenuItems = (order, hasRemark) => [
+    { label: hasRemark ? 'Edit Remark' : 'Add Remark', icon: <MessageSquare size={14} />, onClick: () => setRemarkOrder(order) },
+    { label: 'Edit Order', icon: <Pencil size={14} />, onClick: () => { setEditOrder(order); setShowModal(true); } },
+    { label: 'View Activity', icon: <History size={14} />, onClick: () => navigate(`/activity?entityId=${order._id}&entity=order`), color: 'var(--info)' },
+    { label: 'Delete',     icon: <Trash2 size={14} />, onClick: () => handleDelete(order._id), color: 'var(--danger)', className: 'border-top' },
+  ];
 
   // Pagination (server-side)
   const totalPages  = Math.ceil(totalOrders / pageSize);
@@ -249,20 +287,25 @@ export default function OrdersPage() {
   return (
     <>
       {/* Page Hero Header */}
-      <div className="page-hero">
+      <div className={embedded ? 'page-hero page-hero-embedded' : 'page-hero'}>
         <div className="page-hero-inner">
           <div className="page-hero-left">
-            <button
-              className="btn-back-circle"
-              onClick={() => navigate(-1)}
-              data-tooltip="Back"
-            >
-              <ChevronLeft size={22} />
-            </button>
+            {!embedded && (
+              <button
+                className="btn-back-circle"
+                onClick={() => navigate(-1)}
+                data-tooltip="Back"
+              >
+                <ChevronLeft size={22} />
+              </button>
+            )}
             <div className="page-hero-title-group">
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                <h1 className="page-hero-title">Order Tracker</h1>
-                {totalOrders > 0 && (
+                {embedded
+                  ? <h2 className="section-title">{person.isGroup ? 'Orders on family cards' : `Orders on ${person.name}'s cards`}</h2>
+                  : <h1 className="page-hero-title">Order Tracker</h1>}
+                {/* Embedded in a person's page the stats panel above already shows profit */}
+                {totalOrders > 0 && !embedded && (
                   <span className={`profit-badge ${totalProfit >= 0 ? 'profit-badge-positive' : 'profit-badge-negative'}`}>
                     Profit: {fmtSignedCurrency(totalProfit)} ({avgProfitPercent}%)
                   </span>
@@ -314,106 +357,25 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      <div className="page-content">
-        {/* Filter panel — compact grid */}
+      <div className={embedded ? 'page-content page-content-embedded' : 'page-content'}>
         {showFilters && (
-          <div className="filter-panel filter-panel-compact">
-            <div className="filter-panel-header">
-              <span className="filter-panel-title">
-                <Filter size={14} /> Filters
-              </span>
-              <button className="modal-close" onClick={() => setShowFilters(false)}><XIcon size={16} /></button>
-            </div>
-
-            <div className="filter-grid-compact">
-              <div className="filter-cell">
-                <label className="filter-cell-label">Order Date</label>
-                <DateRangeDropdown
-                  dateFrom={filters.order_date_from}
-                  dateTo={filters.order_date_to}
-                  activePreset={orderDatePreset}
-                  onChange={(from, to, preset) => {
-                    setFilters(f => ({ ...f, order_date_from: from, order_date_to: to }));
-                    setOrderDatePreset(preset || '');
-                  }}
-                />
-              </div>
-              <div className="filter-cell">
-                <label className="filter-cell-label">Delivery Date</label>
-                <DateRangeDropdown
-                  dateFrom={filters.delivery_date_from}
-                  dateTo={filters.delivery_date_to}
-                  activePreset={deliveryDatePreset}
-                  onChange={(from, to, preset) => {
-                    setFilters(f => ({ ...f, delivery_date_from: from, delivery_date_to: to }));
-                    setDeliveryDatePreset(preset || '');
-                  }}
-                />
-              </div>
-              <div className="filter-cell">
-                <label className="filter-cell-label">Buyer</label>
-                <SearchableDropdown
-                  options={['All Buyers', ...sellerOptions.map(o => o.label)]}
-                  value={filters.seller_id ? (sellerOptions.find(o => o.value === filters.seller_id)?.label || '') : ''}
-                  onChange={val => {
-                    const opt = sellerOptions.find(o => o.label === val);
-                    setFilters(f => ({ ...f, seller_id: opt ? opt.value : '' }));
-                  }}
-                  placeholder="All Buyers"
-                />
-              </div>
-              <div className="filter-cell">
-                <label className="filter-cell-label">Card</label>
-                <SearchableDropdown
-                  options={['All Cards', ...cardOptions.map(o => o.label)]}
-                  value={filters.card_id ? (cardOptions.find(o => o.value === filters.card_id)?.label || '') : ''}
-                  onChange={val => {
-                    const opt = cardOptions.find(o => o.label === val);
-                    setFilters(f => ({ ...f, card_id: opt ? opt.value : '' }));
-                  }}
-                  placeholder="All Cards"
-                />
-              </div>
-              <div className="filter-cell">
-                <label className="filter-cell-label">Source</label>
-                <SearchableDropdown
-                  options={sourceOptions}
-                  value={filters.ecomm_site || ''}
-                  onChange={val => setFilters(f => ({ ...f, ecomm_site: val === 'All' ? '' : val }))}
-                  placeholder="All Sources"
-                />
-              </div>
-              <div className="filter-cell">
-                <label className="filter-cell-label">Status</label>
-                <SearchableDropdown
-                  options={STATUS_FILTER_OPTIONS}
-                  value={{ Yes: 'Delivered', No: 'Pending', Cancelled: 'Cancelled' }[filters.delivery_status] || ''}
-                  onChange={val => {
-                    const dbVal = { Delivered: 'Yes', Pending: 'No', Cancelled: 'Cancelled' }[val] || '';
-                    setFilters(f => ({ ...f, delivery_status: dbVal }));
-                  }}
-                  placeholder="All Statuses"
-                />
-              </div>
-              <div className="filter-cell">
-                <label className="filter-cell-label">Cleared</label>
-                <SearchableDropdown
-                  options={['All', 'Cleared', 'Uncleared']}
-                  value={{ true: 'Cleared', false: 'Uncleared' }[filters.is_cleared] || ''}
-                  onChange={val => {
-                    const dbVal = val === 'Cleared' ? 'true' : val === 'Uncleared' ? 'false' : '';
-                    setFilters(f => ({ ...f, is_cleared: dbVal }));
-                  }}
-                  placeholder="All"
-                />
-              </div>
-            </div>
-
-            <div className="filter-panel-footer">
-              <button className="btn btn-secondary btn-sm" onClick={clearFilters}>Clear All</button>
-              <button className="btn btn-primary btn-sm" onClick={() => { setPage(1); fetchOrders(filters, 1, pageSize); }}>Apply Filters</button>
-            </div>
-          </div>
+          <OrderFilters
+            filters={filters}
+            setFilters={setFilters}
+            embedded={embedded}
+            cards={cards}
+            sellerOptions={sellerOptions}
+            cardOptions={cardOptions}
+            personOptions={personOptions}
+            sourceOptions={sourceOptions}
+            orderDatePreset={orderDatePreset}
+            setOrderDatePreset={setOrderDatePreset}
+            deliveryDatePreset={deliveryDatePreset}
+            setDeliveryDatePreset={setDeliveryDatePreset}
+            onClose={() => setShowFilters(false)}
+            onClear={clearFilters}
+            onApply={() => { setPage(1); setSelected(new Set()); fetchOrders(filters, 1, pageSize); }}
+          />
         )}
 
         {totalOrders === 0 ? (
@@ -441,152 +403,43 @@ export default function OrdersPage() {
               </div>
             )}
 
-            <div className="table-responsive-wrapper">
-              <table className="data-table table-freeze-first">
-                <thead>
-                  <tr>
-                    <th style={{ width: '36px', textAlign: 'center', cursor: 'pointer' }} onClick={toggleSelectAll}>
-                      {selected.size === orders.length && orders.length > 0
-                        ? <CheckSquare size={16} style={{ color: 'var(--accent)' }} />
-                        : <Square size={16} style={{ color: 'var(--text-muted)' }} />}
-                    </th>
-                    <th>#</th>
-                    <th>Order Date</th>
-                    <th>Delivery Date</th>
-                    <th>Item</th>
-                    <th>Source &amp; Account</th>
-                    <th>Buyer</th>
-                    <th>Card</th>
-                    <th>Ordered</th>
-                    <th>Returned</th>
-                    <th>Cashback</th>
-                    <th>Profit (%)</th>
-                    <th>Status</th>
-                    <th>Clear</th>
-                    <th className="text-right col-action">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map((order, index) => {
-                    const profit      = order.return_amount - order.order_amount + order.cashback;
-                    const isCancelled = order.delivery_status === 'Cancelled';
-                    const isDelivered = order.delivery_status === 'Yes';
+            {/* Phones: stacked order cards instead of the wide table */}
+            <OrderCardList
+              orders={orders}
+              selected={selected}
+              toggleSelect={toggleSelect}
+              openMenu={openMenu}
+              setOpenMenu={setOpenMenu}
+              menuItems={orderMenuItems}
+              onOpen={setRemarkOrder}
+              onToggleClear={handleToggleClear}
+              showHolder={showHolder}
+              isGroup={Boolean(person?.isGroup)}
+            />
 
-                    const hasRemark = Boolean(order.remark && order.remark.trim());
+            <OrdersTable
+              orders={orders}
+              rowOffset={(page - 1) * pageSize}
+              selected={selected}
+              toggleSelect={toggleSelect}
+              toggleSelectAll={toggleSelectAll}
+              openMenu={openMenu}
+              setOpenMenu={setOpenMenu}
+              menuItems={orderMenuItems}
+              onOpen={setRemarkOrder}
+              onToggleClear={handleToggleClear}
+              showHolder={showHolder}
+              showFriendCol={showFriendCol}
+              isFriendScope={isFriendScope}
+            />
 
-                    return (
-                      <tr
-                        key={order._id}
-                        className="order-row-clickable"
-                        style={isCancelled ? { opacity: 0.5 } : {}}
-                        onClick={() => setRemarkOrder(order)}
-                      >
-                        <td style={{ textAlign: 'center', width: '36px' }} onClick={e => { e.stopPropagation(); toggleSelect(order._id); }}>
-                          {selected.has(order._id)
-                            ? <CheckSquare size={16} style={{ color: 'var(--accent)', cursor: 'pointer' }} />
-                            : <Square size={16} style={{ color: 'var(--text-muted)', cursor: 'pointer' }} />}
-                        </td>
-                        <td style={{ whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span>{(page - 1) * pageSize + index + 1}</span>
-                            {hasRemark && (
-                              <MessageSquare
-                                size={13}
-                                style={{ flexShrink: 0, color: 'var(--accent)' }}
-                                aria-label="Has remark"
-                              />
-                            )}
-                          </div>
-                        </td>
-                        <td style={{ whiteSpace: 'nowrap' }}>
-                          <div className="font-medium">{new Date(order.order_date).toLocaleDateString('en-GB')}</div>
-                        </td>
-                        <td style={{ whiteSpace: 'nowrap' }}>
-                          <div style={{ color: 'var(--text-muted)' }}>{order.delivered_date ? new Date(order.delivered_date).toLocaleDateString('en-GB') : '—'}</div>
-                        </td>
-                        <td style={{ maxWidth: '160px' }}>
-                          <div className="font-medium" title={order.model_ordered} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '150px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {order.model_ordered.length > 20 ? order.model_ordered.slice(0, 20) + '…' : order.model_ordered}
-                            </span>
-                            {order.quantity > 1 && <span style={{ flexShrink: 0, color: 'var(--accent)', fontSize: '0.72rem', fontWeight: 'bold', padding: '2px 5px', background: 'rgba(88,166,255,0.1)', borderRadius: '4px' }}>×{order.quantity}</span>}
-                          </div>
-                          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>{order.variant !== 'NA' ? order.variant : ''}</div>
-                        </td>
-                        <td>
-                          <div className="font-medium">{order.ecomm_site}</div>
-                          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>{order.id_used}</div>
-                        </td>
-                        <td>
-                          <div className="font-medium">{order.seller_id?.name || '—'}</div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                            <MapPin size={11} /> {order.seller_id?.city || ''}
-                          </div>
-                        </td>
-                        <td>
-                          {order.card_id ? <span className="tx-card-pill">{cardLabel(order.card_id)}</span> : '—'}
-                        </td>
-                        <td className="font-medium">{fmtCurrency(order.order_amount)}</td>
-                        <td className="font-medium" style={{ color: 'var(--accent)' }}>{fmtCurrency(order.return_amount)}</td>
-                        <td className="font-medium" style={{ color: 'var(--success)' }}>{fmtCurrency(order.cashback)}</td>
-                        <td className="font-medium" style={{ color: isCancelled ? 'var(--text-muted)' : profit >= 0 ? 'var(--success)' : 'var(--danger)' }}>
-                          {isCancelled
-                            ? '—'
-                            : `${fmtSignedCurrency(profit)} (${order.order_amount > 0 ? ((profit / order.order_amount) * 100).toFixed(2) : '0.00'}%)`}
-                        </td>
-                        <td>
-                          <span className={`badge ${isDelivered ? 'badge-success' : isCancelled ? 'badge-danger' : 'badge-surface'}`}>
-                            {isDelivered ? 'Delivered' : isCancelled ? 'Cancelled' : 'Pending'}
-                          </span>
-                        </td>
-                        <td onClick={e => e.stopPropagation()}>
-                          <button
-                            className={`toggle-btn ${order.is_cleared ? 'toggle-on' : 'toggle-off'}`}
-                            onClick={e => { e.stopPropagation(); handleToggleClear(order); }}
-                          />
-                        </td>
-                        <td className="text-right col-action" onClick={e => e.stopPropagation()}>
-                          <ActionMenu
-                            id={order._id}
-                            openId={openMenu}
-                            onToggle={setOpenMenu}
-                            items={[
-                              { label: hasRemark ? 'Edit Remark' : 'Add Remark', icon: <MessageSquare size={14} />, onClick: () => setRemarkOrder(order) },
-                              { label: 'Edit Order', icon: <Pencil size={14} />, onClick: () => { setEditOrder(order); setShowModal(true); } },
-                              { label: 'View Activity', icon: <History size={14} />, onClick: () => navigate(`/activity?entityId=${order._id}&entity=order`), color: 'var(--info)' },
-                              { label: 'Delete',     icon: <Trash2 size={14} />, onClick: () => handleDelete(order._id), color: 'var(--danger)', className: 'border-top' },
-                            ]}
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Floating bulk action bar */}
             {selected.size > 0 && (
-              <div className="bulk-bar">
-                <div className="bulk-bar-inner">
-                  <span className="bulk-bar-count">{selected.size} selected</span>
-                  <div className="bulk-bar-actions">
-                    <button className="btn btn-sm bulk-btn-delivered" onClick={() => handleBulkStatus('Yes')}>
-                      <Truck size={14} /> Delivered
-                    </button>
-                    <button className="btn btn-sm bulk-btn-cancelled" onClick={() => handleBulkStatus('Cancelled')}>
-                      Cancelled
-                    </button>
-                    <span className="bulk-bar-sep" />
-                    <button className="btn btn-sm bulk-btn-clear" onClick={() => handleBulkClear(true)}>
-                      <CheckCircle size={14} /> Mark Cleared
-                    </button>
-                  </div>
-                  <button className="bulk-bar-close" onClick={clearSelection}>
-                    <XIcon size={14} />
-                  </button>
-                </div>
-              </div>
+              <BulkBar
+                count={selected.size}
+                onStatus={handleBulkStatus}
+                onClear={() => handleBulkClear(true)}
+                onClose={clearSelection}
+              />
             )}
 
             <Pagination

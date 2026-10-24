@@ -64,9 +64,7 @@
   }
 
   /* Also hide the ledger divider next to back button */
-  .ledger-hero-divider {
-    display: none;
-  }
+  
 
   .page-hero-inner {
     flex-direction: row;
@@ -161,19 +159,7 @@
   }
 
   /* ── Dashboard hero / bank / cards ────────────── */
-  .hero-bar {
-    padding: 16px 16px 14px;
-  }
-
-  .hero-label {
-    font-size: 0.68rem;
-    margin-bottom: 4px;
-  }
-
-  .hero-amount {
-    font-size: 1.5rem;
-    margin-bottom: 14px;
-  }
+  
 
   .filter-presets {
     gap: 5px;
@@ -205,17 +191,7 @@
   }
 
   /* Dashboard sort: left-align on mobile */
-  .dashboard-sort-bar {
-    justify-content: flex-start !important;
-    margin-top: 16px !important;
-    margin-bottom: 16px !important;
-  }
-
-  .bank-section-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-  }
+  
 
   .bank-name {
     font-size: 0.95rem;
@@ -237,13 +213,6 @@
   .card-spend-amount {
     font-size: 1.25rem;
     font-weight: 600;
-  }
-
-  .fab {
-    bottom: 24px;
-    right: 20px;
-    width: 48px;
-    height: 48px;
   }
 
   /* ── Modals — centered with margins on mobile ───────── */
@@ -327,7 +296,6 @@
   }
 
   /* Ledger stats mobile overrides are in ledger.css */
-
 
   .app-header {
     padding: 0 12px;
@@ -436,7 +404,7 @@
     right: 0;
     max-height: 60vh;
     overflow-y: auto;
-    background: #0d1117;
+    background: #0a0d14;
     border-bottom: 1px solid var(--border);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
     z-index: 200;
@@ -477,7 +445,7 @@
     bottom: 0;
     width: 270px;
     max-width: 80vw;
-    background: #0d1117;
+    background: #0a0d14;
     border-right: 1px solid var(--border);
     z-index: 10000;
     display: flex;
@@ -536,7 +504,7 @@
 
   .mobile-menu-link.active {
     color: var(--accent);
-    background: rgba(88, 166, 255, 0.08);
+    background: rgba(124, 108, 255, 0.08);
     font-weight: 600;
     border-left: 3px solid var(--accent);
     padding-left: 17px;
@@ -764,7 +732,7 @@
 }
 
 .pw-rule.ok {
-  color: #3fb950;
+  color: var(--success);
 }
 
 .pw-rule.fail {
@@ -840,7 +808,7 @@
 }
 
 .date-range-trigger.has-value {
-  border-color: rgba(88, 166, 255, 0.35);
+  border-color: rgba(124, 108, 255, 0.35);
 }
 
 .date-range-subtitle {
@@ -866,9 +834,7 @@
 }
 
 .date-range-popover {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
+  /* position/top/left come from usePopoverPlacement (fixed, viewport-aware) */
   z-index: 1000;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -971,7 +937,7 @@
 
 /* Range middle — soft tinted strip across the whole cell */
 .rdp-day.rdp-range_middle {
-  background-color: rgba(88, 166, 255, 0.18) !important;
+  background-color: rgba(124, 108, 255, 0.18) !important;
   border-radius: 0;
 }
 
@@ -984,7 +950,7 @@
 
 /* Range start — half-tinted cell with filled circle on the right half */
 .rdp-day.rdp-range_start {
-  background: linear-gradient(90deg, transparent 50%, rgba(88, 166, 255, 0.18) 50%) !important;
+  background: linear-gradient(90deg, transparent 50%, rgba(124, 108, 255, 0.18) 50%) !important;
 }
 
 .rdp-day.rdp-range_start.rdp-range_end {
@@ -993,7 +959,7 @@
 
 /* Range end — half-tinted cell with filled circle on the left half */
 .rdp-day.rdp-range_end {
-  background: linear-gradient(90deg, rgba(88, 166, 255, 0.18) 50%, transparent 50%) !important;
+  background: linear-gradient(90deg, rgba(124, 108, 255, 0.18) 50%, transparent 50%) !important;
 }
 
 /* Start/end/selected day button — solid accent circle */
@@ -1017,7 +983,7 @@
 .rdp-day.rdp-today:not(.rdp-selected) .rdp-day_button {
   color: var(--accent) !important;
   font-weight: 700;
-  border: 1px solid rgba(88, 166, 255, 0.4);
+  border: 1px solid rgba(124, 108, 255, 0.4);
 }
 
 .rdp-day.rdp-outside {
@@ -1334,7 +1300,7 @@
 
 .pagination-select:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.15);
+  box-shadow: 0 0 0 2px rgba(124, 108, 255, 0.15);
 }
 
 .pagination-select option {
@@ -1365,7 +1331,7 @@
 .form-select:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  background: rgba(13, 17, 23, 0.2);
+  background: rgba(10, 13, 20, 0.2);
   border-color: var(--border);
   color: var(--text-muted);
 }
@@ -1449,42 +1415,42 @@
 
 /* ── Shared: accent color matches app blue ─────────────────── */
 .rdp-root {
-  --rdp-accent-color: #58a6ff;
-  --rdp-today-color: #58a6ff;
+  --rdp-accent-color: #7c6cff;
+  --rdp-today-color: #7c6cff;
 }
 
 /* ── Light mode range styles ───────────────────────────────── */
 [data-theme='light'] .rdp-root {
-  --rdp-accent-background-color: rgba(88, 166, 255, 0.15);
-  --rdp-range_middle-background-color: rgba(88, 166, 255, 0.12);
-  --rdp-range_start-date-background-color: #58a6ff;
-  --rdp-range_end-date-background-color: #58a6ff;
+  --rdp-accent-background-color: rgba(124, 108, 255, 0.15);
+  --rdp-range_middle-background-color: rgba(124, 108, 255, 0.12);
+  --rdp-range_start-date-background-color: #7c6cff;
+  --rdp-range_end-date-background-color: #7c6cff;
   --rdp-range_start-color: #ffffff;
   --rdp-range_end-color: #ffffff;
   /* Use transparent half-fill so range blends nicely */
   --rdp-range_start-background: linear-gradient(90deg,
       transparent 50%,
-      rgba(88, 166, 255, 0.12) 50%);
+      rgba(124, 108, 255, 0.12) 50%);
   --rdp-range_end-background: linear-gradient(90deg,
-      rgba(88, 166, 255, 0.12) 50%,
+      rgba(124, 108, 255, 0.12) 50%,
       transparent 50%);
 }
 
 /* ── Dark mode range styles — remove white background ──────── */
 [data-theme='dark'] .rdp-root {
   /* Replace the default #f0f0ff with a dark-friendly blue tint */
-  --rdp-accent-background-color: rgba(88, 166, 255, 0.18);
-  --rdp-range_middle-background-color: rgba(88, 166, 255, 0.15);
-  --rdp-range_start-date-background-color: #58a6ff;
-  --rdp-range_end-date-background-color: #58a6ff;
-  --rdp-range_start-color: #0d1117;
-  --rdp-range_end-color: #0d1117;
+  --rdp-accent-background-color: rgba(124, 108, 255, 0.18);
+  --rdp-range_middle-background-color: rgba(124, 108, 255, 0.15);
+  --rdp-range_start-date-background-color: #7c6cff;
+  --rdp-range_end-date-background-color: #7c6cff;
+  --rdp-range_start-color: #0a0d14;
+  --rdp-range_end-color: #0a0d14;
   /* Dark-transparent half-fill — NO white */
   --rdp-range_start-background: linear-gradient(90deg,
       transparent 50%,
-      rgba(88, 166, 255, 0.15) 50%);
+      rgba(124, 108, 255, 0.15) 50%);
   --rdp-range_end-background: linear-gradient(90deg,
-      rgba(88, 166, 255, 0.15) 50%,
+      rgba(124, 108, 255, 0.15) 50%,
       transparent 50%);
 }
 
@@ -1643,6 +1609,10 @@
   background: var(--surface2);
 }
 
+/* Entity / action colour arrives as --tag; darkened on the light theme */
+.al-tag-entity, .al-tag-action { color: var(--tag); }
+[data-theme="light"] .al-tag-entity, [data-theme="light"] .al-tag-action { color: color-mix(in srgb, var(--tag) 50%, #000); }
+
 .al-tag-time {
   color: var(--text-muted);
   font-weight: 400;
@@ -1696,7 +1666,6 @@
   color: var(--text);
   word-break: break-word;
 }
-
 
 .al-tag-changed {
   color: var(--warning, #f0883e);
@@ -2047,32 +2016,11 @@
     font-size: 0.95rem;
   }
 
-  .ledger-stat-item {
-    padding: 8px 12px;
-  }
-
-  .ledger-stat-value {
-    font-size: 0.9rem;
-  }
-
   /* Ledger timeline — reduce top/bottom padding */
-  .ledger-timeline {
-    padding: 12px 12px 100px;
-  }
-
-  .ledger-date-sep {
-    margin: 12px 0 8px;
-  }
+  
 
   /* Dashboard hero bar */
-  .hero-bar {
-    padding: 10px 16px 10px;
-  }
-
-  .hero-amount {
-    font-size: 1.1rem;
-    margin-bottom: 8px;
-  }
+  
 
   /* Modal content — prevent tall modals from overflowing a short viewport */
   .modal-content {

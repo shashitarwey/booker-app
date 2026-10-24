@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useMemo } from 'react';
-import { loginUser, registerUser } from '../api';
+import { loginUser, registerUser, clearApiCache } from '../api';
 
 const AuthContext = createContext(null);
 
@@ -25,6 +25,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(() => {
+    clearApiCache(); // never show one account's cached data to the next
     localStorage.removeItem('cv_token');
     localStorage.removeItem('cv_user');
     setToken(''); setUser(null);

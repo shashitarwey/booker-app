@@ -19,44 +19,64 @@ body.picker-open {
   touch-action: none;
 }
 
-
 /* ── CSS Variables ────────────────────────────────────────────── */
 :root {
-  --bg: #0d1117;
-  --surface: #161b22;
-  --surface2: #21262d;
-  --border: rgba(255, 255, 255, 0.08);
-  --text: #e6edf3;
-  --text-muted: #8b949e;
+  --bg: #0a0d14;
+  --surface: #111520;
+  --surface2: #1a2030;
+  --surface-raised: #161b28;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --text: #eef1f7;
+  --text-muted: #8a93a6;
   --font-size-base: 14px;
   --font-size-sm: 12px;
   --font-size-xs: 11px;
-  --accent: #58a6ff;
-  --green: #3fb950;
-  --amber: #d29922;
-  --red: #f85149;
-  --success: #3fb950;
-  --danger: #f85149;
-  --info: #58a6ff;
-  --radius: 16px;
+  --accent: #7c6cff;
+  --accent-2: #2dd4bf;
+  --accent-soft: rgba(124, 108, 255, 0.12);
+  --on-accent: #ffffff;
+  --green: #34d399;
+  --amber: #fbbf24;
+  --red: #f87171;
+  --success: #34d399;
+  --danger: #f87171;
+  --info: #7c6cff;
+  /* Text-on-tint colours (gave/got, delivered, add-on); darker in light mode */
+  --ink-red: #fca5a5;
+  --ink-green: #86efac;
+  --ink-amber: #fbbf24;
+  --radius: 18px;
   --radius-sm: 10px;
   --radius-md: 14px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.55);
+  --sidebar-w: 248px;
 }
 
 [data-theme="light"] {
-  --bg: #f8f9fa;
+  --bg: #f4f5fa;
   --surface: #ffffff;
-  --surface2: #e9ecef;
-  --border: rgba(0, 0, 0, 0.12);
-  --text: #1a1a1a;
-  --text-muted: #6c757d;
-  --accent: #1f6feb;
-  --green: #2da44e;
-  --amber: #bf8700;
-  --red: #cf222e;
-  --success: #2da44e;
-  --danger: #cf222e;
-  --info: #1f6feb;
+  --surface2: #eef0f6;
+  --surface-raised: #ffffff;
+  --border: rgba(20, 24, 38, 0.08);
+  --border-strong: rgba(20, 24, 38, 0.14);
+  --text: #141826;
+  --text-muted: #5f6778;
+  --accent: #5b4be6;
+  --accent-2: #0d9488;
+  --accent-soft: rgba(91, 75, 230, 0.09);
+  --green: #059669;
+  --amber: #d97706;
+  --red: #dc2626;
+  --success: #059669;
+  --danger: #dc2626;
+  --info: #5b4be6;
+  --ink-red: #b91c1c;
+  --ink-green: #047857;
+  --ink-amber: #b45309;
+  --shadow-sm: 0 1px 2px rgba(20, 24, 38, 0.06);
+  --shadow: 0 12px 32px -16px rgba(20, 24, 38, 0.18);
 }
 
 /* ── Base ─────────────────────────────────────────────────────── */
@@ -117,7 +137,7 @@ body.picker-open {
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   font-size: var(--font-size-base);

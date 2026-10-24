@@ -6,6 +6,8 @@ import OrdersPage from './pages/OrdersPage';
 import SellersPage from './pages/SellersPage';
 import SellerLedgerPage from './pages/SellerLedgerPage';
 import KhataPage from './pages/KhataPage';
+import PersonDetailPage from './pages/PersonDetailPage';
+import SpendReportPage from './pages/SpendReportPage';
 import KhataDetailPage from './pages/KhataDetailPage';
 import ProfilePage from './pages/ProfilePage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
@@ -51,9 +53,13 @@ export default function App() {
   return (
     <>
       <Navbar />
+      <div className="app-main">
       <ErrorBoundary>
         <Routes>
           <Route path="/" element={<DashboardPage />} />
+          <Route path="/people" element={<Navigate to="/people/family" replace />} />
+          <Route path="/people/:id" element={<PersonDetailPage />} />
+          <Route path="/reports/spends" element={<SpendReportPage />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/sellers" element={<SellersPage />} />
           <Route path="/sellers/:id/ledger" element={<SellerLedgerPage />} />
@@ -66,6 +72,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </ErrorBoundary>
+      </div>
       {toaster}
     </>
   );

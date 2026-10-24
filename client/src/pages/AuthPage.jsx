@@ -57,7 +57,7 @@ export default function AuthPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <div className="auth-logo"><CreditCard size={28} /><span>CardVault</span></div>
+        <div className="auth-logo"><CreditCard size={28} /><span>Booker</span></div>
         <p className="auth-tagline">Track all your credit card spends in one place</p>
 
         <div className="auth-tabs">

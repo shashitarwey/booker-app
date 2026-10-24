@@ -53,7 +53,7 @@ describe('Summary & Analytics Routes', () => {
         order_date: '2026-02-01', delivered_date: '2026-02-05',
         order_amount: 10000, return_amount: 10500,
         model_ordered: 'Samsung S24', id_used: 'test@mail.com',
-        delivery_status: 'Yes', ecomm_site: 'Amazon',
+        delivery_status: 'Delivered', ecomm_site: 'Amazon',
       });
 
       const res = await request(app)

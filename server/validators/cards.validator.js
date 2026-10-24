@@ -2,6 +2,13 @@ const { body, param } = require('express-validator');
 
 const NETWORKS = ['Visa', 'Mastercard', 'AmEx', 'RuPay'];
 const PERIODS = ['monthly', 'quarterly', 'half-yearly', 'yearly'];
+const CARD_TYPES = ['primary', 'addon'];
+
+const holderRules = [
+    body('holder_id').optional({ values: 'falsy' }).isMongoId().withMessage('Invalid holder_id'),
+    body('card_type').optional({ values: 'falsy' }).isIn(CARD_TYPES).withMessage(`card_type must be one of ${CARD_TYPES.join(', ')}`),
+    body('primary_card_id').optional({ values: 'falsy' }).isMongoId().withMessage('Invalid primary_card_id'),
+];
 
 const createRules = [
     body('bank_name').isString().trim().notEmpty().withMessage('Bank name is required'),
@@ -18,6 +25,7 @@ const createRules = [
     body('due_date').optional({ values: 'falsy' }).isInt({ min: 1, max: 31 }).withMessage('due_date must be 1-31'),
     body('cashback_sites').optional().isArray().withMessage('cashback_sites must be an array'),
     body('cashback_sites.*').optional().isString().trim(),
+    ...holderRules,
 ];
 
 const updateRules = [
@@ -36,6 +44,7 @@ const updateRules = [
     body('due_date').optional({ values: 'falsy' }).isInt({ min: 1, max: 31 }).withMessage('due_date must be 1-31'),
     body('cashback_sites').optional().isArray().withMessage('cashback_sites must be an array'),
     body('cashback_sites.*').optional().isString().trim(),
+    ...holderRules,
 ];
 
 const idRule = [param('id').isMongoId().withMessage('Invalid card id')];

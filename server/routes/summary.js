@@ -3,8 +3,10 @@ const router = express.Router();
 const Card = require('../models/Card');
 const Transaction = require('../models/Transaction');
 const Order = require('../models/Order');
-const { toObjectId, buildDateRange, getCashbackCycleStart } = require('../utils/helpers');
+const { PROFIT_EXPR } = require('../utils/profit');
+const { buildDateRange, getCashbackCycleStart } = require('../utils/helpers');
 const { cacheMiddleware } = require('../utils/cache');
+const { todayLocal, todayAsUtcDate } = require('../utils/dates');
 
 /**
  * @swagger
@@ -30,21 +32,21 @@ const { cacheMiddleware } = require('../utils/cache');
 router.get('/', cacheMiddleware(300), async (req, res, next) => {
     try {
         const { from_date: qFrom, to_date: qTo, period } = req.query;
-        const now = new Date();
         let from_date, to_date;
 
         if (qFrom && qTo) {
             from_date = qFrom; to_date = qTo;
-        } else if (period === 'quarterly') {
-            from_date = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1).toISOString().slice(0, 10);
-            to_date = now.toISOString().slice(0, 10);
         } else {
-            from_date = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
-            to_date = now.toISOString().slice(0, 10);
+            // Defaults use the business-timezone calendar day (not UTC)
+            const today = todayAsUtcDate();
+            const y = today.getUTCFullYear();
+            const m = period === 'quarterly' ? Math.floor(today.getUTCMonth() / 3) * 3 : today.getUTCMonth();
+            from_date = new Date(Date.UTC(y, m, 1)).toISOString().slice(0, 10);
+            to_date = todayLocal();
         }
 
         const dateRange = buildDateRange(from_date, to_date);
-        const cards = await Card.find({ user_id: req.user.id }).sort({ bank_name: 1, createdAt: 1 });
+        const cards = await Card.find({ user_id: req.user.id }).populate('holder_id', 'name relation').sort({ bank_name: 1, created_at: 1 });
         const cardIds = cards.map(c => c._id);
 
         // Aggregate transaction spend per card in one query (fixes N+1)
@@ -54,12 +56,13 @@ router.get('/', cacheMiddleware(300), async (req, res, next) => {
         ]);
         const txMap = txAgg.reduce((m, r) => { m[r._id.toString()] = r.total; return m; }, {});
 
-        // Aggregate order spend per card in one query (fixes N+1)
+        // Aggregate order spend + profit per card in one query (fixes N+1).
+        // Profit here saves clients from fetching every order to compute it.
         const ordAgg = await Order.aggregate([
             { $match: { card_id: { $in: cardIds }, order_date: dateRange, delivery_status: { $ne: 'Cancelled' } } },
-            { $group: { _id: '$card_id', total: { $sum: '$order_amount' } } }
+            { $group: { _id: '$card_id', total: { $sum: '$order_amount' }, profit: { $sum: PROFIT_EXPR }, order_count: { $sum: 1 } } }
         ]);
-        const ordMap = ordAgg.reduce((m, r) => { m[r._id.toString()] = r.total; return m; }, {});
+        const ordMap = ordAgg.reduce((m, r) => { m[r._id.toString()] = r; return m; }, {});
 
         // Aggregate cashback earned per card in its current reset cycle
         const cbCards = cards.filter(c => c.cashback_enabled && c.cashback_limit > 0);
@@ -85,9 +88,14 @@ router.get('/', cacheMiddleware(300), async (req, res, next) => {
 
         const cardSummaries = cards.map(card => {
             const id = card._id.toString();
-            const total_spend = (txMap[id] || 0) + (ordMap[id] || 0);
+            const ord = ordMap[id];
+            const total_spend = (txMap[id] || 0) + (ord?.total || 0);
             const cashback_earned_cycle = cbCycleMap[id] || 0;
-            return { ...card.toObject(), total_spend, cashback_earned_cycle };
+            return {
+                ...card.toObject(), total_spend, cashback_earned_cycle,
+                // Order profit in the period (non-cancelled); order_count 0 → no orders
+                profit: ord?.profit || 0, order_count: ord?.order_count || 0,
+            };
         });
 
         const bankMap = {};
