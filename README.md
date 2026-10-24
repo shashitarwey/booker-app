@@ -132,6 +132,14 @@ Open **http://localhost:3000**. API docs are at **http://localhost:5000/api/docs
 docker-compose up --build   # client :80 · server :5000 · MongoDB :27018
 ```
 
+## ☁️ Deploy (free)
+1. Create a free **MongoDB Atlas** M0 cluster, add a database user, and allow access from `0.0.0.0/0`.
+2. On **Render**: **New → Blueprint** → pick this repo. [`render.yaml`](render.yaml) creates `booker-api` (Node) and `booker` (static site).
+3. Fill in `MONGO_URI`, `CORS_ORIGINS` / `CLIENT_URL` (the app's URL) and `VITE_API_URL` (the API's URL + `/api`). Everything else is optional.
+4. Open the app's URL and install it from the browser menu.
+
+The free API sleeps after 15 minutes idle, so the first request after that takes about 30–60 seconds.
+
 ## 🧪 Tests
 ```bash
 ./run.test.sh           # server (Jest) + client (Vitest)

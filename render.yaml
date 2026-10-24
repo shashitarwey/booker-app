@@ -1,0 +1,75 @@
+# Render Blueprint: Dashboard → New → Blueprint → pick this repo.
+# Creates the API (free web service) and the app (free static site).
+# Values marked `sync: false` are asked for when the Blueprint is created.
+services:
+  - type: web
+    name: booker-api
+    runtime: node
+    plan: free
+    region: singapore
+    rootDir: server
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production
+      - key: APP_TZ
+        value: Asia/Kolkata
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MONGO_URI            # MongoDB Atlas connection string (db name: booker_app)
+        sync: false
+      - key: CORS_ORIGINS         # the app's URL, e.g. https://booker.onrender.com
+        sync: false
+      - key: CLIENT_URL           # same as CORS_ORIGINS (used in password-reset emails)
+        sync: false
+      - key: REDIS_URL            # optional: Upstash rediss://… URL; leave blank to run without cache
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+
+  - type: web
+    name: booker
+    runtime: static
+    rootDir: client
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: VITE_API_URL         # the API's URL + /api, e.g. https://booker-api.onrender.com/api
+        sync: false
+    routes:
+      # Single-page app: every path serves index.html so refreshes don't 404
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      # Let installed apps pick up new versions straight away
+      - path: /sw.js
+        name: Cache-Control
+        value: no-cache
+      - path: /index.html
+        name: Cache-Control
+        value: no-cache

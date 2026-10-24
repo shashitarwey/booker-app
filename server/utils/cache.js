@@ -30,7 +30,7 @@ function getClient() {
 
     redis.on('connect', () => {
         isConnected = true;
-        logger.info('Redis connected', { url: REDIS_URL });
+        logger.info('Redis connected', { host: new URL(REDIS_URL).host }); // never log credentials
     });
 
     redis.on('error', (err) => {
