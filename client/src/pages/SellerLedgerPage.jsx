@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getSeller, getAllOrders, getSellerLedger, getLedgerFeed, deleteSellerPayment } from '../api';
 import { ChevronLeft, Wallet, MapPin, TrendingUp, TrendingDown, Trash2, Pencil, BookOpen, FileDown } from 'lucide-react';
 import { fmtCurrency, fmtDisplay, fmtSignedCurrency } from '../utils/formatters';
+import { chipSafeBankLabel } from '../utils/bankAccounts';
 import { pctLabel } from '../utils/profit';
 import { downloadLedgerPdf } from '../utils/ledgerPdf';
 import toast from 'react-hot-toast';
@@ -111,7 +112,7 @@ export default function SellerLedgerPage() {
       else if (item.isPending) parts.push('Not delivered yet — not counted');
       else if (raw.delivered_date) parts.push(`Delivered ${fmtDisplay(raw.delivered_date.slice(0, 10))}`);
     } else {
-      parts.push('Payment received');
+      parts.push(item.bank_label ? `Received in ${chipSafeBankLabel(item.bank_label)}` : 'Payment received');
     }
     return {
       key: `${item.type}-${item.id}`,

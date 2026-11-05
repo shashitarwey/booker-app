@@ -6,5 +6,5 @@ set -e
 
 cd "$(dirname "$0")"
 
-echo "=== Starting server (port 5000) ==="
+echo "=== Starting server (port 5050) ==="
 npm run dev

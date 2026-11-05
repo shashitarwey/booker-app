@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { getActivityLogs, getEntityHistory } from '../api';
 import Pagination from '../common/Pagination';
 import { PAGE_SIZE } from '../constants';
-import { ChevronLeft, ChevronDown, ChevronUp, Plus, Pencil, Trash2, ShoppingBag, CreditCard, Users, Wallet, ArrowLeftRight, History, X as XIcon, BookOpen, Search } from 'lucide-react';
+import { ChevronLeft, ChevronDown, ChevronUp, Plus, Pencil, Trash2, ShoppingBag, CreditCard, Users, Wallet, ArrowLeftRight, History, X as XIcon, BookOpen, Search, ChartCandlestick, Landmark } from 'lucide-react';
 import SearchableDropdown from '../common/SearchableDropdown';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -17,6 +17,9 @@ const ENTITY_CONFIG = {
   customer_entry: { icon: BookOpen,      label: 'Khata Entry',    color: '#a6e3a1' },
   person:         { icon: Users,         label: 'Person',         color: '#f9a875' },
   booker_payment: { icon: Wallet,        label: 'Booker Payment', color: '#fbbf24' },
+  ipo_applicant:  { icon: Users,         label: 'IPO Applicant',  color: '#2dd4bf' },
+  ipo_application:{ icon: ChartCandlestick, label: 'IPO',          color: '#38bdf8' },
+  bank_account:   { icon: Landmark,      label: 'Bank Account',   color: '#a78bfa' },
 };
 
 const ACTION_CONFIG = {
@@ -36,6 +39,9 @@ const ENTITY_FILTER_OPTIONS = [
   { key: 'customer_entry', label: 'Khata Entries' },
   { key: 'person', label: 'People' },
   { key: 'booker_payment', label: 'Booker Payments' },
+  { key: 'ipo_application', label: 'IPOs' },
+  { key: 'ipo_applicant', label: 'IPO Applicants' },
+  { key: 'bank_account', label: 'Bank Accounts' },
 ];
 
 const HIDDEN_KEYS = new Set(['_id', 'user_id', '__v', 'created_at', 'updated_at', 'createdAt', 'updatedAt']);
@@ -45,7 +51,7 @@ const KEY_LABELS = {
   order_date: 'Order Date', delivered_date: 'Delivery Date', delivery_status: 'Status',
   ecomm_site: 'Source', id_used: 'Account', is_cleared: 'Cleared',
   card_id: 'Card', seller_id: 'Buyer', cashback: 'Cashback', variant: 'Variant',
-  friend_amount: 'Return to Friend', advance_amount: 'Advance to Friend', coupon_cashback: 'Coupon Cashback', coupon_in_profit: 'Coupon in Profit', holder_id: 'Card Holder', card_type: 'Card Type', primary_card_id: 'Primary Card', relation: 'Relation',
+  friend_amount: 'Return to Friend', advance_amount: 'Advance to Friend', coupon_cashback: 'Coupon Cashback', coupon_in_profit: 'Coupon in Profit', holder_id: 'Card Holder', card_type: 'Card Type', primary_card_id: 'Primary Card', relation: 'Relation', ipo_name: 'IPO', lot_price: '1 Lot Price', profit_share_percent: 'Their Share %', allotted: 'Allotted', sell_price: 'Sell Price', applicant_id: 'Applicant', bank_account_id: 'Bank Account', default_bank_account_id: 'Default Bank', broker: 'Broker', holder_name: 'Account Holder', account_last4: 'Last 4', card_advance_amount: 'Card Advance', card_advance_bank_id: 'Card Advance From', card_advance_returned: 'Card Advance Returned',
   quantity: 'Qty', bank_name: 'Bank', card_network: 'Network',
   last_four_digit: 'Last 4', name_on_card: 'Name on Card',
   cashback_enabled: 'Cashback', cashback_percent: 'CB %', cashback_limit: 'CB Limit',

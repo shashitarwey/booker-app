@@ -142,3 +142,6 @@ export const DELIVERY_STATUS_OPTIONS = [
 
 // Simple label list for filter dropdowns (prepend "All")
 export const STATUS_FILTER_OPTIONS = ['All', 'Pending', 'Delivered', 'Cancelled'];
+
+// Stock brokers offered when adding an IPO applicant (free text is allowed too)
+export const BROKERS = ['Zerodha', 'Groww', 'Upstox', 'Angel One', 'ICICI Direct', 'HDFC Securities', 'Kotak Securities', 'Motilal Oswal', 'Paytm Money', 'Dhan', '5paisa', 'Sharekhan'];

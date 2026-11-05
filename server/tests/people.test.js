@@ -218,7 +218,8 @@ describe('People, holder cards & friend orders', () => {
       await api().post('/api/orders', makeOrder(friendCard._id, { friend_amount: 50300, advance_amount: 10000 }));
       await api().post('/api/orders', makeOrder(ownCard._id));
       await api().post('/api/orders', makeOrder(ownCard._id, { delivery_status: 'Pending', order_amount: 1000, return_amount: 1200 }));
-      await api().post('/api/sellers/payment', { seller_id: sellerId, amount: 2000, payment_date: '2026-03-02' });
+      const bank = (await api().post('/api/bank-accounts', { holder_name: 'Me', bank_name: 'SBI' })).body;
+      await api().post('/api/sellers/payment', { seller_id: sellerId, amount: 2000, payment_date: '2026-03-02', bank_account_id: bank._id });
 
       const a = (await api().get('/api/analytics/profit')).body;
       expect(a.byBooker.find(b => b.name === 'Ravi')).toMatchObject({ relation: 'friend', profit: 700, profit_percent: 1.4, friend_earning: 2800, pending_dues: 40300 });

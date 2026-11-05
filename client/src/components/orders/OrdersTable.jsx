@@ -1,4 +1,5 @@
 import { MapPin, MessageSquare, CheckSquare, Square } from 'lucide-react';
+import CardAdvanceChip from './CardAdvanceChip';
 import ActionMenu from '../../common/ActionMenu';
 import { fmtCurrency, fmtSignedCurrency, cardLabel } from '../../utils/formatters';
 import { orderProfit, isFriendOrder } from '../../utils/profit';
@@ -81,6 +82,7 @@ export default function OrdersTable({
                     {order.quantity > 1 && <span className="qty-chip">×{order.quantity}</span>}
                   </div>
                   <div className="cell-sub">{order.variant !== 'NA' ? order.variant : ''}</div>
+                  <CardAdvanceChip order={order} />
                 </td>
                 <td>
                   <div className="font-medium">{order.ecomm_site}</div>

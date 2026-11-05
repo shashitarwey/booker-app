@@ -3,6 +3,10 @@ const app = require('../app');
 const { createTestUser, authHeader } = require('./helpers');
 require('./setup');
 
+
+const bankFor = (token) => request(app).post('/api/bank-accounts').set(authHeader(token))
+  .send({ holder_name: 'Me', bank_name: 'SBI' }).then(r => r.body);
+
 describe('Sellers Routes', () => {
   let token;
 
@@ -105,8 +109,15 @@ describe('Sellers Routes', () => {
         .set(authHeader(token))
         .field('seller_id', seller.body._id)
         .field('amount', '5000')
-        .field('payment_date', '2026-03-15');
+        .field('payment_date', '2026-03-15')
+        .field('bank_account_id', (await bankFor(token))._id);
       expect(addRes.status).toBe(201);
+
+      // Every payment must say which account it landed in
+      const noBank = await request(app).post('/api/sellers/payment').set(authHeader(token))
+        .send({ seller_id: seller.body._id, amount: 10, payment_date: '2026-03-15' });
+      expect(noBank.status).toBe(400);
+      expect(noBank.body.error).toMatch(/bank account/);
 
       const listRes = await request(app)
         .get(`/api/sellers/${seller.body._id}/payment`)
@@ -123,7 +134,8 @@ describe('Sellers Routes', () => {
         .set(authHeader(token))
         .field('seller_id', seller.body._id)
         .field('amount', '3000')
-        .field('payment_date', '2026-03-10');
+        .field('payment_date', '2026-03-10')
+        .field('bank_account_id', (await bankFor(token))._id);
 
       const res = await request(app)
         .delete(`/api/sellers/payment/${payment.body._id}`)
@@ -135,12 +147,15 @@ describe('Sellers Routes', () => {
   describe('integrity guards', () => {
     it('blocks deleting a buyer that has payments, and ignores an empty amount on payment edit', async () => {
       const seller = (await request(app).post('/api/sellers').set(authHeader(token)).send({ name: 'Pay Only', city: 'X' })).body;
-      const pay = (await request(app).post('/api/sellers/payment').set(authHeader(token)).send({ seller_id: seller._id, amount: 5000, payment_date: '2026-03-01' })).body;
+      const pay = (await request(app).post('/api/sellers/payment').set(authHeader(token)).send({ seller_id: seller._id, amount: 5000, payment_date: '2026-03-01', bank_account_id: (await bankFor(token))._id })).body;
       const del = await request(app).delete(`/api/sellers/${seller._id}`).set(authHeader(token));
       expect(del.status).toBe(400);
       const edit = await request(app).put(`/api/sellers/payment/${pay._id}`).set(authHeader(token)).send({ amount: '', notes: 'x' });
       expect(edit.status).toBe(200);
       expect(edit.body.amount).toBe(5000);
+      // The account can be changed but never cleared
+      const clear = await request(app).put(`/api/sellers/payment/${pay._id}`).set(authHeader(token)).send({ bank_account_id: '' });
+      expect(clear.status).toBe(400);
     });
   });
 });

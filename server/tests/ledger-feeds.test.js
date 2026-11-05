@@ -82,8 +82,9 @@ describe('Ledger feeds (characterization)', () => {
         await stamp(Order, res.body._id, createdAt);
         return res.body;
       };
+      const bank = (await api().post('/api/bank-accounts', { holder_name: 'Me', bank_name: 'SBI' })).body;
       const payment = async (p, createdAt) => {
-        const res = await api().post('/api/sellers/payment', { seller_id: sellerId, ...p });
+        const res = await api().post('/api/sellers/payment', { seller_id: sellerId, bank_account_id: bank._id, ...p });
         expect(res.status).toBe(201);
         await stamp(SellerPayment, res.body._id, createdAt);
         return res.body;
@@ -114,7 +115,7 @@ describe('Ledger feeds (characterization)', () => {
         seller_id: otherSellerId, card_id: selfCard._id, order_date: '2026-01-07', order_amount: 1, return_amount: 99999,
         model_ordered: 'NOISE', id_used: 'a', ecomm_site: 'Amazon', delivery_status: 'Delivered',
       });
-      await api().post('/api/sellers/payment', { seller_id: otherSellerId, amount: 12345, payment_date: '2026-01-07' });
+      await api().post('/api/sellers/payment', { seller_id: otherSellerId, amount: 12345, payment_date: '2026-01-07', bank_account_id: bank._id });
     });
 
     it('pages newest-first with running balance, tie-breaks and flags', async () => {
@@ -148,7 +149,7 @@ describe('Ledger feeds (characterization)', () => {
 
       // Key order of items is part of the contract
       expect(Object.keys(all.find(i => i.type === 'ORDER'))).toEqual(['id', 'type', 'date', 'description', 'amount', 'booker', 'raw', 'isCancelled', 'isPending', 'runningBalance']);
-      expect(Object.keys(all.find(i => i.type === 'PAYMENT'))).toEqual(['id', 'type', 'date', 'description', 'amount', 'raw', 'isCancelled', 'isPending', 'runningBalance']);
+      expect(Object.keys(all.find(i => i.type === 'PAYMENT'))).toEqual(['id', 'type', 'date', 'description', 'amount', 'bank_label', 'raw', 'isCancelled', 'isPending', 'runningBalance']);
 
       const o5 = all.find(i => i.description === 'O5 ×3');
       expect(o5.booker).toMatchObject({ name: 'Ravi', relation: 'friend' });
@@ -188,7 +189,7 @@ describe('Ledger feeds (characterization)', () => {
       const res = await api().get(`/api/sellers/${sellerId}/payment`);
       expect(res.status).toBe(200);
       expect(res.body.map(p => p.amount)).toEqual([0.2, 0.1, 50, 100, 700, 300]);
-      expect(Object.keys(res.body[0])).toEqual(['_id', 'user_id', 'seller_id', 'amount', 'payment_date', 'notes', 'receipt_url', 'created_at', 'updated_at', '__v']);
+      expect(Object.keys(res.body[0])).toEqual(['_id', 'user_id', 'seller_id', 'amount', 'payment_date', 'notes', 'receipt_url', 'bank_account_id', 'created_at', 'updated_at', '__v']);
     });
   });
 

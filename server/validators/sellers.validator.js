@@ -23,6 +23,7 @@ exports.paymentCreateRules = [
         .isFloat({ gt: 0 }).withMessage('amount must be positive'),
     body('payment_date').isISO8601().withMessage('payment_date must be a valid date'),
     body('notes').optional().isString(),
+    body('bank_account_id').isMongoId().withMessage('Pick the bank account the money was received in'),
 ];
 
 exports.paymentUpdateRules = [
@@ -30,6 +31,8 @@ exports.paymentUpdateRules = [
     body('amount').optional({ values: 'falsy' }).isFloat({ gt: 0 }).withMessage('amount must be positive'),
     body('payment_date').optional({ values: 'falsy' }).isISO8601().withMessage('payment_date must be a valid date'),
     body('notes').optional().isString(),
+    // Can be changed but not cleared: every payment lands in some account
+    body('bank_account_id').optional().isMongoId().withMessage('Pick the bank account the money was received in'),
 ];
 
 exports.paymentIdRule = [param('id').isMongoId().withMessage('Invalid payment id')];

@@ -102,7 +102,7 @@ cd booker-app
 
 ### 2. Configure `server/.env`
 ```env
-PORT=5000
+PORT=5050
 MONGO_URI=mongodb://localhost:27017/booker_app
 JWT_SECRET=change-me
 CORS_ORIGINS=http://localhost:3000
@@ -123,13 +123,13 @@ GEMINI_API_KEY=
 
 ### 3. Run
 ```bash
-./run.local.sh          # server on :5000, client on :3000
+./run.local.sh          # server on :5050, client on :3000
 ```
-Open **http://localhost:3000**. API docs are at **http://localhost:5000/api/docs**.
+Open **http://localhost:3000**. API docs are at **http://localhost:5050/api/docs**.
 
 ### Or with Docker
 ```bash
-docker-compose up --build   # client :80 · server :5000 · MongoDB :27018
+docker-compose up --build   # client :80 · server :5050 · MongoDB :27018
 ```
 
 ## ☁️ Deploy (free)

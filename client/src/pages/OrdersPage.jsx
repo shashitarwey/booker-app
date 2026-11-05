@@ -20,7 +20,8 @@ const EMPTY_FILTERS = {
   order_date_from: '', order_date_to: '',
   delivery_date_from: '', delivery_date_to: '',
   seller_id: '', card_id: '', delivery_status: '', person_id: '',
-  model_ordered: '', ecomm_site: '', is_cleared: ''
+  model_ordered: '', ecomm_site: '', is_cleared: '',
+  card_advance: '', card_advance_bank_id: '',
 };
 
 const EMPTY_SUMMARY = { total_profit: 0, total_order_amount: 0, total_friend_amount: 0, total_friend_earning: 0 };
@@ -57,7 +58,12 @@ export default function OrdersPage({ person = null, onChanged }) {
 
   // Pre-fill seller filter if navigated from SellersPage
   const initSellerId = embedded ? '' : (location.state?.seller_id || '');
-  const [filters, setFilters] = useState({ ...EMPTY_FILTERS, seller_id: initSellerId });
+  // Profile → Bank Accounts links here with the card advances still to return to one account
+  const initAdvance = embedded ? {} : {
+    card_advance: location.state?.card_advance || '',
+    card_advance_bank_id: location.state?.card_advance_bank_id || '',
+  };
+  const [filters, setFilters] = useState({ ...EMPTY_FILTERS, seller_id: initSellerId, ...initAdvance });
   const [orderDatePreset, setOrderDatePreset] = useState('');
   const [deliveryDatePreset, setDeliveryDatePreset] = useState('');
   const debounceRef = useRef(null);

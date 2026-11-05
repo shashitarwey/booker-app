@@ -9,6 +9,9 @@ const Customer = require('../models/Customer');
 const CustomerEntry = require('../models/CustomerEntry');
 const BookerPayment = require('../models/BookerPayment');
 const Variant = require('../models/Variant');
+const IpoApplicant = require('../models/IpoApplicant');
+const IpoApplication = require('../models/IpoApplication');
+const BankAccount = require('../models/BankAccount');
 const { ensureSelfPerson } = require('../utils/people');
 
 /**
@@ -35,16 +38,21 @@ const COLLECTIONS = [
     ['customer_entries', CustomerEntry],
     ['booker_payments', BookerPayment],
     ['variants', Variant],
+    ['bank_accounts', BankAccount],
+    ['ipo_applicants', IpoApplicant],
+    ['ipo_applications', IpoApplication],
 ];
 
 // Reference fields per collection → which collection's id map they point into
 const REFS = {
     cards: { holder_id: 'people', primary_card_id: 'cards' },
-    orders: { card_id: 'cards', seller_id: 'sellers' },
+    orders: { card_id: 'cards', seller_id: 'sellers', card_advance_bank_id: 'bank_accounts' },
     transactions: { card_id: 'cards' },
-    seller_payments: { seller_id: 'sellers' },
+    seller_payments: { seller_id: 'sellers', bank_account_id: 'bank_accounts' },
     customer_entries: { customer_id: 'customers' },
     booker_payments: { person_id: 'people' },
+    ipo_applicants: { default_bank_account_id: 'bank_accounts' },
+    ipo_applications: { applicant_id: 'ipo_applicants', bank_account_id: 'bank_accounts' },
 };
 
 const clean = (doc) => {
@@ -84,6 +92,8 @@ async function isEmptyAccount(userId) {
         Seller.countDocuments({ user_id: userId }),
         Customer.countDocuments({ user_id: userId }),
         Person.countDocuments({ user_id: userId, relation: { $ne: 'self' } }),
+        IpoApplicant.countDocuments({ user_id: userId }),
+        BankAccount.countDocuments({ user_id: userId }),
     ]);
     return counts.every(n => n === 0);
 }

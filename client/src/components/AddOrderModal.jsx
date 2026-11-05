@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { addOrder, updateOrder, getVariants, addVariant, getCashbackCycle } from '../api';
+import { addOrder, updateOrder, getVariants, addVariant, getCashbackCycle, getBankAccounts } from '../api';
 import { X, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ECOMM_SITES, VARIANTS, DELIVERY_STATUS_OPTIONS, getToday } from '../constants';
@@ -14,6 +14,7 @@ const prevDay = (ymd) => {
 import { orderProfit } from '../utils/profit';
 import SingleDatePicker from '../common/SingleDatePicker';
 import SearchableDropdown from '../common/SearchableDropdown';
+import BankAccountSelect from './BankAccountSelect';
 
 
 export default function AddOrderModal({ onClose, onSuccess, editOrder, cards, sellers = [] }) {
@@ -33,6 +34,11 @@ export default function AddOrderModal({ onClose, onSuccess, editOrder, cards, se
     cashback: 0,
     coupon_cashback: '',
     coupon_in_profit: true,
+    // Paid to the credit card in advance (limit too low), from a bank account
+    card_advance_paid: false,
+    card_advance_amount: '',
+    card_advance_bank_id: '',
+    card_advance_returned: false,
     variant: 'NA',
     model_ordered: '',
     id_used: '',
@@ -71,13 +77,19 @@ export default function AddOrderModal({ onClose, onSuccess, editOrder, cards, se
         coupon_in_profit: editOrder.coupon_in_profit !== false,
         advance_paid: editOrder.advance_amount > 0,
         advance_amount: editOrder.advance_amount > 0 ? editOrder.advance_amount : '',
+        card_advance_paid: editOrder.card_advance_amount > 0,
+        card_advance_amount: editOrder.card_advance_amount > 0 ? editOrder.card_advance_amount : '',
+        card_advance_bank_id: editOrder.card_advance_bank_id?._id || editOrder.card_advance_bank_id || '',
+        card_advance_returned: editOrder.card_advance_returned === true,
         remark: editOrder.remark || ''
       });
     }
   }, [editOrder]);
 
+  const [bankAccounts, setBankAccounts] = useState([]);
   useEffect(() => {
     getVariants().then(setVariantOptions).catch(() => {});
+    getBankAccounts().then(setBankAccounts).catch(() => {});
   }, []);
 
   const handleAddVariant = async (name) => {
@@ -155,6 +167,10 @@ export default function AddOrderModal({ onClose, onSuccess, editOrder, cards, se
       if (form.advance_amount === '' || !(adv > 0)) e.advance_amount = 'Enter the advance amount';
       else if (adv > (Number(form.friend_amount) || 0)) e.advance_amount = `Advance can't be more than the return to ${friendName} (₹${Number(form.friend_amount) || 0})`;
     }
+    if (form.card_advance_paid) {
+      if (!(Number(form.card_advance_amount) > 0)) e.card_advance_amount = 'Enter the amount paid to the card';
+      if (!form.card_advance_bank_id) e.card_advance_bank_id = 'Pick the bank account it was paid from';
+    }
     if (form.remark && form.remark.length > 200) e.remark = 'Remark must be 200 characters or fewer';
     if (form.delivery_status === 'Delivered' && !form.delivered_date) e.delivered_date = 'Delivery date is required when status is Delivered';
     setErrors(e);
@@ -170,8 +186,12 @@ export default function AddOrderModal({ onClose, onSuccess, editOrder, cards, se
       friend_amount: isFriendCard ? Number(form.friend_amount) || 0 : null,
       coupon_cashback: Number(form.coupon_cashback) || 0,
       advance_amount: isFriendCard && form.advance_paid ? Number(form.advance_amount) : null,
+      card_advance_amount: form.card_advance_paid ? Number(form.card_advance_amount) : null,
+      card_advance_bank_id: form.card_advance_paid ? form.card_advance_bank_id : null,
+      card_advance_returned: form.card_advance_paid ? form.card_advance_returned : false,
     };
     delete payload.advance_paid;
+    delete payload.card_advance_paid;
     try {
       if (editOrder) {
         await updateOrder(editOrder._id, payload);
@@ -508,6 +528,73 @@ export default function AddOrderModal({ onClose, onSuccess, editOrder, cards, se
                 </div>
               </div>
             </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Paid the card in advance?</label>
+                <div className="segmented">
+                  {[{ v: false, l: 'No' }, { v: true, l: 'Yes' }].map(o => (
+                    <button
+                      type="button"
+                      key={o.l}
+                      className={`segmented-btn ${form.card_advance_paid === o.v ? 'is-active' : ''}`}
+                      onClick={() => {
+                        setForm(f => ({ ...f, card_advance_paid: o.v }));
+                        if (!o.v) setErrors(er => ({ ...er, card_advance_amount: '', card_advance_bank_id: '' }));
+                      }}
+                    >
+                      {o.l}
+                    </button>
+                  ))}
+                </div>
+                <div className="form-hint">When the card limit is short and you pay the card before ordering.</div>
+              </div>
+              {form.card_advance_paid ? (
+                <div className="form-group">
+                  <label className="form-label">Amount paid to card (₹) <span style={{ color: 'var(--danger)' }}>*</span></label>
+                  <input
+                    type="number"
+                    className={`form-input ${errors.card_advance_amount ? 'error' : ''}`}
+                    min="0"
+                    placeholder="0"
+                    value={form.card_advance_amount}
+                    onChange={e => set('card_advance_amount', e.target.value)}
+                  />
+                  {errors.card_advance_amount && <div className="form-error">{errors.card_advance_amount}</div>}
+                </div>
+              ) : <div className="form-group" />}
+            </div>
+
+            {form.card_advance_paid && (
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Paid from <span style={{ color: 'var(--danger)' }}>*</span></label>
+                  <BankAccountSelect
+                    accounts={bankAccounts}
+                    value={form.card_advance_bank_id}
+                    onChange={id => set('card_advance_bank_id', id)}
+                    onAccountAdded={acc => setBankAccounts(list => [...list, acc])}
+                    error={errors.card_advance_bank_id}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Returned to that account?</label>
+                  <div className="segmented">
+                    {[{ v: false, l: 'Not yet' }, { v: true, l: 'Returned' }].map(o => (
+                      <button
+                        type="button"
+                        key={o.l}
+                        className={`segmented-btn ${form.card_advance_returned === o.v ? 'is-active' : ''}`}
+                        onClick={() => set('card_advance_returned', o.v)}
+                      >
+                        {o.l}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="form-hint">Mark Returned once the buyer pays and you move it back.</div>
+                </div>
+              </div>
+            )}
 
             <div className="form-group">
               <label className="form-label">

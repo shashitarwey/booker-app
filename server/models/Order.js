@@ -20,6 +20,12 @@ const OrderSchema = new mongoose.Schema({
     // Advance already paid to the friend against friend_amount (friend orders
     // only; null/0 = no advance). Pending dues = friend_amount − advance_amount.
     advance_amount: { type: Number, default: null, min: 0 },
+    // Money paid to the credit card in advance (card limit too low for the
+    // order), from one of the user's bank accounts. Paid back to that account
+    // once the buyer pays: card_advance_returned. Doesn't affect profit.
+    card_advance_amount: { type: Number, default: null, min: 0 },
+    card_advance_bank_id: { type: mongoose.Schema.Types.ObjectId, ref: 'BankAccount', default: null },
+    card_advance_returned: { type: Boolean, default: false },
     // Free text; options come from Variant.DEFAULT_VARIANTS + user's custom variants
     variant: { type: String, trim: true, maxlength: 30, default: 'NA' },
     model_ordered: { type: String, required: true },

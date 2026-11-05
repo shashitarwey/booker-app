@@ -16,6 +16,9 @@ const ActivityLog = require('../models/ActivityLog');
 const Person = require('../models/Person');
 const Variant = require('../models/Variant');
 const BookerPayment = require('../models/BookerPayment');
+const IpoApplicant = require('../models/IpoApplicant');
+const IpoApplication = require('../models/IpoApplication');
+const BankAccount = require('../models/BankAccount');
 const logger = require('./logger');
 
 const GRACE_PERIOD_DAYS = 7;
@@ -43,6 +46,9 @@ async function purgeUser(user) {
     await Person.deleteMany({ user_id: userId });
     await Variant.deleteMany({ user_id: userId });
     await BookerPayment.deleteMany({ user_id: userId });
+    await IpoApplication.deleteMany({ user_id: userId });
+    await IpoApplicant.deleteMany({ user_id: userId });
+    await BankAccount.deleteMany({ user_id: userId });
     await ActivityLog.deleteMany({ user_id: userId });
 
     logger.info('Purged user data', {

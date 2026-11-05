@@ -13,7 +13,7 @@ mongoose.connection.asPromise()
     .then(() => require('./utils/migrations').runMigrations())
     .catch(err => logger.error('Startup migrations crashed', { error: err.message }));
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5050; // not 5000: macOS AirPlay Receiver owns it
 
 app.listen(PORT, () => {
     logger.info(`Server running at http://localhost:${PORT}`);

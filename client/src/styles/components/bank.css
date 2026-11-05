@@ -1,0 +1,146 @@
+/* ── Bank Accounts page ───────────────────────────────────────── */
+
+.bank-head {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+  margin: 4px 0 16px;
+}
+.bank-head-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+
+.bank-panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.bank-panels.is-loading { opacity: 0.6; transition: opacity 0.15s; }
+
+.bank-panel {
+  display: flex; flex-direction: column; gap: 10px; min-width: 0;
+  padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.bank-panel-head { display: flex; align-items: center; gap: 12px; }
+.bank-panel-head h2 { margin: 0; font-size: 1rem; font-weight: 700; }
+.bank-panel-head p { margin: 2px 0 0; color: var(--text-muted); font-size: 0.78rem; }
+.bank-panel-total { margin-left: auto; font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; }
+.bank-panel-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0; }
+.bank-panel-icon.is-in { background: color-mix(in srgb, var(--success) 14%, transparent); color: var(--ink-green); }
+.bank-panel-icon.is-out { background: color-mix(in srgb, var(--amber) 14%, transparent); color: var(--ink-amber); }
+
+.bank-empty { color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; padding: 8px 0; }
+.bank-sub-title {
+  margin-top: 6px; color: var(--text-muted); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+}
+
+/* Per-buyer rows */
+.bank-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.bank-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) 90px auto; align-items: center; gap: 12px;
+  padding: 10px 12px; background: var(--surface2); border-radius: var(--radius-sm); cursor: pointer;
+}
+.bank-row.is-static { grid-template-columns: minmax(0, 1fr) auto; cursor: default; }
+.bank-row:not(.is-static):hover { outline: 1px solid var(--border-strong); }
+.bank-row-main { display: flex; flex-direction: column; min-width: 0; }
+.bank-row-main strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bank-row-main span { color: var(--text-muted); font-size: 0.76rem; }
+.bank-row-bar { height: 6px; border-radius: 99px; background: var(--border); overflow: hidden; }
+.bank-row-bar span { display: block; height: 100%; border-radius: 99px; background: var(--success); }
+.bank-row-amt { white-space: nowrap; }
+
+/* Payments */
+.bank-list-plain { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.bank-list-plain li {
+  display: grid; grid-template-columns: 86px minmax(0, 1fr) auto; gap: 10px; align-items: baseline;
+  padding: 8px 2px; border-bottom: 1px dashed var(--border); font-size: 0.85rem;
+}
+.bank-list-plain li:last-child { border-bottom: 0; }
+.bank-date { color: var(--text-muted); font-size: 0.78rem; }
+.bank-who { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bank-who em { font-style: normal; color: var(--text-muted); }
+
+/* Advances */
+.bank-adv-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.bank-adv-kpis div { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: var(--surface2); border-radius: var(--radius-sm); }
+.bank-adv-kpis span { color: var(--text-muted); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.bank-adv-kpis strong { font-size: 1.1rem; }
+.bank-adv-kpis em { font-style: normal; color: var(--text-muted); font-size: 0.75rem; }
+
+.bank-adv-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.bank-adv {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 12px; border: 1px solid var(--border); border-left: 3px solid var(--amber); border-radius: var(--radius-sm);
+}
+.bank-adv.is-returned { border-left-color: var(--success); opacity: 0.8; }
+.bank-adv-main { display: flex; flex-direction: column; min-width: 0; font-size: 0.85rem; }
+.bank-adv-main span { color: var(--text-muted); font-size: 0.76rem; overflow-wrap: anywhere; }
+.bank-adv-card { font-weight: 600; }
+.bank-adv-side { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+.bank-adv-toggle { display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 0.75rem; }
+
+@media (max-width: 980px) {
+  .bank-panels { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .bank-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .bank-row-bar { display: none; }
+  .bank-list-plain li { grid-template-columns: minmax(0, 1fr) auto; }
+  .bank-date { grid-column: 1 / -1; }
+  .bank-panel-total { font-size: 1.1rem; }
+}
+
+/* ── Person → accounts ── */
+.bank-person-bar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 0 14px;
+}
+.bank-person-name { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.bank-person-name h2 { margin: 0; font-size: 1.2rem; font-weight: 800; letter-spacing: -0.01em; }
+.bank-rename { display: flex; align-items: center; gap: 6px; }
+.bank-rename .form-input { height: 36px; max-width: 220px; }
+
+.bank-acc-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-bottom: 14px;
+}
+.bank-acc-card {
+  position: relative; display: flex; flex-direction: column; gap: 4px; text-align: left;
+  padding: 14px; border-radius: var(--radius-md); cursor: pointer;
+  background: var(--surface); border: 1px solid var(--border); color: var(--text); font: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+.bank-acc-card:hover { border-color: var(--border-strong); }
+.bank-acc-card.is-active { border-color: var(--accent); background: var(--accent-soft); }
+.bank-acc-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bank-acc-card.is-all { border-style: dashed; }
+.bank-acc-card.is-all.is-active { border-style: solid; }
+.bank-acc-name { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; padding-right: 60px; }
+.bank-acc-sub { color: var(--text-muted); font-size: 0.75rem; }
+.bank-acc-nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+.bank-acc-nums div { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.bank-acc-nums span { color: var(--text-muted); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.bank-acc-nums strong { font-size: 0.92rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bank-acc-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 2px; }
+.bank-acc-actions .icon-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.bank-tag {
+  display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 99px;
+  background: var(--surface2); color: var(--text-muted); font-size: 0.7rem; font-weight: 600;
+}
+
+/* ── IPO panel (separate from received / advanced) ── */
+.bank-panel-wide { grid-column: 1 / -1; }
+.bank-panel-icon.is-ipo { background: var(--accent-soft); color: var(--accent); }
+.bank-panel-link { margin-left: auto; }
+.bank-ipo-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.bank-ipo-kpis div { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: var(--surface2); border-radius: var(--radius-sm); min-width: 0; }
+.bank-ipo-kpis span { color: var(--text-muted); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.bank-ipo-kpis strong { font-size: 1.1rem; }
+.bank-ipo-kpis em { font-style: normal; color: var(--text-muted); font-size: 0.75rem; }
+.bank-ipo-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.bank-ipo-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 300px); align-items: center; gap: 12px;
+  padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+}
+.bank-ipo-nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; text-align: right; }
+.bank-ipo-nums div { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.bank-ipo-nums span { color: var(--text-muted); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.bank-ipo-nums strong { font-size: 0.88rem; white-space: nowrap; }
+.bank-acc-nums { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 10px; }
+
+@media (max-width: 760px) {
+  .bank-ipo-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bank-ipo-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .bank-ipo-nums { grid-column: 1 / -1; text-align: left; }
+}

@@ -6,7 +6,7 @@ set -e
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-echo "=== Starting server (port 5000) and client (port 3000) ==="
+echo "=== Starting server (port 5050) and client (port 3000) ==="
 echo ""
 
 # Run both in background, kill both on exit

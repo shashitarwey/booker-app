@@ -4,6 +4,7 @@ const router = express.Router();
 const Order = require('../models/Order');
 const Card = require('../models/Card');
 const Seller = require('../models/Seller');
+const BankAccount = require('../models/BankAccount');
 const { PROFIT_EXPR, FRIEND_EARNING_EXPR } = require('../utils/profit');
 const { familyPersonIds } = require('../utils/people');
 const { pickFields, parsePagination, paginatedResponse, toObjectId, escapeRegex } = require('../utils/helpers');
@@ -84,7 +85,8 @@ const ORDER_FIELDS = [
     'card_id', 'seller_id', 'order_date', 'delivered_date',
     'order_amount', 'return_amount', 'quantity', 'cashback',
     'variant', 'model_ordered', 'id_used', 'delivery_status', 'ecomm_site', 'is_cleared', 'remark',
-    'friend_amount', 'advance_amount', 'coupon_cashback', 'coupon_in_profit'
+    'friend_amount', 'advance_amount', 'coupon_cashback', 'coupon_in_profit',
+    'card_advance_amount', 'card_advance_bank_id', 'card_advance_returned',
 ];
 
 const CARD_POPULATE = {
@@ -128,6 +130,35 @@ function resolveFriendAmount(card, data, oldOrder = null) {
     if (!Number.isFinite(advance) || advance < 0) return 'Advance amount must be 0 or more';
     if (advance > amount) return 'Advance cannot be more than the return amount to friend';
     data.advance_amount = advance > 0 ? advance : null;
+    return null;
+}
+
+/**
+ * Card advance (paid to the credit card from a bank account): an amount > 0
+ * needs one of the user's bank accounts; no amount clears the bank and the
+ * returned flag. Only runs when the write touches these fields.
+ * Returns an error message or null.
+ */
+async function resolveCardAdvance(userId, data, oldOrder = null) {
+    const keys = ['card_advance_amount', 'card_advance_bank_id', 'card_advance_returned'];
+    if (!keys.some(k => data[k] !== undefined)) return null;
+    const pick = (k) => (data[k] !== undefined ? data[k] : oldOrder?.[k]);
+    const raw = pick('card_advance_amount');
+    const amount = raw === '' || raw === null || raw === undefined ? 0 : Number(raw);
+    if (!Number.isFinite(amount) || amount < 0) return 'Card advance must be 0 or more';
+    if (amount === 0) {
+        data.card_advance_amount = null;
+        data.card_advance_bank_id = null;
+        data.card_advance_returned = false;
+        return null;
+    }
+    const bankId = pick('card_advance_bank_id') || null;
+    if (!bankId) return 'Pick the bank account the card advance was paid from';
+    if (!(await BankAccount.exists({ _id: bankId, user_id: userId }))) return 'Bank account not found';
+    data.card_advance_amount = amount;
+    data.card_advance_bank_id = bankId;
+    const returned = pick('card_advance_returned');
+    data.card_advance_returned = returned === true || returned === 'true';
     return null;
 }
 
@@ -212,7 +243,7 @@ router.get('/', async (req, res, next) => {
             delivery_date_from, delivery_date_to,
             seller_id, card_id, delivery_status,
             model_ordered, ecomm_site, is_cleared,
-            person_id, all
+            person_id, all, card_advance, card_advance_bank_id,
         } = req.query;
 
         const filter = { user_id: req.user.id };
@@ -243,10 +274,20 @@ router.get('/', async (req, res, next) => {
         if (ecomm_site) filter.ecomm_site = ecomm_site;
         if (is_cleared === 'true') filter.is_cleared = true;
         else if (is_cleared === 'false') filter.is_cleared = false;
+        // Card advances: pending = paid to the card, not yet returned to the bank account
+        if (card_advance === 'pending' || card_advance === 'returned') {
+            filter.card_advance_amount = { $gt: 0 };
+            filter.card_advance_returned = card_advance === 'returned';
+        }
+        if (card_advance_bank_id) {
+            if (!mongoose.isValidObjectId(card_advance_bank_id)) return res.status(400).json({ error: 'Invalid card_advance_bank_id' });
+            filter.card_advance_bank_id = card_advance_bank_id;
+        }
 
         const query = Order.find(filter)
             .populate(CARD_POPULATE)
             .populate('seller_id', 'name city')
+            .populate('card_advance_bank_id', 'holder_name bank_name account_last4')
             // Tie-break same-day orders by created_at desc so the most
             // recently added order surfaces at the top of its date group.
             .sort({ order_date: -1, created_at: -1 });
@@ -333,6 +374,8 @@ router.post('/', createRules, validate, async (req, res, next) => {
         if (!card) return res.status(400).json({ error: 'Invalid card_id — card not found or not yours' });
         const friendError = resolveFriendAmount(card, data);
         if (friendError) return res.status(400).json({ error: friendError });
+        const advanceError = await resolveCardAdvance(req.user.id, data);
+        if (advanceError) return res.status(400).json({ error: advanceError });
 
         // Verify the seller belongs to the current user
         let seller = null;
@@ -384,6 +427,9 @@ router.put('/:id', updateRules, validate, async (req, res, next) => {
             const friendError = resolveFriendAmount(card, data, oldOrder);
             if (friendError) return res.status(400).json({ error: friendError });
         }
+
+        const advanceError = await resolveCardAdvance(req.user.id, data, oldOrder);
+        if (advanceError) return res.status(400).json({ error: advanceError });
 
         // Verify the seller belongs to the current user if being changed
         if (data.seller_id) {

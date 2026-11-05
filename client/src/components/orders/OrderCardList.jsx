@@ -1,5 +1,6 @@
 import { MapPin, MessageSquare, CheckSquare, Square } from 'lucide-react';
 import ActionMenu from '../../common/ActionMenu';
+import CardAdvanceChip from './CardAdvanceChip';
 import { fmtCurrency, fmtSignedCurrency, cardLabel } from '../../utils/formatters';
 import { orderProfit, isFriendOrder } from '../../utils/profit';
 
@@ -48,6 +49,7 @@ export default function OrderCardList({ orders, selected, toggleSelect, openMenu
               <span><MapPin size={11} /> {order.seller_id?.name || '—'}</span>
               {showHolder && holder && <span>{isGroup ? 'Member' : 'Booker'}: <strong>{holder.relation === 'self' ? 'You' : holder.name}</strong></span>}
               {order.card_id && <span>{cardLabel(order.card_id)}</span>}
+              <CardAdvanceChip order={order} />
             </div>
 
             <div className="order-card-amounts">

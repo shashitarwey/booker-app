@@ -55,6 +55,8 @@ app.use('/api/analytics', authMiddleware, require('./routes/analytics'));
 app.use('/api/activity', authMiddleware, require('./routes/activity'));
 app.use('/api/ai', authMiddleware, require('./routes/ai'));
 app.use('/api/export', authMiddleware, require('./routes/export'));
+app.use('/api/ipo', authMiddleware, require('./routes/ipo'));
+app.use('/api/bank-accounts', authMiddleware, require('./routes/bankAccounts'));
 
 // ── Health check endpoint (public) ───────────────────────────────────────────
 app.get('/api/health', async (_req, res) => {

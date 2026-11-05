@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react';
-import { addSellerPayment, updateSellerPayment } from '../api';
+import { useState, useRef, useEffect } from 'react';
+import BankAccountSelect from './BankAccountSelect';
+import { addSellerPayment, updateSellerPayment, getBankAccounts } from '../api';
 import { X, Save, Upload, Image as ImageIcon, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import SingleDatePicker from '../common/SingleDatePicker';
@@ -14,9 +15,12 @@ export default function AddPaymentModal({ onClose, onSuccess, seller, editPaymen
     amount: isEdit ? String(editPayment.amount) : '',
     payment_date: isEdit ? editPayment.payment_date?.slice(0, 10) : today,
     notes: isEdit ? (editPayment.notes || '') : '',
+    bank_account_id: isEdit ? String(editPayment.bank_account_id?._id || editPayment.bank_account_id || '') : '',
     receipt: null,
   });
   const [errors, setErrors] = useState({});
+  const [bankAccounts, setBankAccounts] = useState([]);
+  useEffect(() => { getBankAccounts().then(setBankAccounts).catch(() => {}); }, []);
   const [loading, setLoading] = useState(false);
   const hadExistingReceipt = isEdit && !!editPayment.receipt_url;
   const [preview, setPreview] = useState(hadExistingReceipt ? editPayment.receipt_url : null);
@@ -32,6 +36,7 @@ export default function AddPaymentModal({ onClose, onSuccess, seller, editPaymen
     const e = {};
     if (!form.amount || Number(form.amount) <= 0) e.amount = 'Enter a valid payment amount';
     if (!form.payment_date) e.payment_date = 'Payment date is required';
+    if (!form.bank_account_id) e.bank_account_id = 'Pick the account the money was received in';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -46,6 +51,7 @@ export default function AddPaymentModal({ onClose, onSuccess, seller, editPaymen
       submitData.append('payment_date', form.payment_date);
       // Always send notes when editing so clearing the note is saved
       if (form.notes || isEdit) submitData.append('notes', form.notes || '');
+      submitData.append('bank_account_id', form.bank_account_id);
       if (form.receipt) submitData.append('receipt', form.receipt);
       if (isEdit && removedReceipt && !form.receipt) submitData.append('remove_receipt', 'true');
 
@@ -107,6 +113,18 @@ export default function AddPaymentModal({ onClose, onSuccess, seller, editPaymen
                 maxDate={today}
               />
               {errors.payment_date && <div className="form-error">{errors.payment_date}</div>}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Received in <span style={{ color: 'var(--danger)' }}>*</span></label>
+              <BankAccountSelect
+                accounts={bankAccounts}
+                value={form.bank_account_id}
+                onChange={id => set('bank_account_id', id)}
+                onAccountAdded={acc => setBankAccounts(list => [...list, acc])}
+                placeholder="Which bank account got the money?"
+                error={errors.bank_account_id}
+              />
             </div>
 
             <div className="form-group">

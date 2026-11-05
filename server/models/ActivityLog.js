@@ -9,7 +9,7 @@ const ActivityLogSchema = new mongoose.Schema({
     },
     entity: {
         type: String,
-        enum: ['order', 'seller', 'seller_payment', 'transaction', 'card', 'customer', 'customer_entry', 'person', 'booker_payment'],
+        enum: ['order', 'seller', 'seller_payment', 'transaction', 'card', 'customer', 'customer_entry', 'person', 'booker_payment', 'ipo_applicant', 'ipo_application', 'bank_account'],
         required: true
     },
     entity_id: { type: mongoose.Schema.Types.ObjectId },

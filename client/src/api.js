@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API = axios.create({ baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api' });
+const API = axios.create({ baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5050/api' });
 
 // Attach JWT token from localStorage to every request
 API.interceptors.request.use(cfg => {
@@ -59,6 +59,27 @@ export const cancelAccountDeletion = () => API.post('/auth/cancel-deletion').the
 export const getAccountStatus = () => API.get('/auth/account-status').then(r => r.data);
 export const forgotPassword = (data) => API.post('/auth/forgot-password', data).then(r => r.data);
 export const resetPassword = (token, data) => API.post(`/auth/reset-password/${token}`, data).then(r => r.data);
+
+// ── Bank accounts (shared across features) ──
+export const getBankAccounts = () => cachedGet('/bank-accounts');
+export const addBankAccount = (d) => API.post('/bank-accounts', d).then(r => r.data);
+export const updateBankAccount = (id, d) => API.put(`/bank-accounts/${id}`, d).then(r => r.data);
+export const deleteBankAccount = (id) => API.delete(`/bank-accounts/${id}`).then(r => r.data);
+// { account, received: { total, by_seller, payments }, advanced: { total, to_return, returned, by_seller, items }, ipo }
+export const getBankAccountSummary = (id, params) => API.get(`/bank-accounts/${id}/summary`, { params }).then(r => r.data);
+// All of one person's accounts combined; accounts[] carries per-bank received / advanced / to_return
+export const getPersonBankSummary = (holder, params) => API.get('/bank-accounts/summary', { params: { ...params, holder } }).then(r => r.data);
+export const renameBankHolder = (from, to) => API.put('/bank-accounts/holder', { from, to }).then(r => r.data);
+
+// ── IPO ──
+export const getIpoApplicants = () => API.get('/ipo/applicants').then(r => r.data);
+export const addIpoApplicant = (d) => API.post('/ipo/applicants', d).then(r => r.data);
+export const updateIpoApplicant = (id, d) => API.put(`/ipo/applicants/${id}`, d).then(r => r.data);
+export const deleteIpoApplicant = (id) => API.delete(`/ipo/applicants/${id}`).then(r => r.data);
+export const getIpoApplications = (params) => API.get('/ipo/applications', { params }).then(r => r.data); // { items, summary }
+export const addIpoApplications = (d) => API.post('/ipo/applications', d).then(r => r.data); // d.entries = [{ applicant_id, bank_account_id }]
+export const updateIpoApplication = (id, d) => API.put(`/ipo/applications/${id}`, d).then(r => r.data);
+export const deleteIpoApplication = (id) => API.delete(`/ipo/applications/${id}`).then(r => r.data);
 
 // ── Backup ──
 // Downloads every record of the account as one JSON file

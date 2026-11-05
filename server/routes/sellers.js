@@ -4,6 +4,7 @@ const multer = require('multer');
 const Seller = require('../models/Seller');
 const Order = require('../models/Order');
 const SellerPayment = require('../models/SellerPayment');
+const BankAccount = require('../models/BankAccount');
 const { PROFIT_EXPR } = require('../utils/profit');
 const { uploadToCloudinary } = require('../utils/cloudinary');
 const { toObjectId, parsePagination, paginatedResponse } = require('../utils/helpers');
@@ -322,7 +323,7 @@ router.get('/:sellerId/payment', sellerIdRule, validate, async (req, res, next) 
         const payments = await SellerPayment.find({
             seller_id: req.params.sellerId,
             user_id: req.user.id
-        }).sort({ payment_date: -1, created_at: -1 });
+        }).populate('bank_account_id', BANK_FIELDS).sort({ payment_date: -1, created_at: -1 });
         res.json(payments);
     } catch (err) { next(err); }
 });
@@ -359,12 +360,25 @@ const ledgerOrderItem = (o, runningBalance) => ({
     runningBalance,
 });
 
+const BANK_FIELDS = 'holder_name bank_name account_last4';
+const bankText = (b) => (b && b.holder_name ? `${b.holder_name} · ${b.bank_name}${b.account_last4 ? ` ••${b.account_last4}` : ''}` : '');
+
+// The account the money was received in must be one of the user's accounts.
+// Returns {} (not sent), { id } or { error }.
+async function resolveBankAccount(userId, raw) {
+    if (raw === undefined) return {};
+    if (!raw) return { error: 'Pick the bank account the money was received in' };
+    const ok = await BankAccount.exists({ _id: raw, user_id: userId });
+    return ok ? { id: raw } : { error: 'Bank account not found' };
+}
+
 const ledgerPaymentItem = (p, runningBalance) => ({
     id: p._id,
     type: 'PAYMENT',
     date: p.payment_date,
     description: p.notes || 'Payment Received',
     amount: p.amount,
+    bank_label: bankText(p.bank_account_id),
     raw: p,
     isCancelled: false,
     isPending: false,
@@ -396,7 +410,7 @@ router.get('/:sellerId/ledger-feed', sellerIdRule, validate, async (req, res, ne
         const idsOf = (rank) => rows.filter(r => r.rank === rank).map(r => r._id);
         const [orders, payments] = await Promise.all([
             Order.find({ _id: { $in: idsOf(0) }, user_id: req.user.id }).populate(ORDER_CARD_POPULATE).lean(),
-            SellerPayment.find({ _id: { $in: idsOf(1) }, user_id: req.user.id }).lean(),
+            SellerPayment.find({ _id: { $in: idsOf(1) }, user_id: req.user.id }).populate('bank_account_id', BANK_FIELDS).lean(),
         ]);
         const orderById = byId(orders);
         const paymentById = byId(payments);
@@ -421,6 +435,9 @@ router.post('/payment', upload.single('receipt'), paymentCreateRules, validate, 
         const seller = await Seller.findOne({ _id: seller_id, user_id: req.user.id });
         if (!seller) return res.status(400).json({ error: 'Invalid seller_id — seller not found or not yours' });
 
+        const bank = await resolveBankAccount(req.user.id, req.body.bank_account_id);
+        if (bank.error) return res.status(400).json({ error: bank.error });
+
         let receipt_url = '';
         if (req.file) {
             receipt_url = await uploadToCloudinary(req.file.buffer, 'analyzer_receipts');
@@ -432,7 +449,8 @@ router.post('/payment', upload.single('receipt'), paymentCreateRules, validate, 
             amount: Number(amount),
             payment_date,
             notes,
-            receipt_url
+            receipt_url,
+            bank_account_id: bank.id,
         });
         const savedPayment = await newPayment.save();
         invalidateCache(req, 'seller_payments');
@@ -452,6 +470,9 @@ router.put('/payment/:id', upload.single('receipt'), paymentUpdateRules, validat
         if (amount !== undefined && amount !== '') update.amount = Number(amount);
         if (payment_date !== undefined) update.payment_date = payment_date;
         if (notes !== undefined) update.notes = notes;
+        const bank = await resolveBankAccount(req.user.id, req.body.bank_account_id);
+        if (bank.error) return res.status(400).json({ error: bank.error });
+        if (bank.id !== undefined) update.bank_account_id = bank.id;
 
         if (req.file) {
             update.receipt_url = await uploadToCloudinary(req.file.buffer, 'analyzer_receipts');

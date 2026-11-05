@@ -46,21 +46,21 @@ client/
 
 ```bash
 # Development
-cd server && npm install && npm run dev    # Backend on :5000 (nodemon)
-cd client && npm install && npm run dev    # Frontend on :3000 (Vite, proxies /api to :5000)
+cd server && npm install && npm run dev    # Backend on :5050 (nodemon)
+cd client && npm install && npm run dev    # Frontend on :3000 (Vite, proxies /api to :5050)
 
 # Production
 cd server && npm start
 cd client && npm run build                 # Outputs to client/dist/
 
 # Docker (full stack)
-docker-compose up --build                  # Server :5000, Client :80, MongoDB :27018
+docker-compose up --build                  # Server :5050, Client :80, MongoDB :27018
 ```
 
 ## Environment Variables
 
 **Server** (`server/.env`):
-- `PORT` (5000), `MONGO_URI` (DB name: `booker_app`), `JWT_SECRET`
+- `PORT` (5050; 5000 clashes with macOS AirPlay Receiver), `MONGO_URI` (DB name: `booker_app`), `JWT_SECRET`
 - `REDIS_URL` (optional, defaults to localhost:6379)
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `SMTP_SECURE` (email)
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
@@ -68,7 +68,7 @@ docker-compose up --build                  # Server :5000, Client :80, MongoDB :
 - `BACKUP_PASSPHRASE`, `BACKUP_KEEP` (backup scripts only)
 
 **Client** (`client/.env`):
-- `VITE_API_URL` (e.g., `http://localhost:5000/api`)
+- `VITE_API_URL` (e.g., `http://localhost:5050/api`)
 
 ## Database Models
 
@@ -82,6 +82,9 @@ docker-compose up --build                  # Server :5000, Client :80, MongoDB :
 | **Order** | user_id, card_id, seller_id, order/return amounts, cashback, friend_amount, variant (free text), model, delivery_status (`Delivered`/`Pending`/`Cancelled`), ecomm_site, remark | Profit — see below |
 | **Seller** | user_id, name, city, phone | Stats computed dynamically via aggregation |
 | **SellerPayment** | user_id, seller_id, amount, payment_date, notes, receipt_url (Cloudinary) | Index: {user_id, seller_id, payment_date} |
+| **BankAccount** | user_id, holder_name, bank_name, account_last4 | Shared across features. UI groups accounts by person (holder_name, case-insensitive; new accounts reuse an existing person's spelling) |
+| **IpoApplicant** | user_id, name, broker, default_bank_account_id, notes | Separate from Person (never a booker) |
+| **IpoApplication** | user_id, applicant_id, bank_account_id, ipo_name, lot_price, profit_share_percent (applicant's share), allotted, sell_price | Profit: see IPO below |
 | **PasswordResetToken** | user_id, token (SHA-256 hash), expires_at, used | TTL index auto-deletes expired tokens |
 
 ## API Endpoints
@@ -125,6 +128,15 @@ docker-compose up --build                  # Server :5000, Client :80, MongoDB :
 - The orders route requires `friend_amount` for friend-held cards and nulls it otherwise. Friend orders may carry `advance_amount` (0..friend_amount, null = none). **Booker khata** (`utils/bookerKhata.js`, `GET /api/people/:id/khata`, payments via `BookerPayment` + `/api/people/:id/payments`): balance = friend_amount on Delivered orders − advances (non-cancelled orders) − payments; `pending_dues` everywhere is this all-time balance. Always use `PROFIT_EXPR` in aggregations, never inline the formula.
 
 **People UI**: `/people` redirects to `/people/family`. On `/people/:id` the top strip shows ONE "Family" chip (self + family) plus a chip per booker; `/people/family` is the combined family view (member pills drill into one member). Server accepts `person_id=family` (orders) and `holder_id=family` (cards). Tabs: Cards | Orders (| Khata for bookers). `OrdersPage` takes an optional `person` prop that scopes everything via `GET /api/orders?person_id=`.
+
+**Bank accounts** (`routes/bankAccounts.js`, page `/bank-accounts`): one list used by:
+- IPO applications (`bank_account_id`, money blocked from) and the applicant's default
+- orders: `card_advance_amount` + `card_advance_bank_id` + `card_advance_returned` (credit card paid in advance from an account; returned once the buyer pays; never affects profit). Validated in `resolveCardAdvance` (routes/orders.js); `GET /api/orders?card_advance=pending|returned&card_advance_bank_id=`
+- buyer payments: `SellerPayment.bank_account_id` is **required** for new payments ("Received in"); older payments may be null
+
+`GET /api/bank-accounts` adds usage_count, received_total, advance_to_return. `GET /api/bank-accounts/:id/summary` and `GET /api/bank-accounts/summary?holder=` (all of a person's accounts, with a per-account breakdown in `accounts[]`) keep three things separate, never summed together: **received** (from buyers, by payment date), **advanced** (to cards, by order date, with buyer + card per order) and **ipo** (applications from the account, by applied date: counts, amount used on allotted lots, profit split). `PUT /api/bank-accounts/holder {from,to}` renames a person. Deleting an account is blocked while anything in `USAGE` references it; a new feature that stores a bank account must add itself to `USAGE`, `services/accountData.js` REFS and `utils/accountCleanup.js`.
+
+**IPO** (`routes/ipo.js`, `utils/ipo.js` mirrored in `client/src/utils/ipo.js`, page `/ipo`): `POST /api/ipo/applications` takes `entries: [{ applicant_id, bank_account_id }]` to apply one IPO for several people. Profit only once allotted and sold: `sell_price − lot_price`; applicant gets `profit_share_percent`, the user keeps the rest (losses are shared the same way). Un-allotting clears `sell_price`. Status: applied → allotted → sold.
 
 **Activity log**: TTL 365 days (`models/ActivityLog.js`).
 

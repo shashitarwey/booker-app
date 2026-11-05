@@ -18,7 +18,8 @@ describe('AI data snapshot', () => {
     });
     await order(own._id);
     await order(fr._id, { friend_amount: 1050 });
-    await request(app).post('/api/sellers/payment').set(h).send({ seller_id: seller._id, amount: 200, payment_date: '2026-05-02' });
+    const bank = (await request(app).post('/api/bank-accounts').set(h).send({ holder_name: 'Me', bank_name: 'SBI' })).body;
+    await request(app).post('/api/sellers/payment').set(h).send({ seller_id: seller._id, amount: 200, payment_date: '2026-05-02', bank_account_id: bank._id });
 
     const snap = await buildUserDataSnapshot(String(user._id));
     expect(snap.analytics.totals.profit).toBe(150);          // 100 own + 50 booker

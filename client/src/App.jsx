@@ -8,6 +8,8 @@ import SellerLedgerPage from './pages/SellerLedgerPage';
 import KhataPage from './pages/KhataPage';
 import PersonDetailPage from './pages/PersonDetailPage';
 import SpendReportPage from './pages/SpendReportPage';
+import IpoPage from './pages/IpoPage';
+import BankAccountsPage from './pages/BankAccountsPage';
 import KhataDetailPage from './pages/KhataDetailPage';
 import ProfilePage from './pages/ProfilePage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
@@ -68,6 +70,8 @@ export default function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/change-password" element={<ChangePasswordPage />} />
           <Route path="/analytics" element={<OrderAnalyticsPage />} />
+          <Route path="/ipo" element={<IpoPage />} />
+          <Route path="/bank-accounts" element={<BankAccountsPage />} />
           <Route path="/activity" element={<ActivityLogPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

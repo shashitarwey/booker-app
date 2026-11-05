@@ -15,15 +15,20 @@ async function seed(h) {
   const fc = await post('/api/cards', { bank_name: 'Axis Bank', card_network: 'Visa', last_four_digit: '3333', name_on_card: 'R', holder_id: friend._id });
   const seller = await post('/api/sellers', { name: 'Shop', city: 'Patna' });
   const order = (card_id, extra) => post('/api/orders', { card_id, seller_id: seller._id, order_date: '2026-05-01', order_amount: 10000, return_amount: 10600, model_ordered: 'Phone', id_used: 'a', ecomm_site: 'Amazon', delivery_status: 'Delivered', ...extra });
-  await order(own._id, { cashback: 500, coupon_cashback: 200 });
+  const advBank = await post('/api/bank-accounts', { holder_name: 'Me', bank_name: 'HDFC Bank' });
+  await order(own._id, { cashback: 500, coupon_cashback: 200, card_advance_amount: 8000, card_advance_bank_id: advBank._id });
   await order(fc._id, { friend_amount: 10300, advance_amount: 3000 });
   await order(fc._id, { friend_amount: 5000, delivery_status: 'Pending' });
   await post('/api/transactions', { card_id: own._id, amount: 1500, description: 'Fuel', date: '2026-05-02' });
-  await post('/api/sellers/payment', { seller_id: seller._id, amount: 4000, payment_date: '2026-05-03', notes: 'UPI' });
+  await post('/api/sellers/payment', { seller_id: seller._id, amount: 4000, payment_date: '2026-05-03', notes: 'UPI', bank_account_id: advBank._id });
   await post(`/api/people/${friend._id}/payments`, { amount: 2000, payment_date: '2026-05-04' });
   const cust = await post('/api/customers', { name: 'Ramesh' });
   await post('/api/customers/entry', { customer_id: cust._id, type: 'gave', amount: 700, entry_date: '2026-05-05' });
   await post('/api/variants', { name: '16/512' });
+  const nehaBank = await post('/api/bank-accounts', { holder_name: 'Neha', bank_name: 'SBI', account_last4: '4321' });
+  const ipoPerson = await post('/api/ipo/applicants', { name: 'Neha', broker: 'Groww', default_bank_account_id: nehaBank._id });
+  const [ipo] = await post('/api/ipo/applications', { entries: [{ applicant_id: ipoPerson._id, bank_account_id: nehaBank._id }], ipo_name: 'Tata Tech', lot_price: 15000, profit_share_percent: 30, allotted: true });
+  await request(app).put(`/api/ipo/applications/${ipo._id}`).set(h).send({ sell_price: 21000 });
 }
 
 // The numbers a user sees, with ids stripped so two accounts compare equal
@@ -36,8 +41,11 @@ async function snapshotNumbers(h) {
   const report = await get('/api/reports/spends?from_date=2026-04-01&to_date=2027-03-31');
   const customers = (await get('/api/customers')).items.map(c => ({ name: c.name, balance: c.balance }));
   const variants = await get('/api/variants');
+  const ipo = (await get('/api/ipo/applicants')).map(p => ({ name: p.name, broker: p.broker, has_bank: !!p.default_bank_account_id, stats: p.stats }));
+  const ipoApps = (await get('/api/ipo/applications')).items.map(a => [a.applicant_name, a.bank_label, a.profit]);
+  const banks = (await get('/api/bank-accounts')).map(b => [b.label, b.usage_count, b.advance_to_return]);
   return {
-    people: people.sort((x, y) => x.name.localeCompare(y.name)), orders, sellers, customers, variants,
+    people: people.sort((x, y) => x.name.localeCompare(y.name)), orders, sellers, customers, variants, ipo, ipoApps, banks,
     analytics: { totals: a.totals, position: a.position, bySource: a.bySource },
     report: report.people.map(p => ({ total: p.total_spend, billed: p.billed_total, banks: p.banks.map(b => [b.bank_name, b.total_spend, b.billed_total]) })),
   };
@@ -49,7 +57,7 @@ describe('account backup & restore', () => {
     await seed(authHeader(a.token));
     const backup = (await request(app).get('/api/export').set(authHeader(a.token))).body;
     expect(backup.format).toBe('booker-account-backup');
-    expect(backup.counts).toMatchObject({ people: 3, cards: 3, orders: 3, transactions: 1, seller_payments: 1, booker_payments: 1, customer_entries: 1, variants: 1 });
+    expect(backup.counts).toMatchObject({ people: 3, cards: 3, orders: 3, transactions: 1, seller_payments: 1, booker_payments: 1, customer_entries: 1, variants: 1, bank_accounts: 2, ipo_applicants: 1, ipo_applications: 1 });
     expect(JSON.stringify(backup)).not.toContain('"user_id"');
 
     const b = await createTestUser({ email: 'b@example.com' });

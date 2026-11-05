@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { LogOut, Sun, Moon, Search, Menu, X as XIcon, ShoppingBag, Users, UserCog, BarChart3, History, BookOpen, ContactRound, LayoutDashboard, FileText } from 'lucide-react';
+import { LogOut, Sun, Moon, Search, Menu, X as XIcon, ShoppingBag, Users, UserCog, BarChart3, History, BookOpen, ContactRound, LayoutDashboard, FileText, ChartCandlestick, Landmark } from 'lucide-react';
 import BrandMark from './BrandMark';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -13,6 +13,8 @@ const NAV_ITEMS = [
   { to: '/sellers',   label: 'Buyers',           icon: Users },
   { to: '/khata',     label: 'Khata Book',       icon: BookOpen },
   { to: '/analytics', label: 'Analytics',        icon: BarChart3 },
+  { to: '/ipo',       label: 'IPO',              icon: ChartCandlestick },
+  { to: '/bank-accounts', label: 'Bank Accounts', icon: Landmark },
   { to: '/reports/spends', label: 'ITR Spend Report', icon: FileText },
   { to: '/activity',  label: 'Activity Log',     icon: History },
 ];

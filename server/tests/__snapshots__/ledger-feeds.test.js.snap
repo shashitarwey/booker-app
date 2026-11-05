@@ -205,6 +205,9 @@ exports[`Ledger feeds (characterization) GET /api/people/:id/khata ?all=true ret
         "coupon_in_profit": true,
         "friend_amount": 7000,
         "advance_amount": 7000,
+        "card_advance_amount": null,
+        "card_advance_bank_id": null,
+        "card_advance_returned": false,
         "variant": "NA",
         "model_ordered": "B5",
         "id_used": "a",
@@ -291,6 +294,9 @@ exports[`Ledger feeds (characterization) GET /api/people/:id/khata ?all=true ret
         "coupon_in_profit": true,
         "friend_amount": 3000,
         "advance_amount": null,
+        "card_advance_amount": null,
+        "card_advance_bank_id": null,
+        "card_advance_returned": false,
         "variant": "NA",
         "model_ordered": "B4",
         "id_used": "a",
@@ -349,6 +355,9 @@ exports[`Ledger feeds (characterization) GET /api/people/:id/khata ?all=true ret
         "coupon_in_profit": true,
         "friend_amount": 9000,
         "advance_amount": 9000,
+        "card_advance_amount": null,
+        "card_advance_bank_id": null,
+        "card_advance_returned": false,
         "variant": "NA",
         "model_ordered": "B3",
         "id_used": "a",
@@ -407,6 +416,9 @@ exports[`Ledger feeds (characterization) GET /api/people/:id/khata ?all=true ret
         "coupon_in_profit": true,
         "friend_amount": 20000,
         "advance_amount": 5000,
+        "card_advance_amount": null,
+        "card_advance_bank_id": null,
+        "card_advance_returned": false,
         "variant": "NA",
         "model_ordered": "B2",
         "id_used": "a",
@@ -465,6 +477,9 @@ exports[`Ledger feeds (characterization) GET /api/people/:id/khata ?all=true ret
         "coupon_in_profit": true,
         "friend_amount": 50300,
         "advance_amount": 10000,
+        "card_advance_amount": null,
+        "card_advance_bank_id": null,
+        "card_advance_returned": false,
         "variant": "NA",
         "model_ordered": "B1",
         "id_used": "a",
@@ -558,6 +573,9 @@ exports[`Ledger feeds (characterization) GET /api/people/:id/khata pages newest-
           "coupon_in_profit": true,
           "friend_amount": 7000,
           "advance_amount": 7000,
+          "card_advance_amount": null,
+          "card_advance_bank_id": null,
+          "card_advance_returned": false,
           "variant": "NA",
           "model_ordered": "B5",
           "id_used": "a",
@@ -663,6 +681,9 @@ exports[`Ledger feeds (characterization) GET /api/people/:id/khata pages newest-
           "coupon_in_profit": true,
           "friend_amount": 3000,
           "advance_amount": null,
+          "card_advance_amount": null,
+          "card_advance_bank_id": null,
+          "card_advance_returned": false,
           "variant": "NA",
           "model_ordered": "B4",
           "id_used": "a",
@@ -721,6 +742,9 @@ exports[`Ledger feeds (characterization) GET /api/people/:id/khata pages newest-
           "coupon_in_profit": true,
           "friend_amount": 9000,
           "advance_amount": 9000,
+          "card_advance_amount": null,
+          "card_advance_bank_id": null,
+          "card_advance_returned": false,
           "variant": "NA",
           "model_ordered": "B3",
           "id_used": "a",
@@ -798,6 +822,9 @@ exports[`Ledger feeds (characterization) GET /api/people/:id/khata pages newest-
           "coupon_in_profit": true,
           "friend_amount": 20000,
           "advance_amount": 5000,
+          "card_advance_amount": null,
+          "card_advance_bank_id": null,
+          "card_advance_returned": false,
           "variant": "NA",
           "model_ordered": "B2",
           "id_used": "a",
@@ -856,6 +883,9 @@ exports[`Ledger feeds (characterization) GET /api/people/:id/khata pages newest-
           "coupon_in_profit": true,
           "friend_amount": 50300,
           "advance_amount": 10000,
+          "card_advance_amount": null,
+          "card_advance_bank_id": null,
+          "card_advance_returned": false,
           "variant": "NA",
           "model_ordered": "B1",
           "id_used": "a",
@@ -921,6 +951,7 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
       "date": "2026-02-05T00:00:00.000Z",
       "description": "P6",
       "amount": 0.2,
+      "bank_label": "Me · SBI",
       "raw": {
         "_id": "<id0>",
         "user_id": "<id1>",
@@ -929,6 +960,12 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
         "payment_date": "2026-02-05T00:00:00.000Z",
         "notes": "P6",
         "receipt_url": "",
+        "bank_account_id": {
+          "_id": "<id3>",
+          "holder_name": "Me",
+          "bank_name": "SBI",
+          "account_last4": ""
+        },
         "created_at": "2026-02-05T10:00:00.000Z",
         "updated_at": "<ts>",
         "__v": 0
@@ -938,19 +975,26 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
       "runningBalance": 5850.2
     },
     {
-      "id": "<id3>",
+      "id": "<id4>",
       "type": "PAYMENT",
       "date": "2026-02-04T00:00:00.000Z",
       "description": "P5",
       "amount": 0.1,
+      "bank_label": "Me · SBI",
       "raw": {
-        "_id": "<id3>",
+        "_id": "<id4>",
         "user_id": "<id1>",
         "seller_id": "<id2>",
         "amount": 0.1,
         "payment_date": "2026-02-04T00:00:00.000Z",
         "notes": "P5",
         "receipt_url": "",
+        "bank_account_id": {
+          "_id": "<id3>",
+          "holder_name": "Me",
+          "bank_name": "SBI",
+          "account_last4": ""
+        },
         "created_at": "2026-02-04T10:00:00.000Z",
         "updated_at": "<ts>",
         "__v": 0
@@ -960,23 +1004,23 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
       "runningBalance": 5850.4
     },
     {
-      "id": "<id4>",
+      "id": "<id5>",
       "type": "ORDER",
       "date": "2026-02-03T00:00:00.000Z",
       "description": "O7",
       "amount": 1200.5,
       "booker": {
-        "_id": "<id5>",
+        "_id": "<id6>",
         "name": "Test User",
         "relation": "self"
       },
       "raw": {
-        "_id": "<id4>",
+        "_id": "<id5>",
         "user_id": "<id1>",
         "card_id": {
-          "_id": "<id6>",
+          "_id": "<id7>",
           "holder_id": {
-            "_id": "<id5>",
+            "_id": "<id6>",
             "relation": "self",
             "name": "Test User"
           },
@@ -993,6 +1037,9 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
         "coupon_in_profit": true,
         "friend_amount": null,
         "advance_amount": null,
+        "card_advance_amount": null,
+        "card_advance_bank_id": null,
+        "card_advance_returned": false,
         "variant": "8/128",
         "model_ordered": "O7",
         "id_used": "a@x.com",
@@ -1010,19 +1057,26 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
       "runningBalance": 5850.5
     },
     {
-      "id": "<id7>",
+      "id": "<id8>",
       "type": "PAYMENT",
       "date": "2026-02-02T00:00:00.000Z",
       "description": "P4",
       "amount": 50,
+      "bank_label": "Me · SBI",
       "raw": {
-        "_id": "<id7>",
+        "_id": "<id8>",
         "user_id": "<id1>",
         "seller_id": "<id2>",
         "amount": 50,
         "payment_date": "2026-02-02T00:00:00.000Z",
         "notes": "P4",
         "receipt_url": "",
+        "bank_account_id": {
+          "_id": "<id3>",
+          "holder_name": "Me",
+          "bank_name": "SBI",
+          "account_last4": ""
+        },
         "created_at": "2026-02-02T01:00:00.000Z",
         "updated_at": "<ts>",
         "__v": 0
@@ -1032,23 +1086,23 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
       "runningBalance": 4650
     },
     {
-      "id": "<id8>",
+      "id": "<id9>",
       "type": "ORDER",
       "date": "2026-02-02T00:00:00.000Z",
       "description": "O6",
       "amount": 800,
       "booker": {
-        "_id": "<id5>",
+        "_id": "<id6>",
         "name": "Test User",
         "relation": "self"
       },
       "raw": {
-        "_id": "<id8>",
+        "_id": "<id9>",
         "user_id": "<id1>",
         "card_id": {
-          "_id": "<id6>",
+          "_id": "<id7>",
           "holder_id": {
-            "_id": "<id5>",
+            "_id": "<id6>",
             "relation": "self",
             "name": "Test User"
           },
@@ -1065,6 +1119,9 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
         "coupon_in_profit": true,
         "friend_amount": null,
         "advance_amount": null,
+        "card_advance_amount": null,
+        "card_advance_bank_id": null,
+        "card_advance_returned": false,
         "variant": "8/128",
         "model_ordered": "O6",
         "id_used": "a@x.com",
@@ -1081,23 +1138,23 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
       "runningBalance": 4700
     },
     {
-      "id": "<id9>",
+      "id": "<id10>",
       "type": "ORDER",
       "date": "2026-02-01T00:00:00.000Z",
       "description": "O5 ×3",
       "amount": 2500,
       "booker": {
-        "_id": "<id10>",
+        "_id": "<id11>",
         "name": "Ravi",
         "relation": "friend"
       },
       "raw": {
-        "_id": "<id9>",
+        "_id": "<id10>",
         "user_id": "<id1>",
         "card_id": {
-          "_id": "<id11>",
+          "_id": "<id12>",
           "holder_id": {
-            "_id": "<id10>",
+            "_id": "<id11>",
             "name": "Ravi",
             "relation": "friend"
           },
@@ -1114,6 +1171,9 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
         "coupon_in_profit": true,
         "friend_amount": 2400,
         "advance_amount": null,
+        "card_advance_amount": null,
+        "card_advance_bank_id": null,
+        "card_advance_returned": false,
         "variant": "8/128",
         "model_ordered": "O5",
         "id_used": "a@x.com",
@@ -1131,14 +1191,14 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
       "runningBalance": 3900
     },
     {
-      "id": "<id12>",
+      "id": "<id13>",
       "type": "ORDER",
       "date": "2026-01-12T00:00:00.000Z",
       "description": "O4",
       "amount": 1500,
       "booker": null,
       "raw": {
-        "_id": "<id12>",
+        "_id": "<id13>",
         "user_id": "<id1>",
         "card_id": null,
         "order_date": "2026-01-12T00:00:00.000Z",
@@ -1150,6 +1210,9 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
         "coupon_in_profit": true,
         "friend_amount": null,
         "advance_amount": null,
+        "card_advance_amount": null,
+        "card_advance_bank_id": null,
+        "card_advance_returned": false,
         "variant": "8/128",
         "model_ordered": "O4",
         "id_used": "a@x.com",
@@ -1167,19 +1230,26 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
       "runningBalance": 1400
     },
     {
-      "id": "<id13>",
+      "id": "<id14>",
       "type": "PAYMENT",
       "date": "2026-01-12T00:00:00.000Z",
       "description": "Payment Received",
       "amount": 100,
+      "bank_label": "Me · SBI",
       "raw": {
-        "_id": "<id13>",
+        "_id": "<id14>",
         "user_id": "<id1>",
         "seller_id": "<id2>",
         "amount": 100,
         "payment_date": "2026-01-12T00:00:00.000Z",
         "notes": "",
         "receipt_url": "",
+        "bank_account_id": {
+          "_id": "<id3>",
+          "holder_name": "Me",
+          "bank_name": "SBI",
+          "account_last4": ""
+        },
         "created_at": "2026-01-12T07:00:00.000Z",
         "updated_at": "<ts>",
         "__v": 0
@@ -1189,19 +1259,26 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
       "runningBalance": -100
     },
     {
-      "id": "<id14>",
+      "id": "<id15>",
       "type": "PAYMENT",
       "date": "2026-01-10T00:00:00.000Z",
       "description": "P2 upi",
       "amount": 700,
+      "bank_label": "Me · SBI",
       "raw": {
-        "_id": "<id14>",
+        "_id": "<id15>",
         "user_id": "<id1>",
         "seller_id": "<id2>",
         "amount": 700,
         "payment_date": "2026-01-10T00:00:00.000Z",
         "notes": "P2 upi",
         "receipt_url": "",
+        "bank_account_id": {
+          "_id": "<id3>",
+          "holder_name": "Me",
+          "bank_name": "SBI",
+          "account_last4": ""
+        },
         "created_at": "2026-01-10T10:00:00.000Z",
         "updated_at": "<ts>",
         "__v": 0
@@ -1211,23 +1288,23 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
       "runningBalance": 0
     },
     {
-      "id": "<id15>",
+      "id": "<id16>",
       "type": "ORDER",
       "date": "2026-01-10T00:00:00.000Z",
       "description": "O3",
       "amount": 500,
       "booker": {
-        "_id": "<id5>",
+        "_id": "<id6>",
         "name": "Test User",
         "relation": "self"
       },
       "raw": {
-        "_id": "<id15>",
+        "_id": "<id16>",
         "user_id": "<id1>",
         "card_id": {
-          "_id": "<id6>",
+          "_id": "<id7>",
           "holder_id": {
-            "_id": "<id5>",
+            "_id": "<id6>",
             "relation": "self",
             "name": "Test User"
           },
@@ -1244,6 +1321,9 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
         "coupon_in_profit": true,
         "friend_amount": null,
         "advance_amount": null,
+        "card_advance_amount": null,
+        "card_advance_bank_id": null,
+        "card_advance_returned": false,
         "variant": "8/128",
         "model_ordered": "O3",
         "id_used": "a@x.com",
@@ -1261,23 +1341,23 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
       "runningBalance": 700
     },
     {
-      "id": "<id16>",
+      "id": "<id17>",
       "type": "ORDER",
       "date": "2026-01-10T00:00:00.000Z",
       "description": "O2 ×2",
       "amount": 2000,
       "booker": {
-        "_id": "<id10>",
+        "_id": "<id11>",
         "name": "Ravi",
         "relation": "friend"
       },
       "raw": {
-        "_id": "<id16>",
+        "_id": "<id17>",
         "user_id": "<id1>",
         "card_id": {
-          "_id": "<id11>",
+          "_id": "<id12>",
           "holder_id": {
-            "_id": "<id10>",
+            "_id": "<id11>",
             "name": "Ravi",
             "relation": "friend"
           },
@@ -1294,6 +1374,9 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
         "coupon_in_profit": true,
         "friend_amount": 1900,
         "advance_amount": null,
+        "card_advance_amount": null,
+        "card_advance_bank_id": null,
+        "card_advance_returned": false,
         "variant": "8/128",
         "model_ordered": "O2",
         "id_used": "a@x.com",
@@ -1311,23 +1394,23 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
       "runningBalance": 700
     },
     {
-      "id": "<id17>",
+      "id": "<id18>",
       "type": "ORDER",
       "date": "2026-01-05T00:00:00.000Z",
       "description": "O1",
       "amount": 1000,
       "booker": {
-        "_id": "<id5>",
+        "_id": "<id6>",
         "name": "Test User",
         "relation": "self"
       },
       "raw": {
-        "_id": "<id17>",
+        "_id": "<id18>",
         "user_id": "<id1>",
         "card_id": {
-          "_id": "<id6>",
+          "_id": "<id7>",
           "holder_id": {
-            "_id": "<id5>",
+            "_id": "<id6>",
             "relation": "self",
             "name": "Test User"
           },
@@ -1344,6 +1427,9 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
         "coupon_in_profit": true,
         "friend_amount": null,
         "advance_amount": null,
+        "card_advance_amount": null,
+        "card_advance_bank_id": null,
+        "card_advance_returned": false,
         "variant": "8/128",
         "model_ordered": "O1",
         "id_used": "a@x.com",
@@ -1361,19 +1447,26 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
       "runningBalance": 700
     },
     {
-      "id": "<id18>",
+      "id": "<id19>",
       "type": "PAYMENT",
       "date": "2026-01-05T00:00:00.000Z",
       "description": "P1 cash",
       "amount": 300,
+      "bank_label": "Me · SBI",
       "raw": {
-        "_id": "<id18>",
+        "_id": "<id19>",
         "user_id": "<id1>",
         "seller_id": "<id2>",
         "amount": 300,
         "payment_date": "2026-01-05T00:00:00.000Z",
         "notes": "P1 cash",
         "receipt_url": "",
+        "bank_account_id": {
+          "_id": "<id3>",
+          "holder_name": "Me",
+          "bank_name": "SBI",
+          "account_last4": ""
+        },
         "created_at": "2026-01-05T09:00:00.000Z",
         "updated_at": "<ts>",
         "__v": 0
@@ -1404,6 +1497,7 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
         "date": "2026-02-05T00:00:00.000Z",
         "description": "P6",
         "amount": 0.2,
+        "bank_label": "Me · SBI",
         "raw": {
           "_id": "<id0>",
           "user_id": "<id1>",
@@ -1412,6 +1506,12 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
           "payment_date": "2026-02-05T00:00:00.000Z",
           "notes": "P6",
           "receipt_url": "",
+          "bank_account_id": {
+            "_id": "<id3>",
+            "holder_name": "Me",
+            "bank_name": "SBI",
+            "account_last4": ""
+          },
           "created_at": "2026-02-05T10:00:00.000Z",
           "updated_at": "<ts>",
           "__v": 0
@@ -1421,19 +1521,26 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
         "runningBalance": 5850.2
       },
       {
-        "id": "<id3>",
+        "id": "<id4>",
         "type": "PAYMENT",
         "date": "2026-02-04T00:00:00.000Z",
         "description": "P5",
         "amount": 0.1,
+        "bank_label": "Me · SBI",
         "raw": {
-          "_id": "<id3>",
+          "_id": "<id4>",
           "user_id": "<id1>",
           "seller_id": "<id2>",
           "amount": 0.1,
           "payment_date": "2026-02-04T00:00:00.000Z",
           "notes": "P5",
           "receipt_url": "",
+          "bank_account_id": {
+            "_id": "<id3>",
+            "holder_name": "Me",
+            "bank_name": "SBI",
+            "account_last4": ""
+          },
           "created_at": "2026-02-04T10:00:00.000Z",
           "updated_at": "<ts>",
           "__v": 0
@@ -1443,23 +1550,23 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
         "runningBalance": 5850.4
       },
       {
-        "id": "<id4>",
+        "id": "<id5>",
         "type": "ORDER",
         "date": "2026-02-03T00:00:00.000Z",
         "description": "O7",
         "amount": 1200.5,
         "booker": {
-          "_id": "<id5>",
+          "_id": "<id6>",
           "name": "Test User",
           "relation": "self"
         },
         "raw": {
-          "_id": "<id4>",
+          "_id": "<id5>",
           "user_id": "<id1>",
           "card_id": {
-            "_id": "<id6>",
+            "_id": "<id7>",
             "holder_id": {
-              "_id": "<id5>",
+              "_id": "<id6>",
               "relation": "self",
               "name": "Test User"
             },
@@ -1476,6 +1583,9 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
           "coupon_in_profit": true,
           "friend_amount": null,
           "advance_amount": null,
+          "card_advance_amount": null,
+          "card_advance_bank_id": null,
+          "card_advance_returned": false,
           "variant": "8/128",
           "model_ordered": "O7",
           "id_used": "a@x.com",
@@ -1493,19 +1603,26 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
         "runningBalance": 5850.5
       },
       {
-        "id": "<id7>",
+        "id": "<id8>",
         "type": "PAYMENT",
         "date": "2026-02-02T00:00:00.000Z",
         "description": "P4",
         "amount": 50,
+        "bank_label": "Me · SBI",
         "raw": {
-          "_id": "<id7>",
+          "_id": "<id8>",
           "user_id": "<id1>",
           "seller_id": "<id2>",
           "amount": 50,
           "payment_date": "2026-02-02T00:00:00.000Z",
           "notes": "P4",
           "receipt_url": "",
+          "bank_account_id": {
+            "_id": "<id3>",
+            "holder_name": "Me",
+            "bank_name": "SBI",
+            "account_last4": ""
+          },
           "created_at": "2026-02-02T01:00:00.000Z",
           "updated_at": "<ts>",
           "__v": 0
@@ -1515,23 +1632,23 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
         "runningBalance": 4650
       },
       {
-        "id": "<id8>",
+        "id": "<id9>",
         "type": "ORDER",
         "date": "2026-02-02T00:00:00.000Z",
         "description": "O6",
         "amount": 800,
         "booker": {
-          "_id": "<id5>",
+          "_id": "<id6>",
           "name": "Test User",
           "relation": "self"
         },
         "raw": {
-          "_id": "<id8>",
+          "_id": "<id9>",
           "user_id": "<id1>",
           "card_id": {
-            "_id": "<id6>",
+            "_id": "<id7>",
             "holder_id": {
-              "_id": "<id5>",
+              "_id": "<id6>",
               "relation": "self",
               "name": "Test User"
             },
@@ -1548,6 +1665,9 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
           "coupon_in_profit": true,
           "friend_amount": null,
           "advance_amount": null,
+          "card_advance_amount": null,
+          "card_advance_bank_id": null,
+          "card_advance_returned": false,
           "variant": "8/128",
           "model_ordered": "O6",
           "id_used": "a@x.com",
@@ -1576,23 +1696,23 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
   {
     "items": [
       {
-        "id": "<id9>",
+        "id": "<id10>",
         "type": "ORDER",
         "date": "2026-02-01T00:00:00.000Z",
         "description": "O5 ×3",
         "amount": 2500,
         "booker": {
-          "_id": "<id10>",
+          "_id": "<id11>",
           "name": "Ravi",
           "relation": "friend"
         },
         "raw": {
-          "_id": "<id9>",
+          "_id": "<id10>",
           "user_id": "<id1>",
           "card_id": {
-            "_id": "<id11>",
+            "_id": "<id12>",
             "holder_id": {
-              "_id": "<id10>",
+              "_id": "<id11>",
               "name": "Ravi",
               "relation": "friend"
             },
@@ -1609,6 +1729,9 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
           "coupon_in_profit": true,
           "friend_amount": 2400,
           "advance_amount": null,
+          "card_advance_amount": null,
+          "card_advance_bank_id": null,
+          "card_advance_returned": false,
           "variant": "8/128",
           "model_ordered": "O5",
           "id_used": "a@x.com",
@@ -1626,14 +1749,14 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
         "runningBalance": 3900
       },
       {
-        "id": "<id12>",
+        "id": "<id13>",
         "type": "ORDER",
         "date": "2026-01-12T00:00:00.000Z",
         "description": "O4",
         "amount": 1500,
         "booker": null,
         "raw": {
-          "_id": "<id12>",
+          "_id": "<id13>",
           "user_id": "<id1>",
           "card_id": null,
           "order_date": "2026-01-12T00:00:00.000Z",
@@ -1645,6 +1768,9 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
           "coupon_in_profit": true,
           "friend_amount": null,
           "advance_amount": null,
+          "card_advance_amount": null,
+          "card_advance_bank_id": null,
+          "card_advance_returned": false,
           "variant": "8/128",
           "model_ordered": "O4",
           "id_used": "a@x.com",
@@ -1662,19 +1788,26 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
         "runningBalance": 1400
       },
       {
-        "id": "<id13>",
+        "id": "<id14>",
         "type": "PAYMENT",
         "date": "2026-01-12T00:00:00.000Z",
         "description": "Payment Received",
         "amount": 100,
+        "bank_label": "Me · SBI",
         "raw": {
-          "_id": "<id13>",
+          "_id": "<id14>",
           "user_id": "<id1>",
           "seller_id": "<id2>",
           "amount": 100,
           "payment_date": "2026-01-12T00:00:00.000Z",
           "notes": "",
           "receipt_url": "",
+          "bank_account_id": {
+            "_id": "<id3>",
+            "holder_name": "Me",
+            "bank_name": "SBI",
+            "account_last4": ""
+          },
           "created_at": "2026-01-12T07:00:00.000Z",
           "updated_at": "<ts>",
           "__v": 0
@@ -1684,19 +1817,26 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
         "runningBalance": -100
       },
       {
-        "id": "<id14>",
+        "id": "<id15>",
         "type": "PAYMENT",
         "date": "2026-01-10T00:00:00.000Z",
         "description": "P2 upi",
         "amount": 700,
+        "bank_label": "Me · SBI",
         "raw": {
-          "_id": "<id14>",
+          "_id": "<id15>",
           "user_id": "<id1>",
           "seller_id": "<id2>",
           "amount": 700,
           "payment_date": "2026-01-10T00:00:00.000Z",
           "notes": "P2 upi",
           "receipt_url": "",
+          "bank_account_id": {
+            "_id": "<id3>",
+            "holder_name": "Me",
+            "bank_name": "SBI",
+            "account_last4": ""
+          },
           "created_at": "2026-01-10T10:00:00.000Z",
           "updated_at": "<ts>",
           "__v": 0
@@ -1706,23 +1846,23 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
         "runningBalance": 0
       },
       {
-        "id": "<id15>",
+        "id": "<id16>",
         "type": "ORDER",
         "date": "2026-01-10T00:00:00.000Z",
         "description": "O3",
         "amount": 500,
         "booker": {
-          "_id": "<id5>",
+          "_id": "<id6>",
           "name": "Test User",
           "relation": "self"
         },
         "raw": {
-          "_id": "<id15>",
+          "_id": "<id16>",
           "user_id": "<id1>",
           "card_id": {
-            "_id": "<id6>",
+            "_id": "<id7>",
             "holder_id": {
-              "_id": "<id5>",
+              "_id": "<id6>",
               "relation": "self",
               "name": "Test User"
             },
@@ -1739,6 +1879,9 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
           "coupon_in_profit": true,
           "friend_amount": null,
           "advance_amount": null,
+          "card_advance_amount": null,
+          "card_advance_bank_id": null,
+          "card_advance_returned": false,
           "variant": "8/128",
           "model_ordered": "O3",
           "id_used": "a@x.com",
@@ -1768,23 +1911,23 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
   {
     "items": [
       {
-        "id": "<id16>",
+        "id": "<id17>",
         "type": "ORDER",
         "date": "2026-01-10T00:00:00.000Z",
         "description": "O2 ×2",
         "amount": 2000,
         "booker": {
-          "_id": "<id10>",
+          "_id": "<id11>",
           "name": "Ravi",
           "relation": "friend"
         },
         "raw": {
-          "_id": "<id16>",
+          "_id": "<id17>",
           "user_id": "<id1>",
           "card_id": {
-            "_id": "<id11>",
+            "_id": "<id12>",
             "holder_id": {
-              "_id": "<id10>",
+              "_id": "<id11>",
               "name": "Ravi",
               "relation": "friend"
             },
@@ -1801,6 +1944,9 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
           "coupon_in_profit": true,
           "friend_amount": 1900,
           "advance_amount": null,
+          "card_advance_amount": null,
+          "card_advance_bank_id": null,
+          "card_advance_returned": false,
           "variant": "8/128",
           "model_ordered": "O2",
           "id_used": "a@x.com",
@@ -1818,23 +1964,23 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
         "runningBalance": 700
       },
       {
-        "id": "<id17>",
+        "id": "<id18>",
         "type": "ORDER",
         "date": "2026-01-05T00:00:00.000Z",
         "description": "O1",
         "amount": 1000,
         "booker": {
-          "_id": "<id5>",
+          "_id": "<id6>",
           "name": "Test User",
           "relation": "self"
         },
         "raw": {
-          "_id": "<id17>",
+          "_id": "<id18>",
           "user_id": "<id1>",
           "card_id": {
-            "_id": "<id6>",
+            "_id": "<id7>",
             "holder_id": {
-              "_id": "<id5>",
+              "_id": "<id6>",
               "relation": "self",
               "name": "Test User"
             },
@@ -1851,6 +1997,9 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
           "coupon_in_profit": true,
           "friend_amount": null,
           "advance_amount": null,
+          "card_advance_amount": null,
+          "card_advance_bank_id": null,
+          "card_advance_returned": false,
           "variant": "8/128",
           "model_ordered": "O1",
           "id_used": "a@x.com",
@@ -1868,19 +2017,26 @@ exports[`Ledger feeds (characterization) GET /api/sellers/:sellerId/ledger-feed 
         "runningBalance": 700
       },
       {
-        "id": "<id18>",
+        "id": "<id19>",
         "type": "PAYMENT",
         "date": "2026-01-05T00:00:00.000Z",
         "description": "P1 cash",
         "amount": 300,
+        "bank_label": "Me · SBI",
         "raw": {
-          "_id": "<id18>",
+          "_id": "<id19>",
           "user_id": "<id1>",
           "seller_id": "<id2>",
           "amount": 300,
           "payment_date": "2026-01-05T00:00:00.000Z",
           "notes": "P1 cash",
           "receipt_url": "",
+          "bank_account_id": {
+            "_id": "<id3>",
+            "holder_name": "Me",
+            "bank_name": "SBI",
+            "account_last4": ""
+          },
           "created_at": "2026-01-05T09:00:00.000Z",
           "updated_at": "<ts>",
           "__v": 0

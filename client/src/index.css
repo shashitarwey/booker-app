@@ -27,3 +27,5 @@
 @import './styles/theme.css';
 @import './styles/components/dashboard.css';
 @import './styles/components/report.css';
+@import './styles/components/ipo.css';
+@import './styles/components/bank.css';

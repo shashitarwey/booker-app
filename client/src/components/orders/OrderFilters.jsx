@@ -121,6 +121,18 @@ export default function OrderFilters({
             placeholder="All"
           />
         </div>
+        <div className="filter-cell">
+          <label className="filter-cell-label">Card advance</label>
+          <SearchableDropdown
+            options={['All', 'To return', 'Returned']}
+            value={{ pending: 'To return', returned: 'Returned' }[filters.card_advance] || ''}
+            onChange={val => {
+              const dbVal = val === 'To return' ? 'pending' : val === 'Returned' ? 'returned' : '';
+              setFilters(f => ({ ...f, card_advance: dbVal }));
+            }}
+            placeholder="All"
+          />
+        </div>
       </div>
 
       <div className="filter-panel-footer">

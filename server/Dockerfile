@@ -13,7 +13,7 @@ RUN npm ci --omit=dev
 COPY . .
 
 # Expose backend port
-EXPOSE 5000
+EXPOSE 5050
 
 # Start server
 CMD ["node", "index.js"]
