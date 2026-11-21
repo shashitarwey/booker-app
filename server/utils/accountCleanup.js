@@ -95,10 +95,13 @@ async function runCleanup() {
  */
 function startCleanupScheduler(intervalMs = 6 * 60 * 60 * 1000) {
     logger.info(`Account cleanup scheduler started (interval: ${intervalMs / 3600000}h)`);
+    // A failed run (e.g. database briefly unreachable) is logged and retried
+    // on the next tick; it must never crash the server.
+    const safeRun = () => runCleanup().catch(err => logger.error('Account cleanup failed', { error: err.message }));
     // Run once at startup after a short delay
-    setTimeout(() => runCleanup(), 10_000);
+    setTimeout(safeRun, 10_000);
     // Then repeat on interval
-    setInterval(() => runCleanup(), intervalMs);
+    setInterval(safeRun, intervalMs);
 }
 
 module.exports = { runCleanup, purgeUser, startCleanupScheduler };
