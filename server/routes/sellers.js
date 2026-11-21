@@ -287,7 +287,7 @@ router.put('/:id', updateRules, validate, async (req, res, next) => {
         );
         const changedFields = Object.keys(update).filter(k => String(oldSeller[k]) !== String(updatedSeller[k]));
         logActivity(req.user.id, 'updated', 'seller', updatedSeller._id, `Updated seller: ${updatedSeller.name}`, updatedSeller, changedFields);
-        invalidateCache(req, 'sellers');
+        await invalidateCache(req, 'sellers');
         res.json(updatedSeller);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -312,7 +312,7 @@ router.delete('/:id', idRule, validate, async (req, res, next) => {
         const deletedSeller = await Seller.findOneAndDelete({ _id: req.params.id, user_id: req.user.id });
         if (!deletedSeller) return res.status(404).json({ error: 'Seller not found' });
         logActivity(req.user.id, 'deleted', 'seller', deletedSeller._id, `Deleted seller: ${deletedSeller.name}`, deletedSeller);
-        invalidateCache(req, 'sellers');
+        await invalidateCache(req, 'sellers');
         res.json({ success: true });
     } catch (err) { next(err); }
 });
@@ -453,7 +453,7 @@ router.post('/payment', upload.single('receipt'), paymentCreateRules, validate, 
             bank_account_id: bank.id,
         });
         const savedPayment = await newPayment.save();
-        invalidateCache(req, 'seller_payments');
+        await invalidateCache(req, 'seller_payments');
         logActivity(req.user.id, 'created', 'seller_payment', savedPayment._id, `Added payment of ₹${amount} to ${seller.name}`, savedPayment);
         res.status(201).json(savedPayment);
     } catch (err) {
@@ -490,7 +490,7 @@ router.put('/payment/:id', upload.single('receipt'), paymentUpdateRules, validat
         );
         const changedFields = Object.keys(update).filter(k => String(oldPayment[k]) !== String(updated[k]));
         logActivity(req.user.id, 'updated', 'seller_payment', updated._id, `Updated payment of ₹${updated.amount}`, updated, changedFields);
-        invalidateCache(req, 'seller_payments');
+        await invalidateCache(req, 'seller_payments');
         res.json(updated);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -506,7 +506,7 @@ router.delete('/payment/:id', paymentIdRule, validate, async (req, res, next) =>
         });
         if (!deletedPayment) return res.status(404).json({ error: 'Payment not found' });
         logActivity(req.user.id, 'deleted', 'seller_payment', deletedPayment._id, `Deleted payment of ₹${deletedPayment.amount}`, deletedPayment);
-        invalidateCache(req, 'seller_payments');
+        await invalidateCache(req, 'seller_payments');
         res.json({ success: true });
     } catch (err) { next(err); }
 });

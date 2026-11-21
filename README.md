@@ -68,7 +68,7 @@ The same formula is used by the server, the client, analytics and reports.
 ### 🛡️ Your data is safe
 - Download all your data as one file, and restore it into a fresh account.
 - Weekly **encrypted** (AES-256-GCM) database backups through GitHub Actions.
-- Activity log of every change, kept for one year.
+- Activity log of every change, kept for 15 months.
 - JWT auth, bcrypt, rate limiting, ownership checks on every endpoint.
 
 ### 📱 Works everywhere

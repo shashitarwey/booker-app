@@ -12,9 +12,9 @@
 }
 
 .billing-ok {
-  background: rgba(124, 108, 255, 0.12);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
   color: rgba(180, 215, 255, 0.85);
-  border: 1px solid rgba(124, 108, 255, 0.2);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 .billing-warning {

@@ -34,7 +34,7 @@ router.get('/', async (req, res, next) => {
 router.post('/import', async (req, res, next) => {
     try {
         const restored = await importAccount(req.user.id, req.body);
-        invalidate(`route:${req.user.id}:*`).catch(() => {});
+        await invalidate(`route:${req.user.id}:*`); // never answer before the cache is clear
         logger.info('Account restored from backup', { userId: req.user.id, restored });
         res.json({ restored });
     } catch (err) {

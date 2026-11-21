@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse at 20% 60%, rgba(124, 108, 255, 0.07) 0%, transparent 60%),
+  background: radial-gradient(ellipse at 20% 60%, color-mix(in srgb, var(--accent) 7%, transparent) 0%, transparent 60%),
     radial-gradient(ellipse at 80% 30%, rgba(188, 140, 255, 0.07) 0%, transparent 60%),
     var(--bg);
   padding: 20px;
@@ -27,7 +27,7 @@
   gap: 10px;
   font-size: 1.5rem;
   font-weight: 800;
-  background: linear-gradient(90deg, #7c6cff, #2dd4bf);
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -139,7 +139,7 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: rgba(124, 108, 255, 0.1);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
   color: var(--accent);
   margin-bottom: 16px;
 }

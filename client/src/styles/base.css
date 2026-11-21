@@ -20,63 +20,77 @@ body.picker-open {
 }
 
 /* ── CSS Variables ────────────────────────────────────────────── */
+/* CRED-inspired: true black, neutral greys, white type and white as the
+   highlight colour; primary actions are white pills (black in light mode).
+   Colour is reserved for money states (profit/loss/dues) and charts. */
 :root {
-  --bg: #0a0d14;
-  --surface: #111520;
-  --surface2: #1a2030;
-  --surface-raised: #161b28;
-  --border: rgba(255, 255, 255, 0.07);
-  --border-strong: rgba(255, 255, 255, 0.12);
-  --text: #eef1f7;
-  --text-muted: #8a93a6;
+  --bg: #000000;
+  --surface: #0f0f0f;
+  --surface2: #1a1a1a;
+  --surface-raised: #141414;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --text: #f5f5f5;
+  --text-muted: #8a8a8a;
   --font-size-base: 14px;
   --font-size-sm: 12px;
   --font-size-xs: 11px;
-  --accent: #7c6cff;
-  --accent-2: #2dd4bf;
-  --accent-soft: rgba(124, 108, 255, 0.12);
-  --on-accent: #ffffff;
-  --green: #34d399;
-  --amber: #fbbf24;
-  --red: #f87171;
-  --success: #34d399;
-  --danger: #f87171;
-  --info: #7c6cff;
+  --accent: #ffffff;
+  --accent-2: #9a9a9a;
+  --accent-soft: rgba(255, 255, 255, 0.08);
+  --on-accent: #000000;
+  /* Primary actions: white pill on dark, black pill on light */
+  --btn-primary-bg: #f5f5f5;
+  --btn-primary-text: #000000;
+  --green: #3ddc84;
+  --amber: #f5b942;
+  --red: #ff5c5c;
+  --success: #3ddc84;
+  --danger: #ff5c5c;
+  --info: #ffffff;
   /* Text-on-tint colours (gave/got, delivered, add-on); darker in light mode */
-  --ink-red: #fca5a5;
+  --ink-red: #ff9b9b;
   --ink-green: #86efac;
-  --ink-amber: #fbbf24;
-  --radius: 18px;
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.55);
+  --ink-amber: #fcd38a;
+  /* Chart series (validated with the dataviz checker against --surface) */
+  --chart-1: #16a56e;
+  --chart-2: #b8547c;
+  --radius: 20px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --shadow-sm: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --shadow: 0 22px 44px -24px rgba(0, 0, 0, 1);
   --sidebar-w: 248px;
 }
 
 [data-theme="light"] {
-  --bg: #f4f5fa;
+  --bg: #f4f4f4;
   --surface: #ffffff;
-  --surface2: #eef0f6;
+  --surface2: #ededed;
   --surface-raised: #ffffff;
-  --border: rgba(20, 24, 38, 0.08);
-  --border-strong: rgba(20, 24, 38, 0.14);
-  --text: #141826;
-  --text-muted: #5f6778;
-  --accent: #5b4be6;
-  --accent-2: #0d9488;
-  --accent-soft: rgba(91, 75, 230, 0.09);
-  --green: #059669;
-  --amber: #d97706;
-  --red: #dc2626;
-  --success: #059669;
-  --danger: #dc2626;
-  --info: #5b4be6;
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.15);
+  --text: #0a0a0a;
+  --text-muted: #666666;
+  --accent: #0a0a0a;
+  --accent-2: #555555;
+  --accent-soft: rgba(0, 0, 0, 0.06);
+  --on-accent: #ffffff;
+  --btn-primary-bg: #0a0a0a;
+  --btn-primary-text: #ffffff;
+  --green: #15803d;
+  --amber: #b45309;
+  --red: #c0392b;
+  --success: #15803d;
+  --danger: #c0392b;
+  --info: #0a0a0a;
   --ink-red: #b91c1c;
-  --ink-green: #047857;
-  --ink-amber: #b45309;
-  --shadow-sm: 0 1px 2px rgba(20, 24, 38, 0.06);
-  --shadow: 0 12px 32px -16px rgba(20, 24, 38, 0.18);
+  --ink-green: #166534;
+  --ink-amber: #92400e;
+  --chart-1: #098356;
+  --chart-2: #8d3d67;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow: 0 16px 34px -20px rgba(0, 0, 0, 0.2);
 }
 
 /* ── Base ─────────────────────────────────────────────────────── */
@@ -137,7 +151,7 @@ body.picker-open {
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  font-family: 'Manrope', 'Inter', system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   font-size: var(--font-size-base);

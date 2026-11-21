@@ -227,7 +227,7 @@ router.post('/', createRules, validate, async (req, res, next) => {
         const card = await Card.findOne({ _id: card_id, user_id: req.user.id });
         if (!card) return res.status(400).json({ error: 'Card not found or not yours' });
         const tx = await Transaction.create({ user_id: req.user.id, card_id, amount, description, date });
-        invalidateCache(req, 'transactions');
+        await invalidateCache(req, 'transactions');
         logActivity(req.user.id, 'created', 'transaction', tx._id, `Added transaction: ₹${amount} — ${description || 'No description'}`, tx);
         res.status(201).json(tx);
     } catch (err) {
@@ -248,7 +248,7 @@ router.delete('/:id', idRule, validate, async (req, res, next) => {
         }
         if (!tx) return res.status(404).json({ error: 'Transaction not found' });
         await tx.deleteOne();
-        invalidateCache(req, 'transactions');
+        await invalidateCache(req, 'transactions');
         logActivity(req.user.id, 'deleted', 'transaction', tx._id, `Deleted transaction: ₹${tx.amount} — ${tx.description || 'No description'}`, tx);
         res.json({ success: true });
     } catch (err) { next(err); }

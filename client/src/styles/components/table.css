@@ -67,7 +67,7 @@
 }
 
 .data-table tbody tr:hover td {
-  background: rgba(124, 108, 255, 0.04);
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
 }
 
 /* ── Freeze first two columns on horizontal scroll ─────────
@@ -164,9 +164,9 @@
 }
 
 .bulk-btn-pending {
-  background: rgba(124, 108, 255, 0.12);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
   color: var(--accent);
-  border: 1px solid rgba(124, 108, 255, 0.25);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
 .bulk-btn-cancelled {
@@ -290,7 +290,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 50% 0%, rgba(124, 108, 255, 0.06) 0%, transparent 70%);
+  background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--accent) 6%, transparent) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -306,13 +306,13 @@
 }
 
 .empty-icon-sellers {
-  background: linear-gradient(135deg, rgba(124, 108, 255, 0.15), rgba(188, 140, 255, 0.15));
-  border: 1px solid rgba(124, 108, 255, 0.2);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 15%, transparent), rgba(188, 140, 255, 0.15));
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
   color: var(--accent);
 }
 
 .empty-icon-orders {
-  background: linear-gradient(135deg, rgba(52, 211, 153, 0.15), rgba(124, 108, 255, 0.15));
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.15), color-mix(in srgb, var(--accent) 15%, transparent));
   border: 1px solid rgba(52, 211, 153, 0.2);
   color: var(--green);
 }

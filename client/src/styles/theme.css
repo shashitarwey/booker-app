@@ -3,21 +3,13 @@
    components on top of the original layout files. Spacing/mobile layout
    stays in layout-*.css; this file is mostly colour, depth and shape. */
 
+/* CRED look: flat black, no tint */
 body {
-  background:
-    radial-gradient(1200px 600px at 100% -10%, rgba(124, 108, 255, 0.10), transparent 60%),
-    radial-gradient(900px 500px at -10% 110%, rgba(45, 212, 191, 0.06), transparent 60%),
-    var(--bg);
-  background-attachment: fixed;
-  letter-spacing: -0.005em;
+  background: var(--bg);
+  letter-spacing: -0.01em;
 }
 
-[data-theme="light"] body {
-  background:
-    radial-gradient(1200px 600px at 100% -10%, rgba(91, 75, 230, 0.07), transparent 60%),
-    var(--bg);
-  background-attachment: fixed;
-}
+[data-theme="light"] body { background: var(--bg); }
 
 ::selection { background: var(--accent-soft); }
 
@@ -65,9 +57,10 @@ body {
   border-radius: 10px;
   display: grid;
   place-items: center;
-  color: #fff;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  box-shadow: 0 6px 18px -6px var(--accent);
+  color: #ffffff;
+  background: linear-gradient(160deg, #2b2b2b, #0a0a0a);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 18px -8px rgba(0, 0, 0, 0.9);
 }
 
 .sidebar-search {
@@ -120,8 +113,9 @@ body {
 .sidebar-link:hover { background: var(--surface2); color: var(--text); }
 
 .sidebar-link.active {
-  background: var(--accent-soft);
+  background: var(--surface2);
   color: var(--text);
+  box-shadow: var(--shadow-sm);
 }
 
 .sidebar-link.active svg { color: var(--accent); }
@@ -249,7 +243,7 @@ body {
   box-shadow: var(--shadow-sm), var(--shadow);
 }
 
-.stat-card::after { background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+.stat-card::after { background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0.6; }
 
 .modal-content {
   background: var(--surface-raised);
@@ -260,15 +254,16 @@ body {
 .modal-backdrop { backdrop-filter: blur(6px); }
 
 /* ── Buttons ─────────────────────────────────────────────────── */
-.btn { border-radius: 10px; letter-spacing: -0.005em; }
+/* CRED: pill-shaped, primary is solid white (black in light mode) */
+.btn { border-radius: 999px; letter-spacing: -0.005em; font-weight: 700; }
 
 .btn-primary{
-  background: var(--accent);
-  color: var(--on-accent);
-  box-shadow: 0 8px 20px -10px var(--accent);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.12), 0 10px 22px -14px rgba(0, 0, 0, 0.9);
 }
 
-.btn-primary:hover { filter: brightness(1.08); box-shadow: 0 10px 24px -10px var(--accent); }
+.btn-primary:hover { filter: none; background: color-mix(in srgb, var(--btn-primary-bg) 86%, var(--bg)); box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.12), 0 12px 26px -14px rgba(0, 0, 0, 0.9); }
 
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: none; }
 
@@ -505,3 +500,33 @@ tr.order-row-clickable.is-cancelled { opacity: 0.5; }
 /* One control height for small buttons (bordered or not) so they line up with
    the date filter and each other in every header/toolbar */
 .btn-sm { min-height: 34px; justify-content: center; }
+
+
+/* ── CRED finish ─────────────────────────────────────────────── */
+/* Soft raised surfaces: a hairline top highlight over a deep drop shadow */
+.stat-card, .table-card, .empty-state-card, .analytics-card, .chart-card,
+.ipo-kpi, .bank-panel, .bank-acc-card, .booker-card, .khata-summary, .profile-card {
+  box-shadow: var(--shadow-sm), var(--shadow);
+}
+
+/* Big numbers read like CRED's: heavy, tight */
+.page-hero-title, .stat-card-value, .kpi-value, .ipo-kpi strong, .bank-panel-total {
+  letter-spacing: -0.035em;
+  font-weight: 800;
+}
+
+/* Micro labels: small caps-style, wide tracking */
+.stat-card-label, .kpi-label, .filter-cell-label, .bank-sub-title, .data-table th {
+  letter-spacing: 0.09em;
+}
+
+/* Chips and tabs follow the pill shape */
+.tab-btn, .member-pill, .segmented, .segmented-btn { border-radius: 999px; }
+.tab-btn.is-active, .member-pill.is-active {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border-color: transparent;
+}
+.tab-btn.is-active .tab-btn-count { background: rgba(0, 0, 0, 0.12); color: inherit; }
+[data-theme="light"] .tab-btn.is-active .tab-btn-count { background: rgba(255, 255, 255, 0.18); }
+.segmented-btn.is-active { background: var(--btn-primary-bg); color: var(--btn-primary-text); box-shadow: none; }

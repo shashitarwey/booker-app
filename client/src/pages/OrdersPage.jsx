@@ -279,9 +279,12 @@ export default function OrdersPage({ person = null, onChanged }) {
   const sourceOptions = ['All', ...ECOMM_SITES];
   const hasActiveFilters = Object.entries(filters).some(([k, v]) => k !== 'model_ordered' && v);
 
+  // A row click opens the full edit form; remarks stay in the ⋮ menu
+  const openEdit = (order) => { setEditOrder(order); setShowModal(true); };
+
   const orderMenuItems = (order, hasRemark) => [
     { label: hasRemark ? 'Edit Remark' : 'Add Remark', icon: <MessageSquare size={14} />, onClick: () => setRemarkOrder(order) },
-    { label: 'Edit Order', icon: <Pencil size={14} />, onClick: () => { setEditOrder(order); setShowModal(true); } },
+    { label: 'Edit Order', icon: <Pencil size={14} />, onClick: () => openEdit(order) },
     { label: 'View Activity', icon: <History size={14} />, onClick: () => navigate(`/activity?entityId=${order._id}&entity=order`), color: 'var(--info)' },
     { label: 'Delete',     icon: <Trash2 size={14} />, onClick: () => handleDelete(order._id), color: 'var(--danger)', className: 'border-top' },
   ];
@@ -417,7 +420,7 @@ export default function OrdersPage({ person = null, onChanged }) {
               openMenu={openMenu}
               setOpenMenu={setOpenMenu}
               menuItems={orderMenuItems}
-              onOpen={setRemarkOrder}
+              onOpen={openEdit}
               onToggleClear={handleToggleClear}
               showHolder={showHolder}
               isGroup={Boolean(person?.isGroup)}
@@ -432,7 +435,7 @@ export default function OrdersPage({ person = null, onChanged }) {
               openMenu={openMenu}
               setOpenMenu={setOpenMenu}
               menuItems={orderMenuItems}
-              onOpen={setRemarkOrder}
+              onOpen={openEdit}
               onToggleClear={handleToggleClear}
               showHolder={showHolder}
               showFriendCol={showFriendCol}

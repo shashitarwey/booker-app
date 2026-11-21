@@ -386,7 +386,7 @@ router.post('/', createRules, validate, async (req, res, next) => {
 
         const newOrder = new Order(data);
         await newOrder.save();
-        invalidateCache(req, 'orders');
+        await invalidateCache(req, 'orders');
         const orderDate = new Date(data.order_date).toLocaleDateString('en-GB');
 
         // Card + seller were already loaded by the ownership checks above
@@ -445,7 +445,7 @@ router.put('/:id', updateRules, validate, async (req, res, next) => {
             ),
             { card, seller }
         );
-        invalidateCache(req, 'orders');
+        await invalidateCache(req, 'orders');
 
         // Compute which fields actually changed
         const changedFields = Object.keys(data).filter(k => String(oldOrder[k]) !== String(updatedOrder[k]));
@@ -470,7 +470,7 @@ router.delete('/:id', idRule, validate, async (req, res, next) => {
             Order.findOneAndDelete({ _id: req.params.id, user_id: req.user.id })
         );
         if (!deletedOrder) return res.status(404).json({ error: 'Order not found' });
-        invalidateCache(req, 'orders');
+        await invalidateCache(req, 'orders');
         const delDate = new Date(deletedOrder.order_date).toLocaleDateString('en-GB');
 
         const snap = orderSnapshot(deletedOrder, cardDoc, sellerDoc);
@@ -520,7 +520,7 @@ router.post('/bulk/status', bulkStatusRules, validate, async (req, res, next) =>
             { _id: { $in: ids }, user_id: req.user.id },
             update
         );
-        invalidateCache(req, 'orders');
+        await invalidateCache(req, 'orders');
 
         // Re-fetch updated docs so each activity log has the post-update snapshot
         const updated = await Order.find({ _id: { $in: ids }, user_id: req.user.id });
@@ -540,7 +540,7 @@ router.post('/bulk/clear', bulkClearRules, validate, async (req, res, next) => {
             { _id: { $in: ids }, user_id: req.user.id },
             { is_cleared }
         );
-        invalidateCache(req, 'orders');
+        await invalidateCache(req, 'orders');
 
         const updated = await Order.find({ _id: { $in: ids }, user_id: req.user.id });
         const { cardMap, sellerMap } = await buildLabelMaps(req.user.id, updated);
@@ -559,7 +559,7 @@ router.post('/bulk/delete', bulkDeleteRules, validate, async (req, res, next) =>
         const { cardMap, sellerMap } = await buildLabelMaps(req.user.id, toDelete);
 
         await Order.deleteMany({ _id: { $in: ids }, user_id: req.user.id });
-        invalidateCache(req, 'orders');
+        await invalidateCache(req, 'orders');
 
         for (const o of toDelete) {
             const snap = o.toObject();

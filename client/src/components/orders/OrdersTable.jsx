@@ -50,6 +50,7 @@ export default function OrdersTable({
                 key={order._id}
                 className={`order-row-clickable${isCancelled ? ' is-cancelled' : ''}`}
                 onClick={() => onOpen(order)}
+                title="Click to edit this order"
               >
                 <td className="ot-check" onClick={e => { e.stopPropagation(); toggleSelect(order._id); }}>
                   {selected.has(order._id)

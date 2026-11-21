@@ -178,7 +178,7 @@ router.post('/', createRules, validate, async (req, res, next) => {
         if (holderError) return res.status(400).json({ error: holderError });
         const created = await Card.create(data);
         const card = await created.populate(HOLDER_POPULATE);
-        invalidateCache(req, 'cards');
+        await invalidateCache(req, 'cards');
         logActivity(req.user.id, 'created', 'card', card._id, `Added card: ${data.bank_name} •••• ${data.last_four_digit}`, card);
         res.status(201).json(card);
     } catch (err) {
@@ -219,7 +219,7 @@ router.put('/:id', updateRules, validate, async (req, res, next) => {
         if (card.card_type === 'addon') {
             await Card.updateMany({ user_id: req.user.id, primary_card_id: card._id }, { primary_card_id: null });
         }
-        invalidateCache(req, 'cards');
+        await invalidateCache(req, 'cards');
         const changedFields = Object.keys(data).filter(k => String(oldCard[k]) !== String(card[k]));
         await card.populate(HOLDER_POPULATE);
         logActivity(req.user.id, 'updated', 'card', card._id, `Updated card: ${card.bank_name} •••• ${card.last_four_digit}`, card, changedFields);
@@ -241,7 +241,7 @@ router.delete('/:id', idRule, validate, async (req, res, next) => {
         if (!card) return res.status(404).json({ error: 'Card not found' });
         await Transaction.deleteMany({ card_id: req.params.id });
         await Card.updateMany({ user_id: req.user.id, primary_card_id: card._id }, { primary_card_id: null });
-        invalidateCache(req, 'cards');
+        await invalidateCache(req, 'cards');
         logActivity(req.user.id, 'deleted', 'card', card._id, `Deleted card: ${card.bank_name} •••• ${card.last_four_digit}`, card);
         res.json({ success: true });
     } catch (err) { next(err); }

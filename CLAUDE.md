@@ -138,13 +138,13 @@ docker-compose up --build                  # Server :5050, Client :80, MongoDB :
 
 **IPO** (`routes/ipo.js`, `utils/ipo.js` mirrored in `client/src/utils/ipo.js`, page `/ipo`): `POST /api/ipo/applications` takes `entries: [{ applicant_id, bank_account_id }]` to apply one IPO for several people. Profit only once allotted and sold: `sell_price − lot_price`; applicant gets `profit_share_percent`, the user keeps the rest (losses are shared the same way). Un-allotting clears `sell_price`. Status: applied → allotted → sold.
 
-**Activity log**: TTL 365 days (`models/ActivityLog.js`).
+**Activity log**: TTL 456 days (~15 months, `ACTIVITY_TTL_SECONDS` in `models/ActivityLog.js`). MongoDB won't change the expiry of an existing TTL index, so on a database that already has it, drop `created_at_1` once and let Mongoose recreate it.
 
 **Dates / timezone**: stored dates are calendar days at UTC midnight. "Today" must be the local day: client `getToday()` (constants), server `utils/dates.js` (`todayLocal`, `todayAsUtcDate`; `APP_TZ`, default Asia/Kolkata). Never use `toISOString()` for "today".
 
 **Cashback limit**: `GET /api/cards/:id/cashback-cycle?date=&exclude_order=` returns limit/earned/remaining for the cycle containing that date (`getCashbackCycle` in utils/helpers.js); the order form caps auto-cashback at `remaining`. Person cards tab shows spend by bank with billed (primary + linked add-ons) vs the ₹10L SFT limit (`components/BankSection.jsx` + `utils/bankSpend.js`; cards are grouped by bank).
 
-**Caching**: server `cacheMiddleware(300)` on summary, analytics, people (+khata) and reports. Writes call `invalidateCache(req, '<change>')`; the `AFFECTS` map in `utils/cache.js` decides which areas are cleared (uses SCAN, not KEYS). Client `api.js` has a 30s `cachedGet` for people/cards/buyers/summary/variants; any non-GET response clears it, as does logout.
+**Caching**: server `cacheMiddleware(300)` on summary, analytics, people (+khata) and reports. Writes call `await invalidateCache(req, '<change>')` **before** sending their response (so an immediate reload never sees stale numbers); the `AFFECTS` map in `utils/cache.js` decides which areas are cleared (uses SCAN, not KEYS). Client `api.js` has a 30s `cachedGet` for people/cards/buyers/summary/variants; any non-GET response clears it, as does logout.
 
 **Ledgers**: buyer ledger, khata customer and booker khata feeds are paginated inside MongoDB (`utils/ledgerFeed.js`: `$unionWith` + `$setWindowFields` running balance + `$facet`). The UI for all three is `client/src/components/LedgerView.jsx` (+ `LedgerSummary`).
 
@@ -176,9 +176,12 @@ docker-compose up --build                  # Server :5050, Client :80, MongoDB :
 - **Per-account** (`services/accountData.js`, `routes/export.js`; UI under Profile → Your Data). `GET /api/export` downloads every record the user owns as JSON (`format: booker-account-backup`, `user_id`/`__v` stripped). `POST /api/export/import` (25mb body limit) restores only into an *empty* account. It gives every record a fresh `_id`, remaps references through `REFS`, maps the backup's self person onto the account's self, validates everything before writing, and undoes partial inserts on failure. When adding a collection or a reference field, update `COLLECTIONS`/`REFS` and `tests/backup.test.js`.
 - **Whole database**: `npm run backup` / `npm run restore -- <file> [--force]` (server/scripts). Writes an EJSON dump with gzip and AES-256-GCM using `BACKUP_PASSPHRASE` (12+ chars) to `backups/` (gitignored; keeps the newest `BACKUP_KEEP`, default 14). Restore refuses non-empty collections unless `--force`. `.github/workflows/backup.yml` runs it weekly (plus manual dispatch) using the `MONGO_URI` and `BACKUP_PASSPHRASE` secrets, and keeps the encrypted file as a 90-day artifact.
 
+**Look**: CRED-inspired monochrome. Dark = true black (`--bg: #000`), neutral greys, white type; `--accent` is white (black in light mode); primary buttons are white pills (`--btn-primary-bg/text`, black in light). Colour is only for money states and charts. Chart series: `--chart-1/2` (emerald / rose, validated with the dataviz checker; Recharts needs the hex per theme in `BookerAnalytics.jsx` / `OrderAnalyticsPage.jsx`). Font: Manrope.
+
 **Theme colours**: Use tokens, not hex, for coloured text: `--success`/`--danger`/`--amber`, and `--ink-red`/`--ink-green`/`--ink-amber` for text on tinted chips. Every token has a light-mode value. Entity-coloured tags (relation badge, activity tags) pass the colour as `--tag` and CSS darkens it in light mode. Card widgets are always dark, so they use fixed light colours.
 
 ## Tests
 
 - Server: `cd server && npm test` (Jest + Supertest + mongodb-memory-server)
+  - `supertest` is mapped (jest.config.js) to `tests/supertestShared.js`: one server per test file on `::1`, started by `tests/setup.js`. Any test file using `request(app)` must `require('./setup')`. (Per-request servers on 127.0.0.1 collided with other local port forwarders and failed random tests.)
 - Client: `cd client && npx vitest run`

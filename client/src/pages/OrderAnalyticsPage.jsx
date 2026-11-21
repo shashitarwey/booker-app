@@ -153,7 +153,7 @@ export default function OrderAnalyticsPage() {
   const narrow = typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches;
   const labelMargin = narrow ? 96 : 120;
   const yWidth = (rows, key) => Math.min(narrow ? 96 : 170, Math.max(70, rows.reduce((m, r) => Math.max(m, (r[key] || '').length), 0) * 7 + 12));
-  const seriesColor = theme === 'light' ? '#5b4be6' : '#7c6cff';
+  const seriesColor = theme === 'light' ? '#098356' : '#16a56e'; // --chart-1
 
   return (
     <>

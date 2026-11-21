@@ -284,7 +284,7 @@
   pointer-events: none;
 }
 
-.card-type-tab.is-primary { background: #7c6cff; color: #fff; }
+.card-type-tab.is-primary { background: var(--accent); color: #fff; }
 .card-type-tab.is-addon { background: #fbbf24; color: #3b2600; }
 
-[data-theme="light"] .card-type-tab.is-primary { background: #5b4be6; }
+[data-theme="light"] .card-type-tab.is-primary { background: var(--accent); }

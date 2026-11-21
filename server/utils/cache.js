@@ -173,18 +173,19 @@ const AFFECTS = {
 
 /**
  * Invalidate only the cached areas a write affects.
- * Usage: invalidateCache(req, 'orders')
+ * Usage: await invalidateCache(req, 'orders')  (before sending the response)
  */
 function invalidateCache(req, change) {
     const uid = req.user?.id;
-    if (!uid) return;
+    if (!uid) return Promise.resolve();
     const areas = AFFECTS[change];
-    if (!areas) {
-        logger.warn('invalidateCache: unknown change type, clearing all', { change });
-        invalidate(`route:${uid}:*`).catch(() => { });
-        return;
-    }
-    for (const area of areas) invalidate(`route:${uid}:${CACHED_AREAS[area]}*`).catch(() => { });
+    const patterns = areas
+        ? areas.map(area => `route:${uid}:${CACHED_AREAS[area]}*`)
+        : [`route:${uid}:*`];
+    if (!areas) logger.warn('invalidateCache: unknown change type, clearing all', { change });
+    // Callers await this before responding, so the client's next GET never
+    // reads a stale cached copy. invalidate() never rejects.
+    return Promise.all(patterns.map(p => invalidate(p)));
 }
 
 /**
@@ -193,11 +194,9 @@ function invalidateCache(req, change) {
  * Usage: router.post('/path', handler, invalidateSummaryCache)
  */
 function invalidateSummaryCache(req, res, next) {
-    // Run invalidation after the response is sent
-    if (req.user?.id) {
-        invalidate(`route:${req.user.id}:*`).catch(() => { });
-    }
-    if (next) next();
+    if (!req.user?.id) return next && next();
+    // Finish clearing before handing on, so nothing after it reads stale data
+    invalidate(`route:${req.user.id}:*`).then(() => next && next());
 }
 
 /** Check if Redis is connected */

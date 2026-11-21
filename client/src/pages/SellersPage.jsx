@@ -138,7 +138,7 @@ export default function SellersPage() {
 
             <div className="stat-card">
               <div className="stat-card-header">
-                <div className="stat-card-icon" style={{ background: 'rgba(124, 108, 255, 0.12)', color: 'var(--accent)' }}>
+                <div className="stat-card-icon" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
                   <TrendingUp size={16} />
                 </div>
                 <span className="stat-card-label">Total Profit</span>

@@ -72,7 +72,7 @@
 
 .profile-card--link:hover {
   border-color: var(--accent);
-  box-shadow: 0 4px 32px rgba(124, 108, 255, 0.1);
+  box-shadow: 0 4px 32px color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .profile-card-link-content {

@@ -58,7 +58,7 @@ export const BANK_NAME_TO_CODE = Object.fromEntries(
 
 // ─── Card holders ──────────────────────────────────────────────────────────
 export const RELATIONS = {
-    self:   { label: 'Self',   color: '#58a6ff' },
+    self:   { label: 'Self',   color: '#e5e5e5' },
     family: { label: 'Family', color: '#a6e3a1' },
     friend: { label: 'Friend', color: '#f9a875' },
 };

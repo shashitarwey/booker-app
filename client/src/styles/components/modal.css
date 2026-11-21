@@ -219,7 +219,7 @@ div[style*="overflow"]>form>.form-group:first-child {
 .form-select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(124, 108, 255, 0.15);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
 }
 
 .form-input::placeholder {
@@ -254,9 +254,9 @@ div[style*="overflow"]>form>.form-group:first-child {
 }
 
 .cashback-site-chip.is-active {
-  background: rgba(124, 108, 255, 0.15);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
   color: var(--accent);
-  border-color: rgba(124, 108, 255, 0.45);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
 .toggle-row {
@@ -517,14 +517,14 @@ div[style*="overflow"]>form>.form-group:first-child {
 
 .upload-area:hover {
   border-color: var(--accent);
-  background: rgba(124, 108, 255, 0.04);
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
 }
 
 .upload-area-icon {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: rgba(124, 108, 255, 0.1);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
   color: var(--accent);
   display: flex;
   align-items: center;

@@ -79,7 +79,7 @@
 .tab-btn.is-active {
   color: var(--text);
   border-color: var(--accent);
-  background: rgba(124, 108, 255, 0.1);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .tab-btn-count {

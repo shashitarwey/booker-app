@@ -158,7 +158,7 @@ router.post('/', createRules, validate, async (req, res, next) => {
         const data = pickFields(req.body, PERSON_FIELDS);
         data.user_id = req.user.id;
         const person = await Person.create(data);
-        invalidateCache(req, 'people');
+        await invalidateCache(req, 'people');
         logActivity(req.user.id, 'created', 'person', person._id, `Added ${person.relation}: ${person.name}`, person);
         res.status(201).json({ ...person.toObject(), ...EMPTY_STATS });
     } catch (err) {
@@ -197,7 +197,7 @@ router.put('/:id', updateRules, validate, async (req, res, next) => {
             { new: true, runValidators: true }
         );
         // Holder name/relation shows up in card listings and summary
-        invalidateCache(req, 'people');
+        await invalidateCache(req, 'people');
         const changedFields = Object.keys(data).filter(k => String(old[k]) !== String(person[k]));
         logActivity(req.user.id, 'updated', 'person', person._id, `Updated ${person.relation}: ${person.name}`, person, changedFields);
         res.json(person);
@@ -218,7 +218,7 @@ router.delete('/:id', idRule, validate, async (req, res, next) => {
         }
         await person.deleteOne();
         await BookerPayment.deleteMany({ user_id: req.user.id, person_id: person._id });
-        invalidateCache(req, 'people');
+        await invalidateCache(req, 'people');
         logActivity(req.user.id, 'deleted', 'person', person._id, `Deleted ${person.relation}: ${person.name}`, person);
         res.json({ success: true });
     } catch (err) { next(err); }
@@ -284,7 +284,7 @@ router.post('/:id/payments', idRule, paymentRules(false), validate, async (req, 
         if (!person) return;
         const data = pickFields(req.body, PAYMENT_FIELDS);
         const payment = await BookerPayment.create({ ...data, user_id: req.user.id, person_id: person._id });
-        invalidateCache(req, 'booker_payments');
+        await invalidateCache(req, 'booker_payments');
         logActivity(req.user.id, 'created', 'booker_payment', payment._id, paymentDesc(payment, person.name), payment);
         res.status(201).json(payment);
     } catch (err) {
@@ -300,7 +300,7 @@ router.put('/payments/:paymentId', paymentIdRule, paymentRules(true), validate, 
         const old = await BookerPayment.findOne({ _id: req.params.paymentId, user_id: req.user.id });
         if (!old) return res.status(404).json({ error: 'Payment not found' });
         const payment = await BookerPayment.findOneAndUpdate({ _id: old._id }, data, { new: true, runValidators: true });
-        invalidateCache(req, 'booker_payments');
+        await invalidateCache(req, 'booker_payments');
         const person = await Person.findById(payment.person_id, 'name');
         const changed = Object.keys(data).filter(k => String(old[k]) !== String(payment[k]));
         logActivity(req.user.id, 'updated', 'booker_payment', payment._id, paymentDesc(payment, person?.name || 'booker'), payment, changed);
@@ -314,7 +314,7 @@ router.delete('/payments/:paymentId', paymentIdRule, validate, async (req, res, 
     try {
         const payment = await BookerPayment.findOneAndDelete({ _id: req.params.paymentId, user_id: req.user.id });
         if (!payment) return res.status(404).json({ error: 'Payment not found' });
-        invalidateCache(req, 'booker_payments');
+        await invalidateCache(req, 'booker_payments');
         const person = await Person.findById(payment.person_id, 'name');
         logActivity(req.user.id, 'deleted', 'booker_payment', payment._id, `Deleted payment ₹${payment.amount} to ${person?.name || 'booker'}`, payment);
         res.json({ success: true });

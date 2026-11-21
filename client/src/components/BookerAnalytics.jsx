@@ -10,8 +10,8 @@ import { pctLabel } from '../utils/profit';
 // contrast ≥ 3:1 on the chart surface). Recharts writes fills as SVG
 // attributes, where CSS vars aren't reliable — so pick the hex per theme.
 const SOURCE_COLORS = {
-  dark:  { own: '#7c6cff', bookers: '#0fa596' },
-  light: { own: '#5b4be6', bookers: '#0d9488' },
+  dark:  { own: '#16a56e', bookers: '#b8547c' },  // emerald / rose, as --chart-1/2
+  light: { own: '#098356', bookers: '#8d3d67' },
 };
 
 const kFmt = (v) => (Math.abs(v) >= 1000 ? `₹${(v / 1000).toFixed(Math.abs(v) >= 10000 ? 0 : 1)}k` : `₹${Math.round(v)}`);

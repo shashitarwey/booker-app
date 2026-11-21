@@ -8,8 +8,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 const ENTITY_CONFIG = {
-  order:          { icon: ShoppingBag,   label: 'Order',          color: '#7c6cff' },
-  seller:         { icon: Users,         label: 'Buyer',          color: '#d2a8ff' },
+  order:          { icon: ShoppingBag,   label: 'Order',          color: '#e5e5e5' },
+  seller:         { icon: Users,         label: 'Buyer',          color: '#f0a07a' },
   seller_payment: { icon: Wallet,        label: 'Buyer Payment',  color: '#34d399' },
   transaction:    { icon: ArrowLeftRight, label: 'Transaction',    color: '#f0883e' },
   card:           { icon: CreditCard,    label: 'Card',           color: '#f87171' },
@@ -17,14 +17,14 @@ const ENTITY_CONFIG = {
   customer_entry: { icon: BookOpen,      label: 'Khata Entry',    color: '#a6e3a1' },
   person:         { icon: Users,         label: 'Person',         color: '#f9a875' },
   booker_payment: { icon: Wallet,        label: 'Booker Payment', color: '#fbbf24' },
-  ipo_applicant:  { icon: Users,         label: 'IPO Applicant',  color: '#2dd4bf' },
-  ipo_application:{ icon: ChartCandlestick, label: 'IPO',          color: '#38bdf8' },
-  bank_account:   { icon: Landmark,      label: 'Bank Account',   color: '#a78bfa' },
+  ipo_applicant:  { icon: Users,         label: 'IPO Applicant',  color: '#a3e4c1' },
+  ipo_application:{ icon: ChartCandlestick, label: 'IPO',          color: '#f5b942' },
+  bank_account:   { icon: Landmark,      label: 'Bank Account',   color: '#c8c8c8' },
 };
 
 const ACTION_CONFIG = {
   created: { icon: Plus,   bg: 'rgba(52,211,153,0.12)',  color: '#34d399', label: 'Created' },
-  updated: { icon: Pencil, bg: 'rgba(124,108,255,0.12)', color: '#7c6cff', label: 'Updated' },
+  updated: { icon: Pencil, bg: 'var(--accent-soft)', color: '#e5e5e5', label: 'Updated' },
   deleted: { icon: Trash2, bg: 'rgba(248,113,113,0.12)',  color: '#f87171', label: 'Deleted' },
 };
 
